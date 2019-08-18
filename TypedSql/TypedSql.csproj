@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <TargetFramework>netstandard1.6</TargetFramework>
     <PackageTags>sql;database;sqlserver;mysql</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>Write database queries in C# and syntax as close to real SQL as possible.</Description>
     <!--AssemblyOriginatorKeyFile>..\TypedSql.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign-->

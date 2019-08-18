@@ -128,6 +128,14 @@ namespace TypedSql.Test
                 .Value(p => p.ProductId, 1)
                 .Value(p => p.Price, 50));
 
+            stmtList.Insert(DB.Inventories, insert => insert
+                .Value(p => p.UnitId, 1)
+                .Value(p => p.Stock, 10));
+
+            stmtList.Insert(DB.Inventories, insert => insert
+                .Value(p => p.UnitId, 2)
+                .Value(p => p.Stock, 50));
+
             runner.ExecuteNonQuery(stmtList);
 
         }

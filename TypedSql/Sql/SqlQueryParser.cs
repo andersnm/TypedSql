@@ -268,7 +268,7 @@ namespace TypedSql {
                 {
                     MemberName = column.MemberName,
                     SqlName = column.SqlName,
-                    SqlNameAlias = column.SqlName,
+                    SqlNameAlias = column.MemberName,
                     TableAlias = tableAlias,
                     TableType = fromQuery.TableType,
                     FieldType = column.OriginalType,
@@ -279,7 +279,6 @@ namespace TypedSql {
             {
                 From = new SqlFromTable()
                 {
-                    // FromTableType = fromQuery.TableType,
                     TableName = fromQuery.TableName,
                 },
                 FromAlias = tableAlias,
