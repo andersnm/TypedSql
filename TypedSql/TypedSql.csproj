@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>0.0.1</Version>
+    <TargetFramework>netstandard1.6</TargetFramework>
+    <PackageTags>sql;database;sqlserver;mysql</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <!--AssemblyOriginatorKeyFile>..\TypedSql.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>
