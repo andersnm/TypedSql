@@ -21,9 +21,11 @@ namespace TypedSql.Test
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
+            var environment = Environment.GetEnvironmentVariable("TYPEDSQL_ENVIRONMENT");
             var config = new ConfigurationBuilder()
                 .SetBasePath(TestContext.CurrentContext.TestDirectory)
                 .AddJsonFile("appSettings.json")
+                .AddJsonFile("appSettings." + environment + ".json", true)
                 .Build();
 
             var mycsb = new MySqlConnectionStringBuilder()
@@ -42,6 +44,12 @@ namespace TypedSql.Test
                 InitialCatalog = ConfigurationBinder.GetValue<string>(config, "SqlServer:InitialCatalog"),
                 IntegratedSecurity = ConfigurationBinder.GetValue<bool>(config, "SqlServer:IntegratedSecurity"),
             };
+
+            if (!mscsb.IntegratedSecurity)
+            {
+                mscsb.UserID = ConfigurationBinder.GetValue<string>(config, "SqlServer:UserID");
+                mscsb.Password = ConfigurationBinder.GetValue<string>(config, "SqlServer:Password");
+            }
 
             var services = new ServiceCollection();
 
