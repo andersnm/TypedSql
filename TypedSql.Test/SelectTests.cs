@@ -98,7 +98,7 @@ namespace TypedSql.Test
                             Unit = b,
                         })
                     .Where(p => p.Unit.UnitId == 1)
-                    .Select((ctx, p) => p.Product),
+                    .Project((ctx, p) => p.Product),
                 (ctx, a) => a);
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);

@@ -124,11 +124,17 @@ namespace TypedSql {
         /// <summary>
         /// SELECT {expression} FROM ...
         /// </summary>
-        /// <param name="limit"></param>
-        /// <returns></returns>
         public FlatQuery<TFrom, TKey> Select<TKey>(Expression<Func<SelectorContext<T>, T, TKey>> selectExpr)
         {
             return new SelectQuery<TFrom, T, TKey>(this, selectExpr);
+        }
+
+        /// <summary>
+        /// Project specific fields in parent query
+        /// </summary>
+        public FlatQuery<TFrom, TKey> Project<TKey>(Expression<Func<SelectorContext<T>, T, TKey>> selectExpr)
+        {
+            return new ProjectQuery<TFrom, T, TKey>(this, selectExpr);
         }
 
         protected bool HasAggregates(Expression selectExpression)
