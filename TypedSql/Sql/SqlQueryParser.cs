@@ -779,9 +779,23 @@ namespace TypedSql {
                     }
                 }
             }
+            else if (selectExpression.Body is MemberExpression memberExpression)
+            {
+                // Select all members in a table
+                var memberRef = ParseParameterMemberExpression(memberExpression, parameters);
+                if (memberRef is SqlExpressionMember memberExprRef && memberExprRef.Expression is SqlTableExpression memberRefExprTable)
+                {
+                    return memberRefExprTable.TableResult.Members;
+                }
+                else
+                {
+                    // TODO: allow to select a single field
+                    throw new ArgumentException("Select Member Expression should refer to a table");
+                }
+            }
             else
             {
-                throw new ArgumentException("Select expression should be a LambdaDelegate whose Body property is a New, MemberAccess or MemberInit Expression");
+                throw new ArgumentException("Select expression should be a LambdaDelegate whose Body property is a New, MemberAccess, MemberInit or Member Expression");
             }
 
             return members;
