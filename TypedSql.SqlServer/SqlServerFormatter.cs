@@ -121,6 +121,15 @@ namespace TypedSql.SqlServer
             writer.Append("SELECT CAST(SCOPE_IDENTITY() AS INT)");
         }
 
+        public override void WriteIfNullExpression(SqlExpression testExpr, SqlExpression ifNullExpr, StringBuilder writer)
+        {
+            writer.Append("ISNULL(");
+            WriteExpression(testExpr, writer);
+            writer.Append(", ");
+            WriteExpression(ifNullExpr, writer);
+            writer.Append(")");
+        }
+
         public override void WriteSelectQuery(SqlQuery queryObject, StringBuilder writer)
         {
             base.WriteSelectQuery(queryObject, writer);

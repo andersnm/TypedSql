@@ -61,6 +61,20 @@ namespace TypedSql
             var leftType = Left.GetExpressionType();
             var rightType = Right.GetExpressionType();
 
+            var leftTypeInfo = leftType.GetTypeInfo();
+            var leftNullable = (leftTypeInfo.IsGenericType && leftTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
+            if (leftNullable)
+            {
+                leftType = Nullable.GetUnderlyingType(leftType);
+            }
+
+            var rightTypeInfo = rightType.GetTypeInfo();
+            var rightNullable = (rightTypeInfo.IsGenericType && rightTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
+            if (rightNullable)
+            {
+                rightType = Nullable.GetUnderlyingType(rightType);
+            }
+
             if (leftType != rightType)
             {
                 throw new InvalidOperationException("BinaryExpression requires same type on both sides");

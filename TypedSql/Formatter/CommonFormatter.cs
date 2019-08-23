@@ -18,6 +18,7 @@ namespace TypedSql
         public abstract void WriteColumnName(string tableName, StringBuilder writer);
         public abstract void WriteUpdateQuery(List<InsertInfo> inserts, SqlQuery queryObject, StringBuilder writer);
         public abstract void WriteLastIdentityExpression(StringBuilder writer);
+        public abstract void WriteIfNullExpression(SqlExpression testExpr, SqlExpression ifNullExpr, StringBuilder writer);
 
         public virtual void WriteExpression(SqlExpression node, StringBuilder writer)
         {
@@ -57,6 +58,10 @@ namespace TypedSql
                     WriteExpression(binary.Left, writer);
                     writer.Append(" LIKE ");
                     WriteExpression(binary.Right, writer);
+                }
+                else if (binary.Op == ExpressionType.Coalesce)
+                {
+                    WriteIfNullExpression(binary.Left, binary.Right, writer);
                 }
                 else
                 {
@@ -196,28 +201,130 @@ namespace TypedSql
             }
             else if (node is SqlConditionalExpression condExpr)
             {
-                // Special handling for "x != null ? x.Value : null" in SQL
-                if (condExpr.Test is SqlBinaryExpression testExpr)
+                // Special handling for:
+                // - "x != null ? x.Value : null" in SQL where x is a table/result type
+                // - "x.Value != null ? (T)x.Value : 0" in SQL where x.Value is a Nullable<T> type
+                if (IsConditionalNullTableCastToNullable(condExpr, out var nullCastExpr))
                 {
-                    if (testExpr.Left is SqlTableExpression leftExpr && testExpr.Right is SqlConstantExpression rightExpr && rightExpr.Value == null)
-                    {
-                        WriteExpression(condExpr.IfTrue, writer);
-                    }
-                    else
-                    {
-                        // TODO: CASE WHEN ELSE END
-                        throw new Exception("Expected BinaryExpression in the form 'x != null ? x.Value : null'");
-                    }
+                    WriteExpression(nullCastExpr, writer);
                 }
-                else
+                else if (IsIfNull(condExpr, out var ifNullTestExpr, out var ifNullExpr))
                 {
-                    throw new Exception("Expected BinaryExpression in conditional");
+                    WriteIfNullExpression(ifNullTestExpr, ifNullExpr, writer);
+                }
+                else {
+                    // TODO: CASE WHEN ELSE END
+                    throw new Exception("Expected BinaryExpression in Conditional in a known form."); // the form 'x != null ? x.Value : null'");
                 }
             }
             else
             {
                 throw new Exception("Unhandled SQL expression " + node.GetType().Name);
             }
+        }
+
+        private bool IsIfNull(SqlConditionalExpression condExpr, out SqlExpression testExpression, out SqlExpression ifNullExpression)
+        {
+            // Detect conditional IFNULL() expressions
+            // "x.Value != null ? (T)x.Value : 0" in SQL where x.Value is a Nullable < T > type
+            testExpression = null;
+            ifNullExpression = null;
+
+            if (!(condExpr.Test is SqlBinaryExpression condTestExpr))
+            {
+                return false;
+            }
+
+            if (!IsConditionalNullableField(condTestExpr.Left, out var condTestLeftExpr))
+            {
+                return false;
+            }
+
+            if (condTestExpr.Op != ExpressionType.NotEqual)
+            {
+                return false;
+            }
+
+            if (!(condTestExpr.Right is SqlConstantExpression condTestRightExpr && condTestRightExpr.Value == null))
+            {
+                return false;
+            }
+
+            if (!(condExpr.IfTrue is SqlCastExpression condTrueCastExpr))
+            {
+                return false;
+            }
+
+            if (!IsConditionalNullableField(condTrueCastExpr.Operand, out var condTrueCastOperandExpr))
+            {
+                return false;
+            }
+
+            if (condTestLeftExpr != condTrueCastOperandExpr)
+            {
+                return false;
+            }
+
+            testExpression = condTestLeftExpr;
+            ifNullExpression = condExpr.IfFalse;
+            return true;
+        }
+
+        /// <summary>
+        /// A nullable member expression like 'a.Value' is represented
+        /// as a conditional 'a != null ? a.Value : null'.
+        /// This method detects nullable expressions, and returns only 
+        /// the field expression.
+        /// </summary>
+        bool IsConditionalNullableField(SqlExpression operand, out SqlExpression outputExpression)
+        {
+            if (!(operand is SqlConditionalExpression condTrueCastCondExpr))
+            {
+                outputExpression = null;
+                return false;
+            }
+
+            if (!IsConditionalNullTableCastToNullable(condTrueCastCondExpr, out var condTrueCastCondTrueExpr))
+            {
+                outputExpression = null;
+                return false;
+            }
+
+            // TODO: check if return cast target is non-nullable
+            if (!(condTrueCastCondTrueExpr is SqlCastExpression condTrueCastCondTrueCastExpr))
+            {
+                outputExpression = null;
+                return false;
+            }
+
+            outputExpression = condTrueCastCondTrueCastExpr.Operand;
+            return true;
+        }
+
+        private bool IsConditionalNullTableCastToNullable(SqlConditionalExpression condExpr, out SqlExpression outputExpression) {
+            // Detect conditional casts to nullables in C# which translates directly to f.ex just the field name in SQL
+            // "x != null ? x.Value : null" where x is a table/result type
+            if (!(condExpr.Test is SqlBinaryExpression testExpr))
+            {
+                outputExpression = null;
+                return false;
+            }
+
+            if (testExpr.Left is SqlTableExpression && testExpr.Right is SqlConstantExpression rightExpr && rightExpr.Value == null && testExpr.Op == ExpressionType.NotEqual)
+            {
+                outputExpression = condExpr.IfTrue;
+                return true;
+            }
+
+            // "x == null ? null : x.Value" where x is a table/result type
+            if (testExpr.Right is SqlTableExpression && testExpr.Left is SqlConstantExpression leftExpr && leftExpr.Value == null && testExpr.Op == ExpressionType.Equal)
+            {
+                outputExpression = condExpr.IfFalse;
+                return true;
+            }
+
+            outputExpression = null;
+            return false;
         }
 
         public virtual void WriteQueryObject(SqlMember member, StringBuilder writer)

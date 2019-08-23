@@ -225,7 +225,7 @@ namespace TypedSql.Test
             }
         }
 
-        [Test, Ignore("TODO: Nullable in BinaryExpression, Conditional, Coalesce, IFNULL SQL")]
+        [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]

@@ -120,6 +120,15 @@ namespace TypedSql.MySql
             writer.Append("LAST_INSERT_ID()");
         }
 
+        public override void WriteIfNullExpression(SqlExpression testExpr, SqlExpression ifNullExpr, StringBuilder writer)
+        {
+            writer.Append("IFNULL(");
+            WriteExpression(testExpr, writer);
+            writer.Append(", ");
+            WriteExpression(ifNullExpr, writer);
+            writer.Append(")");
+        }
+
         public override void WriteSelectQuery(SqlQuery queryObject, StringBuilder writer)
         {
             base.WriteSelectQuery(queryObject, writer);
