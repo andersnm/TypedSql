@@ -32,11 +32,11 @@ namespace TypedSql
         /// <summary>
         /// SELECT ... FROM ...
         /// </summary>
-        public StatementResult<TResult> Select<TFrom, T, TResult>(Query<TFrom, T> query, Expression<Func<SelectorContext<T>, T, TResult>> selectExpr)
+        public StatementResult<T> Select<TFrom, T>(Query<TFrom, T> query)
         {
-            var stmt = new SelectStatement<TFrom, T, TResult>(query, selectExpr);
+            var stmt = new SelectStatement<TFrom, T>(query);
             Queries.Add(stmt);
-            return new StatementResult<TResult>()
+            return new StatementResult<T>()
             {
                 Statement = stmt,
                 StatementList = this

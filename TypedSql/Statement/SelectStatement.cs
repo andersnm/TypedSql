@@ -13,20 +13,20 @@ namespace TypedSql
         List<object> EvaluateInMemory(InMemoryQueryRunner runner);
     }
 
-    public class SelectStatement<TFrom, T, TResult> : ISelectStatement
+    public class SelectStatement<TFrom, T> : ISelectStatement
     {
         public Query SelectQuery { get; }
-        internal Query<TFrom, TResult> SelectQueryTResult { get; }
+        internal Query<TFrom, T> SelectQueryT { get; }
 
-        public SelectStatement(Query<TFrom, T> parent, Expression<Func<SelectorContext<T>, T, TResult>> selectExpression)
+        public SelectStatement(Query<TFrom, T> parent)
         {
-            SelectQueryTResult = new ProjectQuery<TFrom, T, TResult>(parent, selectExpression);
-            SelectQuery = SelectQueryTResult;
+            SelectQueryT = parent;
+            SelectQuery = SelectQueryT;
         }
 
         public List<object> EvaluateInMemory(InMemoryQueryRunner runner)
         {
-            return SelectQueryTResult.InMemorySelect(runner).Cast<object>().ToList();
+            return SelectQueryT.InMemorySelect(runner).Cast<object>().ToList();
         }
     }
 

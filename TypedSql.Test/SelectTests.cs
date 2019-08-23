@@ -64,12 +64,13 @@ namespace TypedSql.Test
         {
             var stmtList = new SqlStatementList();
             var select = stmtList.Select(
-                DB.Products.Where(p => p.ProductId == 1),
-                (ctx, a) => new TestClass() {
-                    X = a.ProductId,
-                    Y = true,
-                    Z = a.Name
-                });
+                DB.Products
+                    .Where(p => p.ProductId == 1)
+                    .Project((ctx, a) => new TestClass() {
+                        X = a.ProductId,
+                        Y = true,
+                        Z = a.Name
+                    }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -98,8 +99,7 @@ namespace TypedSql.Test
                             Unit = b,
                         })
                     .Where(p => p.Unit.UnitId == 1)
-                    .Project((ctx, p) => p.Product),
-                (ctx, a) => a);
+                    .Project((ctx, p) => p.Product));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -115,9 +115,7 @@ namespace TypedSql.Test
         public void SelectRenamedTableWithRenamedField(Type runnerType)
         {
             var stmtList = new SqlStatementList();
-            var select = stmtList.Select(
-                DB.Inventories,
-                (ctx, a) => a);
+            var select = stmtList.Select(DB.Inventories);
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -147,8 +145,7 @@ namespace TypedSql.Test
                             ProductName = a.Name,
                             b.UnitId,
                             UnitName = b.Name,
-                        }),
-                (ctx, p) => p);
+                        }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -169,13 +166,13 @@ namespace TypedSql.Test
                     .Join(
                         DB.Units,
                         (actx, a, bctx, b) => a.ProductId == b.ProductId,
-                        (actx, a, bctx, b) => new { Product = a, Unit = b, X = 1234 }),
-                (ctx, p) => new {
-                    p.Product.ProductId,
-                    p.Product.Name,
-                    UnitName = p.Unit.Name,
-                    p.X,
-                });
+                        (actx, a, bctx, b) => new { Product = a, Unit = b, X = 1234 })
+                    .Project((ctx, p) => new {
+                        p.Product.ProductId,
+                        p.Product.Name,
+                        UnitName = p.Unit.Name,
+                        p.X,
+                    }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -201,8 +198,7 @@ namespace TypedSql.Test
                             ProductName = a.Name,
                             UnitId = b != null ? (int?)b.UnitId : null, // HMMMMM
                             UnitName = b != null ? b.Name : null,
-                        }),
-                (ctx, p) => p);
+                        }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -247,8 +243,7 @@ namespace TypedSql.Test
                         (ctx, p) => new {
                             UnitId = p.UnitId != null ? (int)p.UnitId : 0,
                             UnitId2 = p.UnitId ?? 0
-                        }),
-                (ctx, p) => p);
+                        }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -276,8 +271,7 @@ namespace TypedSql.Test
                             a.ProductId,
                             ProductName = a.Name,
                             b.UnitCount
-                        }),
-                (ctx, p) => p);
+                        }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -302,8 +296,7 @@ namespace TypedSql.Test
                             a.ProductId,
                             UnitName = a.Name,
                             b.UnitId
-                        }),
-                (ctx, p) => p);
+                        }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -322,8 +315,7 @@ namespace TypedSql.Test
             var subquery = DB.Units.Select((ctx, ur) => ur);
 
             var select = stmtList.Select(
-                subquery,
-                (ctx, p) => new { Count = Function.Count(ctx, x => x.UnitId )});
+                subquery.Project((ctx, p) => new { Count = Function.Count(ctx, x => x.UnitId )}));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -340,7 +332,7 @@ namespace TypedSql.Test
         public void SelectWhereNull(Type runnerType)
         {
             var stmtList = new SqlStatementList();
-            var select = stmtList.Select(DB.Products.Where(p => p.Name == null), (ctx, p) => p);
+            var select = stmtList.Select(DB.Products.Where(p => p.Name == null));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -363,8 +355,7 @@ namespace TypedSql.Test
             var select = stmtList.Select(
                 DB.Products
                     .Where(
-                        p => Function.Contains(p.ProductId, productIds)),
-                        (ctx, p) => p);
+                        p => Function.Contains(p.ProductId, productIds)));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -380,7 +371,7 @@ namespace TypedSql.Test
         public void SelectWhereContainsInline(Type runnerType)
         {
             var stmtList = new SqlStatementList();
-            var select = stmtList.Select(DB.Products.Where(p => Function.Contains(p.ProductId, new[] { 1, 200, 300 })), (ctx, p) => p);
+            var select = stmtList.Select(DB.Products.Where(p => Function.Contains(p.ProductId, new[] { 1, 200, 300 })));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -396,7 +387,7 @@ namespace TypedSql.Test
         public void SelectConcatExpression(Type runnerType)
         {
             var stmtList = new SqlStatementList();
-            var select = stmtList.Select(DB.Products, (ctx, p) => new { Name = "Product: " + p.Name });
+            var select = stmtList.Select(DB.Products.Project((ctx, p) => new { Name = "Product: " + p.Name }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -420,7 +411,7 @@ namespace TypedSql.Test
             var testvar = stmtList.DeclareSqlVariable<int>("testvar");
             stmtList.SetSqlVariable(testvar, ctx => 1234);
 
-            var select = stmtList.Select(DB.Products, (ctx, p) => new { VariableValue = testvar.Value });
+            var select = stmtList.Select(DB.Products.Project((ctx, p) => new { VariableValue = testvar.Value }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -444,7 +435,7 @@ namespace TypedSql.Test
             var testvar = stmtList.DeclareSqlVariable<int>("testvar");
             stmtList.SetSqlVariable(testvar, ctx => 1);
 
-            var select = stmtList.Select(DB.Products.Where(p => p.ProductId == testvar.Value), (ctx, p) => new { p.ProductId });
+            var select = stmtList.Select(DB.Products.Where(p => p.ProductId == testvar.Value).Project((ctx, p) => new { p.ProductId }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -466,7 +457,7 @@ namespace TypedSql.Test
         {
             var stmtList = new SqlStatementList();
 
-            var select = stmtList.Select(DB.Products.OrderBy(false, p => p.Name), (ctx, p) => p);
+            var select = stmtList.Select(DB.Products.OrderBy(false, p => p.Name));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -484,7 +475,7 @@ namespace TypedSql.Test
         {
             var stmtList = new SqlStatementList();
 
-            var select = stmtList.Select(DB.Products.OrderBy(true, p => p.Name), (ctx, p) => p);
+            var select = stmtList.Select(DB.Products.OrderBy(true, p => p.Name));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -513,8 +504,7 @@ namespace TypedSql.Test
                         (ctx, ur) => new {
                             ur.Product.ProductId,
                             UnitCount = Function.Count(ctx, t => t.Unit.UnitId)
-                        }),
-                (ctx, p) => p);
+                        }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -547,8 +537,7 @@ namespace TypedSql.Test
                         (ctx, ur) => new {
                             ur.Product.ProductId,
                             PriceSum = Function.Sum(ctx, t => t.Unit != null ? (int?)t.Unit.Price : null)
-                        }),
-                (ctx, p) => p);
+                        }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
