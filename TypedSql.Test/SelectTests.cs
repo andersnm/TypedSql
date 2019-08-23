@@ -225,6 +225,38 @@ namespace TypedSql.Test
             }
         }
 
+        [Test, Ignore("TODO: Nullable in BinaryExpression, Conditional, Coalesce, IFNULL SQL")]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectNullProp(Type runnerType)
+        {
+            var stmtList = new SqlStatementList();
+            var select = stmtList.Select(
+                DB.Products
+                    .LeftJoin(
+                        DB.Units,
+                        (actx, a, bctx, b) => a.ProductId == b.ProductId,
+                        (actx, a, bctx, b) => new {
+                            a.ProductId,
+                            ProductName = a.Name,
+                            UnitId = b != null ? (int?)b.UnitId : null,
+                            UnitName = b != null ? b.Name : null,
+                        })
+                    .Project(
+                        (ctx, p) => new {
+                            UnitId = p.UnitId != null ? (int)p.UnitId : 0,
+                            UnitId2 = p.UnitId ?? 0
+                        }),
+                (ctx, p) => p);
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+            Assert.True(results.Count > 0, "Should be results");
+        }
+
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
@@ -244,6 +276,32 @@ namespace TypedSql.Test
                             a.ProductId,
                             ProductName = a.Name,
                             b.UnitCount
+                        }),
+                (ctx, p) => p);
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+            Assert.True(results.Count > 0, "Should be results");
+        }
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectJoinSubqueryNames(Type runnerType)
+        {
+            var stmtList = new SqlStatementList();
+
+            var select = stmtList.Select(
+                DB.Units
+                    .Join(
+                        DB.Inventories.Where(i => i.Stock > 0),
+                        (actx, a, bctx, b) => a.UnitId == b.UnitId,
+                        (actx, a, bctx, b) => new {
+                            a.ProductId,
+                            UnitName = a.Name,
+                            b.UnitId
                         }),
                 (ctx, p) => p);
 

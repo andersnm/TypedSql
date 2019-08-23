@@ -15,14 +15,9 @@ namespace TypedSql {
         public Type FieldType { get; set; }
 
         /// <summary>
-        /// The name being referenced in SQL. F.ex the underlying backing field name inside renamed joins
+        /// The name being referenced in SQL.
         /// </summary>
         public string SqlName { get; set; }
-
-        /// <summary>
-        /// The name being exposed in SQL. F.ex the renamed backing field name outside renamed joins
-        /// </summary>
-        public string SqlNameAlias { get; set; }
     }
 
     public class SqlTableFieldMember : SqlMember

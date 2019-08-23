@@ -65,6 +65,22 @@ namespace TypedSql
                     {
                         writer.Append("=");
                     }
+                    else if (binary.Op == ExpressionType.GreaterThan)
+                    {
+                        writer.Append(">");
+                    }
+                    else if (binary.Op == ExpressionType.GreaterThanOrEqual)
+                    {
+                        writer.Append(">=");
+                    }
+                    else if (binary.Op == ExpressionType.LessThan)
+                    {
+                        writer.Append("<");
+                    }
+                    else if (binary.Op == ExpressionType.LessThanOrEqual)
+                    {
+                        writer.Append("<=");
+                    }
                     else if (binary.Op == ExpressionType.Add)
                     {
                         writer.Append("+");
@@ -91,7 +107,7 @@ namespace TypedSql
                     }
                     else
                     {
-                        throw new Exception(binary.Op.ToString());
+                        throw new Exception("Unhandled binary operation " + binary.Op.ToString());
                     }
                     WriteExpression(binary.Right, writer);
                 }
@@ -243,7 +259,7 @@ namespace TypedSql
 
                 WriteQueryObject(queryMember, writer);
                 writer.Append(" AS ");
-                WriteColumnName(queryMember.SqlNameAlias, writer);
+                WriteColumnName(queryMember.MemberName, writer);
             }
 
             if (queryObject.From != null)

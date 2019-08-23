@@ -26,6 +26,7 @@ namespace TypedSql {
     public class SqlQueryParser {
         readonly SqlAliasProvider AliasProvider;
         readonly Dictionary<string, SqlSubQueryResult> SubqueryParameters;
+        public Dictionary<string, object> Constants = new Dictionary<string, object>();
 
         public SqlQueryParser(SqlAliasProvider aliasProvider, Dictionary<string, SqlSubQueryResult> subqueryParameters) {
             AliasProvider = aliasProvider;
@@ -158,9 +159,7 @@ namespace TypedSql {
 
         SqlQuery ParseJoinQuery(IJoinQuery joinQuery, out SqlSubQueryResult parentResult) {
             var result = ParseQuery(joinQuery.Parent, out var tempParentResult);
-            var joinParser = new SqlQueryParser(AliasProvider, SubqueryParameters);
-
-            var joinFromSubQuery = joinParser.ParseQuery(joinQuery.JoinTable);
+            var joinFromSubQuery = ParseQuery(joinQuery.JoinTable);
 
             if (joinQuery.JoinTable is IFromQuery)
             {
@@ -186,8 +185,7 @@ namespace TypedSql {
                     JoinAlias = joinAlias,
                     SourceField = m,
                     MemberName = m.MemberName,
-                    SqlName = m.SqlName,
-                    SqlNameAlias = m.SqlNameAlias,
+                    SqlName = m.MemberName,
                     FieldType = m.FieldType,
                 }).ToList<SqlMember>(),
             };
@@ -268,7 +266,6 @@ namespace TypedSql {
                 {
                     MemberName = column.MemberName,
                     SqlName = column.SqlName,
-                    SqlNameAlias = column.MemberName,
                     TableAlias = tableAlias,
                     TableType = fromQuery.TableType,
                     FieldType = column.OriginalType,
@@ -340,7 +337,6 @@ namespace TypedSql {
                     SourceField = m,
                     MemberName = m.MemberName,
                     SqlName = m.SqlName,
-                    SqlNameAlias = m.SqlNameAlias,
                     FieldType = m.FieldType,
                 }).ToList<SqlMember>(),
             };
@@ -803,36 +799,13 @@ namespace TypedSql {
 
         void ParseSelectNewExpression(SqlExpression exprResult, MemberInfo member, List<SqlMember> members)
         {
-            if (exprResult is SqlTableFieldExpression subQueryExpr)
+            members.Add(new SqlExpressionMember()
             {
-                members.Add(new SqlExpressionMember()
-                {
-                    MemberName = member.Name,
-                    SqlName = member.Name,
-                    SqlNameAlias = member.Name,
-                    Expression = subQueryExpr,
-                    FieldType = subQueryExpr.GetExpressionType(),
-                });
-            }
-            else if (exprResult is SqlJoinFieldExpression joinExpr)
-            {
-                members.Add(joinExpr.JoinFieldRef);
-            }
-            else if (exprResult is SqlConstantExpression || exprResult is SqlCastExpression || exprResult is SqlNegateExpression || exprResult is SqlBinaryExpression || exprResult is SqlPlaceholderExpression || exprResult is SqlCallExpression || exprResult is SqlConditionalExpression || exprResult is SqlTableExpression)
-            {
-                members.Add(new SqlExpressionMember()
-                {
-                    Expression = exprResult,
-                    MemberName = member.Name,
-                    SqlName = member.Name,
-                    SqlNameAlias = member.Name,
-                    FieldType = exprResult.GetExpressionType(),
-                });
-            }
-            else
-            {
-                throw new InvalidOperationException("Unable to parse select new expression");
-            }
+                Expression = exprResult,
+                MemberName = member.Name,
+                SqlName = member.Name,
+                FieldType = exprResult.GetExpressionType(),
+            });
         }
 
         public List<InsertInfo> ParseInsertBuilder(IFromQuery fromQuery, LambdaExpression insertExpr, Dictionary<string, SqlSubQueryResult> parameters)
@@ -880,8 +853,6 @@ namespace TypedSql {
 
             return values;
         }
-
-        public Dictionary<string, object> Constants = new Dictionary<string, object>();
 
         string RegisterConstant(object value)
         {
