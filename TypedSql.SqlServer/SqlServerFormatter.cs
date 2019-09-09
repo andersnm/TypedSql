@@ -48,9 +48,37 @@ namespace TypedSql.SqlServer
 
         public override string WriteColumnType(Type type)
         {
-            if (type == typeof(int))
+            if (type == typeof(sbyte))
+            {
+                throw new InvalidOperationException("Signed byte is not supported in SQL Server");
+            }
+            else if (type == typeof(byte))
+            {
+                return "TINYINT";
+            }
+            else if (type == typeof(short))
+            {
+                return "SMALLINT";
+            }
+            else if (type == typeof(ushort))
+            {
+                throw new InvalidOperationException("Unsigned short is not supported in SQL Server");
+            }
+            else if (type == typeof(int))
             {
                 return "INT";
+            }
+            else if (type == typeof(uint))
+            {
+                throw new InvalidOperationException("Unsigned int is not supported in SQL Server");
+            }
+            else if (type == typeof(long))
+            {
+                return "BIGINT";
+            }
+            else if (type == typeof(ulong))
+            {
+                throw new InvalidOperationException("Unsigned long is not supported in SQL Server");
             }
             else if (type == typeof(decimal))
             {

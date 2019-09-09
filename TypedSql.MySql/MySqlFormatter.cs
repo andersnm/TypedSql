@@ -23,9 +23,37 @@ namespace TypedSql.MySql
 
         public override string WriteColumnType(Type type)
         {
-            if (type == typeof(int))
+            if (type == typeof(sbyte))
+            {
+                return "TINYINT";
+            }
+            else if (type == typeof(byte))
+            {
+                return "TINYINT UNSIGNED";
+            }
+            else if (type == typeof(short))
+            {
+                return "SMALLINT";
+            }
+            else if (type == typeof(ushort))
+            {
+                return "SMALLINT UNSIGNED";
+            }
+            else if (type == typeof(int))
             {
                 return "INT";
+            }
+            else if (type == typeof(uint))
+            {
+                return "INT UNSIGNED";
+            }
+            else if (type == typeof(long))
+            {
+                return "BIGINT";
+            }
+            else if (type == typeof(ulong))
+            {
+                return "BIGINT UNSIGNED";
             }
             else if (type == typeof(decimal))
             {

@@ -18,7 +18,15 @@ namespace TypedSql.Test
         public void SelectConstants(Type runnerType)
         {
             var stmtList = new SqlStatementList();
-            var select = stmtList.Select(ctx => new { X = 1, Y = true, Z = "test" });
+            var select = stmtList.Select(ctx => new {
+                X = 1,
+                Y = true,
+                Z = "test",
+                // DateValue = DateTime.Now, // TODO: also testing static property lookup
+                DecimalValue = 4.5M,
+                DoubleValue = 1.23D,
+                FloatValue = 6.4f,
+            });
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -28,6 +36,9 @@ namespace TypedSql.Test
             Assert.AreEqual(1, results[0].X, "X should be 1");
             Assert.AreEqual(true, results[0].Y, "X should be true");
             Assert.AreEqual("test", results[0].Z, "X should be 'test'");
+            Assert.AreEqual(4.5M, results[0].DecimalValue, "DecimalValue should be 4.5");
+            Assert.AreEqual(1.23D, results[0].DoubleValue, "DoubleValue should be 1.23");
+            Assert.AreEqual(6.4f, results[0].FloatValue, "FloatValue should be 6.4");
         }
 
         class TestClass
