@@ -78,7 +78,7 @@ namespace TypedSql.SqlServer
 
                 try
                 {
-                    foreach (var record in reader.ReadTypedReader<T>())
+                    foreach (var record in reader.ReadTypedReader<T>(LastSelectMembers))
                     {
                         yield return record;
                     }

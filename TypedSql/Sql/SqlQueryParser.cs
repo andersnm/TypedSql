@@ -185,6 +185,7 @@ namespace TypedSql {
                     JoinAlias = joinAlias,
                     SourceField = m,
                     MemberName = m.MemberName,
+                    MemberInfo = m.MemberInfo,
                     SqlName = m.MemberName,
                     FieldType = m.FieldType,
                 }).ToList<SqlMember>(),
@@ -265,6 +266,7 @@ namespace TypedSql {
                 selectResult.Members.Add(new SqlTableFieldMember()
                 {
                     MemberName = column.MemberName,
+                    MemberInfo = column.PropertyInfo,
                     SqlName = column.SqlName,
                     TableAlias = tableAlias,
                     TableType = fromQuery.TableType,
@@ -336,6 +338,7 @@ namespace TypedSql {
                     JoinAlias = joinAlias,
                     SourceField = m,
                     MemberName = m.MemberName,
+                    MemberInfo = m.MemberInfo,
                     SqlName = m.SqlName,
                     FieldType = m.FieldType,
                 }).ToList<SqlMember>(),
@@ -670,8 +673,16 @@ namespace TypedSql {
         {
             if (expr is MemberExpression memberExpr)
             {
-                var thisValue = ResolveConstant(memberExpr.Expression, out var thisType);
-                return GetObjectMember(thisValue, memberExpr.Member, out constantType);
+                if (memberExpr.Expression == null)
+                {
+                    // Static class member, f.ex DateTime.Now
+                    return GetObjectMember(null, memberExpr.Member, out constantType);
+                }
+                else
+                {
+                    var thisValue = ResolveConstant(memberExpr.Expression, out var thisType);
+                    return GetObjectMember(thisValue, memberExpr.Member, out constantType);
+                }
             }
             else if (expr is ConstantExpression constant)
             {
@@ -803,6 +814,7 @@ namespace TypedSql {
             {
                 Expression = exprResult,
                 MemberName = member.Name,
+                MemberInfo = (PropertyInfo)member,
                 SqlName = member.Name,
                 FieldType = exprResult.GetExpressionType(),
             });

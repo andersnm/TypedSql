@@ -22,7 +22,7 @@ namespace TypedSql.Test
                 X = 1,
                 Y = true,
                 Z = "test",
-                // DateValue = DateTime.Now, // TODO: also testing static property lookup
+                DateValue = DateTime.Now, // also testing static property lookup
                 DecimalValue = 4.5M,
                 DoubleValue = 1.23D,
                 FloatValue = 6.4f,
@@ -46,6 +46,7 @@ namespace TypedSql.Test
             public int X { get; set; }
             public bool Y { get; set; }
             public string Z { get; set; }
+            public int UnusedMember { get; set; }
         }
 
         [Test]
@@ -65,6 +66,7 @@ namespace TypedSql.Test
             Assert.AreEqual(1, results[0].X, "X should be 1");
             Assert.AreEqual(true, results[0].Y, "X should be true");
             Assert.AreEqual("test", results[0].Z, "X should be 'test'");
+            Assert.AreEqual(default(int), results[0].UnusedMember, "Unused member should have default value");
         }
 
         [Test]

@@ -8,11 +8,11 @@ namespace TypedSql
 {
     public static class DataExtensions
     {
-        public static IEnumerable<T> ReadTypedReader<T>(this IDataReader reader)
+        public static IEnumerable<T> ReadTypedReader<T>(this IDataReader reader, List<SqlMember> selectMembers)
         {
             while (reader.Read())
             {
-                var row = ReadObject<T>(reader);
+                var row = ReadObject<T>(reader, selectMembers);
                 yield return row;
             }
         }
@@ -40,7 +40,7 @@ namespace TypedSql
                 && (typeInfo.Attributes & TypeAttributes.NotPublic) == TypeAttributes.NotPublic;
         }
 
-        static T ReadObject<T>(IDataRecord reader)
+        static T ReadObject<T>(IDataRecord reader, List<SqlMember> selectMembers)
         {
             var type = typeof(T);
             var typeInfo = typeof(T).GetTypeInfo();
@@ -73,7 +73,7 @@ namespace TypedSql
                 var parameters = constructor.GetParameters();
                 if (parameters.Length == properties.Length)
                 {
-                    return ReadRowConstructor<T>(constructor, reader);
+                    return ReadRowConstructor<T>(constructor, reader, selectMembers);
                 }
             }
 
@@ -83,39 +83,34 @@ namespace TypedSql
                 var parameters = constructor.GetParameters();
                 if (parameters.Length == 0)
                 {
-                    return ReadRowObject<T>(constructor, reader);
+                    return ReadRowObject<T>(constructor, reader, selectMembers);
                 }
             }
 
             throw new InvalidOperationException("Could not find a constructor for " + typeof(T));
         }
 
-        static T ReadRowConstructor<T>(ConstructorInfo constructor, IDataRecord reader)
+        static T ReadRowConstructor<T>(ConstructorInfo constructor, IDataRecord reader, List<SqlMember> selectMembers)
         {
-            var typeInfo = typeof(T).GetTypeInfo();
-            var properties = typeInfo.GetProperties();
-
             var parameters = new List<object>();
-            foreach (var property in properties)
+            foreach (var member in selectMembers)
             {
-                var value = GetValue(reader, property);
+                var value = GetValue(reader, member.MemberInfo);
                 parameters.Add(value);
             }
 
             return (T)constructor.Invoke(parameters.ToArray());
         }
 
-        static T ReadRowObject<T>(ConstructorInfo constructor, IDataRecord reader)
+        static T ReadRowObject<T>(ConstructorInfo constructor, IDataRecord reader, List<SqlMember> selectMembers)
         {
             var row = (T)constructor.Invoke(new object[0]);
-            var typeInfo = typeof(T).GetTypeInfo();
-            var properties = typeInfo.GetProperties();
-            foreach (var property in properties)
+            foreach (var member in selectMembers)
             {
-                var value = GetValue(reader, property);
-                property.SetValue(row, value);
-
+                var value = GetValue(reader, member.MemberInfo);
+                member.MemberInfo.SetValue(row, value);
             }
+
             return row;
         }
 

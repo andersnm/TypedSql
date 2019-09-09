@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace TypedSql {
     public abstract class SqlMember
@@ -8,6 +9,8 @@ namespace TypedSql {
         /// The name being used in C#.
         /// </summary>
         public string MemberName { get; set; }
+
+        public PropertyInfo MemberInfo { get; set; }
 
         /// <summary>
         /// The type of this named ref

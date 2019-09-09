@@ -8,6 +8,7 @@ namespace TypedSql
     public abstract class SqlQueryRunner : IQueryRunner
     {
         private IFormatter Formatter { get; }
+        protected List<SqlMember> LastSelectMembers { get; set; }
 
         public SqlQueryRunner(IFormatter formatter)
         {
@@ -77,6 +78,7 @@ namespace TypedSql
             var subqr = parser.ParseQuery(stmt.SelectQuery);
             formatter.WriteSelectQuery(subqr, sb);
             sb.AppendLine(";");
+            LastSelectMembers = subqr.SelectResult.Members;
         }
 
         void WriteInsertStatement(IInsertStatement stmt, SqlQueryParser parser, IFormatter formatter, StringBuilder sb)
@@ -127,7 +129,6 @@ namespace TypedSql
             DropTableSql(table, true, formatter, sb);
             sb.AppendLine(";");
         }
-
 
         void CreateTableSql(IFromQuery table, IFormatter formatter, StringBuilder writer)
         {
