@@ -351,22 +351,45 @@ namespace TypedSql
             }
         }
 
+        void GetFlatSelectMembers(List<SqlMember> members, string prefix, List<Tuple<string, SqlMember>> result)
+        {
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                prefix += "_";
+            }
+
+            foreach (var member in members)
+            {
+                if (member is SqlExpressionMember exprMember && exprMember.Expression is SqlTableExpression tableExpression)
+                {
+                    GetFlatSelectMembers(tableExpression.TableResult.Members, prefix + exprMember.MemberName, result);
+                }
+                else
+                {
+                    result.Add(new Tuple<string, SqlMember>(prefix, member));
+                }
+            }
+        }
+
         public virtual void WriteSelectQuery(SqlQuery queryObject, StringBuilder writer)
         {
             writer.Append("SELECT ");
 
-            for (var i = 0; i < queryObject.SelectResult.Members.Count; i++)
+            var flatMembers = new List<Tuple<string, SqlMember>>();
+            GetFlatSelectMembers(queryObject.SelectResult.Members, "", flatMembers);
+
+            for (var i = 0; i < flatMembers.Count; i++)
             {
                 if (i > 0)
                 {
                     writer.Append(", ");
                 }
 
-                var queryMember = queryObject.SelectResult.Members[i];
+                var queryMember = flatMembers[i];
 
-                WriteQueryObject(queryMember, writer);
+                WriteQueryObject(queryMember.Item2, writer);
                 writer.Append(" AS ");
-                WriteColumnName(queryMember.MemberName, writer);
+                WriteColumnName(queryMember.Item1 + queryMember.Item2.MemberName, writer);
             }
 
             if (queryObject.From != null)

@@ -92,11 +92,13 @@ namespace TypedSql
 
         static T ReadRowConstructor<T>(ConstructorInfo constructor, IDataRecord reader, List<SqlMember> selectMembers)
         {
+            var ordinal = 0;
             var parameters = new List<object>();
             foreach (var member in selectMembers)
             {
-                var value = GetValue(reader, member.MemberInfo);
+                var value = GetValue(reader, member, ordinal, out var usedOrdinals);
                 parameters.Add(value);
+                ordinal += usedOrdinals;
             }
 
             return (T)constructor.Invoke(parameters.ToArray());
@@ -104,37 +106,95 @@ namespace TypedSql
 
         static T ReadRowObject<T>(ConstructorInfo constructor, IDataRecord reader, List<SqlMember> selectMembers)
         {
+            var ordinal = 0;
             var row = (T)constructor.Invoke(new object[0]);
             foreach (var member in selectMembers)
             {
-                var value = GetValue(reader, member.MemberInfo);
+                var value = GetValue(reader, member, ordinal, out var usedOrdinals);
                 member.MemberInfo.SetValue(row, value);
+                ordinal += usedOrdinals;
             }
 
             return row;
         }
 
-        static object GetValue(IDataRecord reader, PropertyInfo property)
+        static bool IsNullObject(IDataRecord reader, List<SqlMember> members, int ordinal, out int usedOrdinals)
         {
-            var ordinal = reader.GetOrdinal(property.Name);
+            var isNullObject = true;
+            usedOrdinals = 0;
+            foreach (var member in members)
+            {
+                if (member is SqlExpressionMember memberExpr && memberExpr.Expression is SqlTableExpression tableExpression)
+                {
+                    if (!IsNullObject(reader, tableExpression.TableResult.Members, ordinal, out var usedMemberOrdinals))
+                    {
+                        isNullObject = false;
+                    }
+
+                    ordinal += usedMemberOrdinals;
+                    usedOrdinals += usedMemberOrdinals;
+                }
+                else
+                {
+                    if (!reader.IsDBNull(ordinal))
+                    {
+                        isNullObject = false;
+                    }
+
+                    ordinal++;
+                    usedOrdinals++;
+                }
+            }
+
+            return isNullObject;
+        }
+
+        static object GetValue(IDataRecord reader, SqlMember member, int ordinal, out int usedOrdinals)
+        {
+            var propertyType = member.MemberInfo.PropertyType;
+
+            // NOTE: Cannot tell the difference between a null object and an object where all fields are null!
+            // Assuming null object if all fields are null
+            if (member is SqlExpressionMember memberExpr && memberExpr.Expression is SqlTableExpression tableExpression)
+            {
+                if (IsNullObject(reader, tableExpression.TableResult.Members, ordinal, out int nullOrdinals))
+                {
+                    usedOrdinals = nullOrdinals;
+                    return null;
+                }
+
+                var obj = Activator.CreateInstance(propertyType);
+                usedOrdinals = 0;
+                foreach (var objectMember in tableExpression.TableResult.Members)
+                {
+                    var memberValue = GetValue(reader, objectMember, ordinal, out var usedMemberOrdinals);
+                    objectMember.MemberInfo.SetValue(obj, memberValue);
+                    usedOrdinals += usedMemberOrdinals;
+                }
+
+                return obj;
+            }
+
             var isNull = reader.IsDBNull(ordinal);
             var value = isNull ? null : reader.GetValue(ordinal);
-            var nullable = IsNullable(property.PropertyType);
+            var nullable = IsNullable(propertyType);
 
             if (nullable)
             {
+                usedOrdinals = 1;
                 if (value == null || value == DBNull.Value)
                 {
-                    return Activator.CreateInstance(property.PropertyType, null);
+                    return Activator.CreateInstance(propertyType, null);
                 }
 
-                var underlyingValue = Convert.ChangeType(value, Nullable.GetUnderlyingType(property.PropertyType));
-                return Activator.CreateInstance(property.PropertyType, underlyingValue);
+                var underlyingValue = Convert.ChangeType(value, Nullable.GetUnderlyingType(propertyType));
+                return Activator.CreateInstance(propertyType, underlyingValue);
             }
             else
             {
+                usedOrdinals = 1;
                 // NOTE: if this throws, check for left joins not casting to nullable
-                return Convert.ChangeType(value, property.PropertyType);
+                return Convert.ChangeType(value, propertyType);
             }
         }
     }

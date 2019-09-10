@@ -563,5 +563,39 @@ namespace TypedSql.Test
             Assert.AreEqual(2, results[1].ProductId, "Row 1: ProductId == 2");
             Assert.AreEqual(null, results[1].PriceSum, "Row 1: PriceSum == null");
         }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectComplexResult(Type runnerType)
+        {
+            var stmtList = new SqlStatementList();
+
+            var select = stmtList.Select(
+                DB.Products
+                    .LeftJoin(
+                        DB.Units,
+                        (qctx, q, wctx, w) => q.ProductId == w.ProductId,
+                        (qctx, q, wctx, w) => new { Product = q, Unit = w }));
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+            // Assert.AreEqual(2, results.Count, "Should be 2 results");
+            Assert.AreEqual(1, results[0].Product.ProductId, "Row 0: ProductId == 1");
+            Assert.AreEqual(1, results[0].Unit.UnitId, "Row 0: UnitId == 1");
+
+            Assert.AreEqual(1, results[1].Product.ProductId, "Row 1: ProductId == 1");
+            Assert.AreEqual(2, results[1].Unit.UnitId, "Row 1: UnitId == 2");
+
+            Assert.AreEqual(1, results[2].Product.ProductId, "Row 2: ProductId == 1");
+            Assert.AreEqual(3, results[2].Unit.UnitId, "Row 2: UnitId == 3");
+
+            Assert.AreEqual(2, results[3].Product.ProductId, "Row 3: ProductId == 2");
+            Assert.AreEqual(null, results[3].Unit, "Row 3: Unit == null");
+        }
+
     }
 }
