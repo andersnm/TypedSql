@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.0.4</Version>
+    <Version>0.0.5</Version>
     <TargetFramework>netstandard1.6</TargetFramework>
-    <PackageTags>sql;database;sqlserver;mysql</PackageTags>
+    <PackageTags>sql;database;sqlserver;mysql;orm;micro-orm</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Write database queries in C# and syntax as close to real SQL as possible.</Description>
