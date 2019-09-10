@@ -190,6 +190,15 @@ namespace TypedSql
 
                     writer.Append(")");
                 }
+                else if (callExpr.Method.Name == nameof(Function.Average))
+                {
+                    writer.Append("AVG(");
+
+                    var selector = (SqlSelectorExpression)callExpr.Arguments[1];
+                    WriteExpression(selector.SelectorExpression, writer);
+
+                    writer.Append(")");
+                }
                 else if (callExpr.Method.Name == nameof(Function.LastInsertIdentity))
                 {
                     WriteLastIdentityExpression(writer);

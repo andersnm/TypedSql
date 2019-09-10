@@ -7,12 +7,24 @@ using TypedSql.InMemory;
 namespace TypedSql {
     public static partial class Function {
 
-        public static int Count<T>(SelectorContext<T> t, Func<T, int> selector)
+        public static int Count<T, TX>(SelectorContext<T> t, Func<T, TX> selector)
         {
             return t.Items.Count;
         }
 
-        public static int? Sum<T>(SelectorContext<T> t, Func<T, int?> selector) {
+        public static byte? Sum<T>(SelectorContext<T> t, Func<T, byte?> selector)
+        {
+            var result = (byte?)0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+            }
+
+            return result;
+        }
+
+        public static int? Sum<T>(SelectorContext<T> t, Func<T, int?> selector)
+        {
             var result = (int?)0;
             foreach (var item in t.Items)
             {
@@ -20,6 +32,128 @@ namespace TypedSql {
             }
 
             return result;
+        }
+
+        public static long? Sum<T>(SelectorContext<T> t, Func<T, long?> selector)
+        {
+            var result = (long?)0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+            }
+
+            return result;
+        }
+
+        public static decimal? Sum<T>(SelectorContext<T> t, Func<T, decimal?> selector)
+        {
+            var result = (decimal?)0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+            }
+
+            return result;
+        }
+
+        public static float? Sum<T>(SelectorContext<T> t, Func<T, float?> selector)
+        {
+            var result = (float?)0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+            }
+
+            return result;
+        }
+
+        public static double? Sum<T>(SelectorContext<T> t, Func<T, double?> selector)
+        {
+            var result = (double?)0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+            }
+
+            return result;
+        }
+
+        public static byte? Average<T>(SelectorContext<T> t, Func<T, byte?> selector)
+        {
+            var result = (byte?)0;
+            var count = 0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+                count++;
+            }
+
+            return Convert.ToByte(result.Value / count);
+        }
+
+        public static int? Average<T>(SelectorContext<T> t, Func<T, int?> selector)
+        {
+            var result = (int?)0;
+            var count = 0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+                count++;
+            }
+
+            return result / count;
+        }
+
+        public static long? Average<T>(SelectorContext<T> t, Func<T, long?> selector)
+        {
+            var result = (long?)0;
+            var count = 0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+                count++;
+            }
+
+            return result / count;
+        }
+
+        public static decimal? Average<T>(SelectorContext<T> t, Func<T, decimal?> selector)
+        {
+            var result = (decimal?)0;
+            var count = 0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+                count++;
+            }
+
+            return result / count;
+        }
+
+        public static float? Average<T>(SelectorContext<T> t, Func<T, float?> selector)
+        {
+            var result = (float?)0;
+            var count = 0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+                count++;
+            }
+
+            return result / count;
+        }
+
+        public static double? Average<T>(SelectorContext<T> t, Func<T, double?> selector)
+        {
+            var result = (double?)0;
+            var count = 0;
+            foreach (var item in t.Items)
+            {
+                result += selector(item);
+                count++;
+            }
+
+            return result / count;
         }
 
         public static bool Like(string lhs, string rhs)

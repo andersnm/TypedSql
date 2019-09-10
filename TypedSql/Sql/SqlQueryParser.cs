@@ -436,6 +436,17 @@ namespace TypedSql {
                         Arguments = new List<SqlExpression> { arg0, arg1 }
                     };
                 }
+                else if (call.Method.Name == nameof(Function.Average))
+                {
+                    var arg0 = ParseExpression(call.Arguments[0], parameters);
+                    var arg1 = ParseAggregateSelector((LambdaExpression)call.Arguments[1], parameters, ((SqlTableExpression)arg0).TableResult);
+
+                    return new SqlCallExpression()
+                    {
+                        Method = call.Method,
+                        Arguments = new List<SqlExpression> { arg0, arg1 }
+                    };
+                }
                 else if (call.Method.Name == nameof(Function.Contains))
                 {
                     // TODO: one of:

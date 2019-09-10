@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using TypedSql.InMemory;
 using TypedSql.MySql;
 using TypedSql.SqlServer;
@@ -595,6 +596,110 @@ namespace TypedSql.Test
 
             Assert.AreEqual(2, results[3].Product.ProductId, "Row 3: ProductId == 2");
             Assert.AreEqual(null, results[3].Unit, "Row 3: Unit == null");
+        }
+
+        class Aggregated<T> where T : struct
+        {
+            public T? Sum { get; set; }
+            public T? Average { get; set; }
+            public int Count { get; set; }
+        }
+
+        void SelectAggregated<T>(Type runnerType, Expression<Func<SelectorContext<TypeValue>, TypeValue, Aggregated<T>>> func) where T : struct
+        {
+            var stmtList = new SqlStatementList();
+
+            var select = stmtList.Select(
+                DB.TypeValues.Project(func));
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+            // Assert.AreEqual(1, results.Count, "Should be 1 result");
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateByte(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<byte>()
+            {
+                Sum = Function.Sum(ctx, x => x.ByteValue),
+                Count = Function.Count(ctx, x => x.ByteValue),
+                Average = Function.Average(ctx, x => x.ByteValue)
+            });
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateInt(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<int>()
+            {
+                Sum = Function.Sum(ctx, x => x.IntValue),
+                Count = Function.Count(ctx, x => x.IntValue),
+                Average = Function.Average(ctx, x => x.IntValue)
+            });
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateLong(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<long>()
+            {
+                Sum = Function.Sum(ctx, x => x.LongValue),
+                Count = Function.Count(ctx, x => x.LongValue),
+                Average = Function.Average(ctx, x => x.LongValue)
+            });
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateDecimal(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<decimal>()
+            {
+                Sum = Function.Sum(ctx, x => x.DecimalValue),
+                Count = Function.Count(ctx, x => x.DecimalValue),
+                Average = Function.Average(ctx, x => x.DecimalValue)
+            });
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateFloat(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<float>()
+            {
+                Sum = Function.Sum(ctx, x => x.FloatValue),
+                Count = Function.Count(ctx, x => x.FloatValue),
+                Average = Function.Average(ctx, x => x.FloatValue)
+            });
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateDouble(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<double>() {
+                Sum = Function.Sum(ctx, x => x.DoubleValue),
+                Count = Function.Count(ctx, x => x.DoubleValue),
+                Average = Function.Average(ctx, x => x.DoubleValue)
+            });
         }
 
     }
