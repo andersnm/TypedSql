@@ -19,7 +19,7 @@ The primary focus of TypedSql is to write readable and maintainable SQL queries.
 - ORDER BY, LIMIT, OFFSET
 - CREATE TABLE, DROP TABLE
 - DECLARE, SET SQL variables
-- Aggregate SQL functions AVERAGE(), COUNT(), SUM()
+- Aggregate SQL functions AVERAGE(), COUNT(), SUM(), MIN(), MAX()
 - Scalar SQL functions YEAR(), MONTH(), DAY(), HOUR(), MINUTE(), SECOND(), LAST_INSERT_ID()
 - Batch multiple SQL statements
 - Composable SQL subqueries
@@ -307,6 +307,8 @@ TypedSql supports SQL functions and operators through a static `Function` class 
 |`Function.Count(ctx, selector)`|`COUNT()`|
 |`Function.Sum(ctx, selector)`|`SUM()`|
 |`Function.Average(ctx, selector)`|`AVG()`|
+|`Function.Min(ctx, selector)`|`MIN()`|
+|`Function.Max(ctx, selector)`|`MAX()`|
 |`Function.Like(lhs, rhs)`|`lhs LIKE rhs`|
 |`Function.Contains(ctx, value, subquery)`|`value IN (SELECT ...)`|
 |`Function.Contains(value, enumerable)`|`value IN (...)`|

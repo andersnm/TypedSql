@@ -603,6 +603,8 @@ namespace TypedSql.Test
             public T? Sum { get; set; }
             public T? Average { get; set; }
             public int Count { get; set; }
+            public T? Min { get; set; }
+            public T? Max { get; set; }
         }
 
         void SelectAggregated<T>(Type runnerType, Expression<Func<SelectorContext<TypeValue>, TypeValue, Aggregated<T>>> func) where T : struct
@@ -629,7 +631,26 @@ namespace TypedSql.Test
             {
                 Sum = Function.Sum(ctx, x => x.ByteValue),
                 Count = Function.Count(ctx, x => x.ByteValue),
-                Average = Function.Average(ctx, x => x.ByteValue)
+                Average = Function.Average(ctx, x => x.ByteValue),
+                Min = Function.Min(ctx, x => x.ByteValue),
+                Max = Function.Max(ctx, x => x.ByteValue),
+            });
+        }
+
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateShort(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<short>()
+            {
+                Sum = Function.Sum(ctx, x => x.ShortValue),
+                Count = Function.Count(ctx, x => x.ShortValue),
+                Average = Function.Average(ctx, x => x.ShortValue),
+                Min = Function.Min(ctx, x => x.ShortValue),
+                Max = Function.Max(ctx, x => x.ShortValue),
             });
         }
 
@@ -643,7 +664,9 @@ namespace TypedSql.Test
             {
                 Sum = Function.Sum(ctx, x => x.IntValue),
                 Count = Function.Count(ctx, x => x.IntValue),
-                Average = Function.Average(ctx, x => x.IntValue)
+                Average = Function.Average(ctx, x => x.IntValue),
+                Min = Function.Min(ctx, x => x.IntValue),
+                Max = Function.Max(ctx, x => x.IntValue),
             });
         }
 
@@ -657,7 +680,9 @@ namespace TypedSql.Test
             {
                 Sum = Function.Sum(ctx, x => x.LongValue),
                 Count = Function.Count(ctx, x => x.LongValue),
-                Average = Function.Average(ctx, x => x.LongValue)
+                Average = Function.Average(ctx, x => x.LongValue),
+                Min = Function.Min(ctx, x => x.LongValue),
+                Max = Function.Max(ctx, x => x.LongValue),
             });
         }
 
@@ -671,7 +696,9 @@ namespace TypedSql.Test
             {
                 Sum = Function.Sum(ctx, x => x.DecimalValue),
                 Count = Function.Count(ctx, x => x.DecimalValue),
-                Average = Function.Average(ctx, x => x.DecimalValue)
+                Average = Function.Average(ctx, x => x.DecimalValue),
+                Min = Function.Min(ctx, x => x.DecimalValue),
+                Max = Function.Max(ctx, x => x.DecimalValue),
             });
         }
 
@@ -685,7 +712,9 @@ namespace TypedSql.Test
             {
                 Sum = Function.Sum(ctx, x => x.FloatValue),
                 Count = Function.Count(ctx, x => x.FloatValue),
-                Average = Function.Average(ctx, x => x.FloatValue)
+                Average = Function.Average(ctx, x => x.FloatValue),
+                Min = Function.Min(ctx, x => x.FloatValue),
+                Max = Function.Max(ctx, x => x.FloatValue),
             });
         }
 
@@ -698,7 +727,9 @@ namespace TypedSql.Test
             SelectAggregated(runnerType, (ctx, t) => new Aggregated<double>() {
                 Sum = Function.Sum(ctx, x => x.DoubleValue),
                 Count = Function.Count(ctx, x => x.DoubleValue),
-                Average = Function.Average(ctx, x => x.DoubleValue)
+                Average = Function.Average(ctx, x => x.DoubleValue),
+                Min = Function.Min(ctx, x => x.DoubleValue),
+                Max = Function.Max(ctx, x => x.DoubleValue),
             });
         }
 

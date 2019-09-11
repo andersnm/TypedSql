@@ -199,6 +199,24 @@ namespace TypedSql
 
                     writer.Append(")");
                 }
+                else if (callExpr.Method.Name == nameof(Function.Min))
+                {
+                    writer.Append("MIN(");
+
+                    var selector = (SqlSelectorExpression)callExpr.Arguments[1];
+                    WriteExpression(selector.SelectorExpression, writer);
+
+                    writer.Append(")");
+                }
+                else if (callExpr.Method.Name == nameof(Function.Max))
+                {
+                    writer.Append("MAX(");
+
+                    var selector = (SqlSelectorExpression)callExpr.Arguments[1];
+                    WriteExpression(selector.SelectorExpression, writer);
+
+                    writer.Append(")");
+                }
                 else if (callExpr.Method.Name == nameof(Function.LastInsertIdentity))
                 {
                     WriteLastIdentityExpression(writer);
