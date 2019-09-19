@@ -55,6 +55,11 @@ namespace TypedSql {
 
         internal Dictionary<T, TFrom> FromRowMapping = new Dictionary<T, TFrom>();
 
+        public T AsExpression(SelectorContext<T> ctx)
+        {
+            return InMemorySelect(ctx.Runner).FirstOrDefault();
+        }
+
         internal virtual IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {
             throw new NotSupportedException("Select must be overridden");

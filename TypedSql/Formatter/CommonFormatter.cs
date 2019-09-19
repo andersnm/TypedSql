@@ -239,10 +239,17 @@ namespace TypedSql
                 {
                     WriteIfNullExpression(ifNullTestExpr, ifNullExpr, writer);
                 }
-                else {
+                else
+                {
                     // TODO: CASE WHEN ELSE END
                     throw new Exception("Expected BinaryExpression in Conditional in a known form."); // the form 'x != null ? x.Value : null'");
                 }
+            }
+            else if (node is SqlSelectExpression selectExpr)
+            {
+                writer.Append("(");
+                WriteSelectQuery(selectExpr.Query, writer);
+                writer.Append(")");
             }
             else
             {

@@ -126,6 +126,32 @@ namespace TypedSql.Test
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectScalar(Type runnerType)
+        {
+            var stmtList = new SqlStatementList();
+            var select = stmtList.Select(
+                DB.Products
+                    .Join(DB.Units,
+                        (actx, a, bctx, b) => a.ProductId == b.ProductId,
+                        (actx, a, bctx, b) => new
+                        {
+                            Product = a,
+                            Unit = b,
+                        })
+                    .Where(p => p.Unit.UnitId == 1)
+                    .Project((ctx, p) => p.Product.Name + ", " + p.Unit.Name));
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+            Assert.AreEqual(1, results.Count, "Should be 1 result");
+            Assert.AreEqual("Happy T-Shirt, Happy XL", results[0], "Selected 'Happy T-Shirt, Happy XL'");
+        }
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectRenamedTableWithRenamedField(Type runnerType)
         {
             var stmtList = new SqlStatementList();

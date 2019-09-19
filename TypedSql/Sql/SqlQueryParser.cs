@@ -410,9 +410,47 @@ namespace TypedSql {
             };
         }
 
+        private bool IsQueryType(Type type)
+        {
+            var typeInfo = type.GetTypeInfo();
+            if (!typeInfo.IsGenericType)
+            {
+                return false;
+            }
+
+            if (type.GetGenericTypeDefinition() == typeof(Query<,>))
+            {
+                return true;
+            }
+
+            if (typeInfo.BaseType != null)
+            {
+                return IsQueryType(typeInfo.BaseType);
+            }
+
+            return false;
+        }
+
         private SqlExpression ParseFunctionCallExpression(MethodCallExpression call, Dictionary<string, SqlSubQueryResult> parameters)
         {
-            if (call.Object == null && call.Method.DeclaringType == typeof(Function))
+            if (IsQueryType(call.Method.DeclaringType))
+            {
+                if (call.Method.Name == nameof(Query<int, int>.AsExpression))
+                {
+                    var queryLambda = Expression.Lambda(call.Object);
+                    var query = (Query)queryLambda.Compile().DynamicInvoke();
+                    var sqlQuery = ParseQuery(query);
+                    return new SqlSelectExpression()
+                    {
+                        Query = sqlQuery
+                    };
+                }
+                else
+                {
+                    throw new Exception("Unsuported query method call " + call.Method.Name);
+                }
+            }
+            else if (call.Object == null && call.Method.DeclaringType == typeof(Function))
             {
                 if (call.Method.Name == nameof(Function.Count))
                 {
@@ -512,7 +550,7 @@ namespace TypedSql {
             }
             else
             {
-                throw new Exception("No method calls except via Function.* - " + call.Method.Name);
+                throw new Exception("Unsupported method call " + call.Method.Name);
             }
         }
 
@@ -821,21 +859,38 @@ namespace TypedSql {
             }
             else if (selectExpression.Body is MemberExpression memberExpression)
             {
-                // Select all members in a table
                 var memberRef = ParseParameterMemberExpression(memberExpression, parameters);
                 if (memberRef is SqlExpressionMember memberExprRef && memberExprRef.Expression is SqlTableExpression memberRefExprTable)
                 {
+                    // Select all members in a table
                     return memberRefExprTable.TableResult.Members;
+                }
+                else if (memberRef is SqlTableFieldMember)
+                {
+                    // Select scalar
+                    return new List<SqlMember>()
+                    {
+                        memberRef,
+                    };
                 }
                 else
                 {
-                    // TODO: allow to select a single field
-                    throw new ArgumentException("Select Member Expression should refer to a table");
+                    throw new ArgumentException("Select Member Expression should refer to a table or scalar");
                 }
             }
             else
             {
-                throw new ArgumentException("Select expression should be a LambdaDelegate whose Body property is a New, MemberAccess, MemberInit or Member Expression");
+                // Parse scalar expression result
+                var expr = ParseExpression(selectExpression.Body, parameters);
+                return new List<SqlMember>()
+                {
+                    new SqlExpressionMember() {
+                        Expression = expr,
+                        FieldType = expr.GetExpressionType(),
+                        MemberName = "Value",
+                        SqlName = "Value",
+                    }
+                };
             }
 
             return members;

@@ -170,4 +170,14 @@ namespace TypedSql
             return Method.ReturnType;
         }
     }
+
+    public class SqlSelectExpression : SqlExpression
+    {
+        public SqlQuery Query { get; set; }
+
+        public override Type GetExpressionType()
+        {
+            return Query.SelectResult.Members[0].FieldType;
+        }
+    }
 }
