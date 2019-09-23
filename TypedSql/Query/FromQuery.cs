@@ -125,6 +125,8 @@ namespace TypedSql {
             foreach (var property in properties)
             {
                 var primaryKeyAttribute = property.GetCustomAttribute<PrimaryKeyAttribute>();
+                var stringAttribute = property.GetCustomAttribute<SqlStringAttribute>();
+                var decimalAttribute = property.GetCustomAttribute<SqlDecimalAttribute>();
 
                 var propertyTypeInfo = property.PropertyType.GetTypeInfo();
                 var nullable = (propertyTypeInfo.IsGenericType && propertyTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
@@ -150,6 +152,13 @@ namespace TypedSql {
                     BaseType = nullable ? Nullable.GetUnderlyingType(property.PropertyType) : property.PropertyType,
                     Nullable = nullable,
                     PropertyInfo = property,
+                    SqlType = new SqlTypeInfo()
+                    {
+                        StringLength = stringAttribute?.Length ?? 0,
+                        StringNVarChar = stringAttribute?.NVarChar ?? false,
+                        DecimalPrecision = decimalAttribute?.Precision ?? 13,
+                        DecimalScale = decimalAttribute?.Scale ?? 5,
+                    }
                 });
             }
 

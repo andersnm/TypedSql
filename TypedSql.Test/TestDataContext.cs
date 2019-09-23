@@ -48,11 +48,21 @@
         // public ulong UlongValue { get; set; }
     }
 
+    public class AttributeValue
+    {
+        [SqlString(Length = 100, NVarChar = true)]
+        public string Length100Unicode { get; set; }
+
+        [SqlDecimal(Precision = 10, Scale = 7)]
+        public decimal DecimalPrecision { get; set; }
+    }
+
     public class TestDataContext : DatabaseContext
     {
         public FromQuery<Product> Products { get; set; }
         public FromQuery<Unit> Units { get; set; }
         public FromQuery<Inventory> Inventories { get; set; }
         public FromQuery<TypeValue> TypeValues { get; set; }
+        public FromQuery<AttributeValue> AttributeValues { get; set; }
     }
 }

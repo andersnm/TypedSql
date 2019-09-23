@@ -57,7 +57,7 @@ namespace TypedSql
                     WriteDeleteStatement(deleteStmt, parser, formatter, sb);
                     return;
                 case IDeclareVariableStatement declareStmt:
-                    formatter.WriteDeclareSqlVariable(declareStmt.VariableName, declareStmt.Type, sb);
+                    formatter.WriteDeclareSqlVariable(declareStmt.VariableName, declareStmt.Type, declareStmt.SqlTypeInfo, sb);
                     return;
                 case ISetVariableStatement setStmt:
                     formatter.WriteSetSqlVariable(setStmt.Variable, parser.ParseExpression(setStmt.ValueExpression), sb);

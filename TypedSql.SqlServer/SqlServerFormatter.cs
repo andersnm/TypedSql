@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TypedSql.Schema;
 
 namespace TypedSql.SqlServer
 {
@@ -24,7 +25,7 @@ namespace TypedSql.SqlServer
             WriteColumnName(column.SqlName, writer);
             writer.Append(" ");
 
-            writer.Append(WriteColumnType(column.BaseType));
+            writer.Append(WriteColumnType(column.BaseType, column.SqlType));
 
             if (column.Nullable)
             {
@@ -46,7 +47,7 @@ namespace TypedSql.SqlServer
             }
         }
 
-        public override string WriteColumnType(Type type)
+        public override string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo)
         {
             if (type == typeof(sbyte))
             {
@@ -82,7 +83,7 @@ namespace TypedSql.SqlServer
             }
             else if (type == typeof(decimal))
             {
-                return "DECIMAL(13, 5)";
+                return $"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})";
             }
             else if (type == typeof(float))
             {
@@ -94,7 +95,9 @@ namespace TypedSql.SqlServer
             }
             else if (type == typeof(string))
             {
-                return "NVARCHAR(MAX)";
+                var length = sqlTypeInfo.StringLength > 0 ? sqlTypeInfo.StringLength.ToString() : "MAX";
+                var stringType = sqlTypeInfo.StringNVarChar ? "NVARCHAR" : "VARCHAR";
+                return $"{stringType}({length})";
             }
             else if (type == typeof(DateTime))
             {
@@ -119,12 +122,12 @@ namespace TypedSql.SqlServer
             writer.AppendLine(");");
         }
 
-        public override void WriteDeclareSqlVariable(string name, Type type, StringBuilder writer)
+        public override void WriteDeclareSqlVariable(string name, Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer)
         {
             writer.Append("DECLARE @");
             writer.Append(name);
             writer.Append(" ");
-            writer.Append(WriteColumnType(type));
+            writer.Append(WriteColumnType(type, sqlTypeInfo));
             writer.AppendLine(";");
         }
 

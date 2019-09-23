@@ -8,9 +8,9 @@ namespace TypedSql
 {
     public abstract class CommonFormatter : IFormatter
     {
-        public abstract string WriteColumnType(Type type);
+        public abstract string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo);
         public abstract void WriteCreateTableColumn(Column column, StringBuilder writer);
-        public abstract void WriteDeclareSqlVariable(string name, Type type, StringBuilder writer);
+        public abstract void WriteDeclareSqlVariable(string name, Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer);
         public abstract void WriteDeleteQuery(SqlQuery queryObject, StringBuilder writer);
         public abstract void WritePlaceholder(SqlPlaceholder placeholder, StringBuilder writer);
         public abstract void WriteSetSqlVariable(SqlPlaceholder variable, SqlExpression expr, StringBuilder writer);

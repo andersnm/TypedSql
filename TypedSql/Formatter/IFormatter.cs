@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TypedSql.Schema;
 
 namespace TypedSql
 {
@@ -11,7 +12,7 @@ namespace TypedSql
         void WriteInsertBuilderQuery(SqlQuery parentQueryResult, List<InsertInfo> inserts, IFromQuery query, StringBuilder writer);
         void WriteUpdateQuery(List<InsertInfo> inserts, SqlQuery queryObject, StringBuilder writer);
         void WriteDeleteQuery(SqlQuery queryObject, StringBuilder writer);
-        void WriteDeclareSqlVariable(string name, Type type, StringBuilder writer);
+        void WriteDeclareSqlVariable(string name, Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer);
         void WriteSetSqlVariable(SqlPlaceholder variable, SqlExpression expr, StringBuilder writer);
 
         // TODO: replace these with create table/drop table statements

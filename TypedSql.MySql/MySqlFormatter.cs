@@ -21,7 +21,7 @@ namespace TypedSql.MySql
             writer.Append("`");
         }
 
-        public override string WriteColumnType(Type type)
+        public override string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo)
         {
             if (type == typeof(sbyte))
             {
@@ -57,7 +57,7 @@ namespace TypedSql.MySql
             }
             else if (type == typeof(decimal))
             {
-                return "DECIMAL(13, 5)";
+                return $"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})";
             }
             else if (type == typeof(float))
             {
@@ -69,7 +69,8 @@ namespace TypedSql.MySql
             }
             else if (type == typeof(string))
             {
-                return "VARCHAR(1024)";
+                var length = sqlTypeInfo.StringLength > 0 ? sqlTypeInfo.StringLength.ToString() : "1024";
+                return $"VARCHAR({length})";
             }
             else if (type == typeof(DateTime))
             {
@@ -90,7 +91,7 @@ namespace TypedSql.MySql
             WriteColumnName(column.SqlName, writer);
             writer.Append(" ");
 
-            writer.Append(WriteColumnType(column.BaseType));
+            writer.Append(WriteColumnType(column.BaseType, column.SqlType));
 
             if (column.Nullable)
             {
@@ -112,7 +113,7 @@ namespace TypedSql.MySql
             }
         }
 
-        public override void WriteDeclareSqlVariable(string name, Type type, StringBuilder writer)
+        public override void WriteDeclareSqlVariable(string name, Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer)
         {
             // NOTE: TODO: declare in sp, not in sesssion
             // throw new NotImplementedException();
