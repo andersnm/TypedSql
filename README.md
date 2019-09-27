@@ -2,9 +2,12 @@
 
 **EXPERIMENTAL** Write database queries in C# and syntax as close to real SQL as possible.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/luv9d8m96u2nweqk?svg=true)](https://ci.appveyor.com/project/andersnm/typedsql)
+
 ## About
 
-The primary focus of TypedSql is to write readable and maintainable SQL queries. Object-relational mapping is generally left to the user. TypedSql is inspired by and somewhat similar to Entity Framework and Linq2Sql, but by design there is:
+The primary focus of TypedSql is to write readable and maintainable SQL queries. Object-relational mapping is generally left to the user, although TypedSql is capable of returning complex object hierarchies without arrays.
+TypedSql is inspired by and somewhat similar to Entity Framework and Linq2Sql, but by design there is:
 
 - No change tracking => scales better
 - No navigation properties => explicit joins
@@ -66,18 +69,20 @@ public class TestDataContext : DatabaseContext
 }
 ```
 
-### SELECT ... FROM ...
+### Basic example: SELECT ... WHERE ...
 
 Query in C#:
 
 ```c#
 
+var runner = new InMemoryQueryRunner();
 var db = new TestDataContext();
 var stmtList = new SqlStatementList();
-
 var query = stmtList.Select(db.Products.Where(p => p.ProductId == 1));
 
-var enumerable = runner.ExecuteQuery(query);
+foreach (var row in runner.ExecuteQuery(query)) {
+    Console.WriteLine("{0}: {1}", row.ProductId, row.Name);
+}
 
 ```
 
@@ -89,7 +94,9 @@ FROM Product a
 WHERE a.ProductId = 1
 ```
 
-### SELECT ... INNER JOIN
+### SELECT ... INNER JOIN [table]
+
+A table can be specified in the first parameter to `Join()`, which generates SQL with a plain join:
 
 ```c#
 var query = stmtList.Select(
@@ -116,7 +123,40 @@ INNER JOIN Unit b ON a.ProductId = b.ProductId
 WHERE a.ProductId = 1
 ```
 
+### SELECT ... INNER JOIN [subquery]
+
+Any query that is not a table object can be specified in the first parameter to `Join()`, which generates SQL with a joined subquery:
+
+```c#
+var query = stmtList.Select(
+    db.Products
+        .Where(p => p.ProductId == 1)
+        .Join(
+            Db.Units.Project((ctx, u) => new { u.ProductId, u.Name }),
+            (actx, a, bctx, b) => a.ProductId == b.ProductId,
+            (actx, a, bctx, b) => new {
+                a.ProductId,
+                a.ProductName,
+                b.UnitId,
+                b.UnitName
+            }
+        ));
+```
+
+Translated to SQL:
+
+```sql
+SELECT a.ProductId, a.ProductName
+FROM Product a
+INNER JOIN (SELECT b.ProductId, b.Name FROM Unit b) c ON a.ProductId = c.ProductId
+WHERE a.ProductId = 1
+```
+
+
 ### SELECT ... LEFT JOIN
+
+The joined side in a LEFT JOIN can be null, so field accesses in the query code must be null-checked.
+The SQL generator recognizes null-checking shorthand patterns for nullables, and generates SQL without any actual null checks, since this is handled transparently in the SQL language:
 
 ```c#
 var query = DataStatementList.Select(
@@ -168,6 +208,8 @@ WHERE a.ProductId = 1
 
 ### INSERT INTO ... VALUES ...
 
+Insert (and update) statements use the `InsertBuilder` class to assign to SQL fields in a typed way:
+
 ```c#
 stmtList.Insert(
     DB.Products, insert =>
@@ -200,6 +242,8 @@ FROM Unit a
 
 ### UPDATE
 
+Update (and isnert) statements use the `InsertBuilder` class to assign to SQL fields in a typed way:
+
 ```c#
 stmtList.Update(
     DB.Products
@@ -215,6 +259,57 @@ UPDATE Product
 SET Name = CONCAT(Name, ": Not tonight")
 WHERE ProductId = 1
 ```
+
+### SELECT ... FROM (SELECT ...)
+
+Use the `Select()` method to wrap a query in a subquery:
+
+```c#
+stmtList.Select(DB.Products.Select((ctx, p) => p));
+```
+
+Translated to SQL:
+
+```sql
+SELECT a.ProductId, a.Name
+FROM (SELECT b.ProductId, b.Name FROM Product b) a
+```
+
+### SELECT (SELECT ...) FROM ...
+
+Use the `AsExpression()` method to treat a query as an expression:
+
+```c#
+stmtList.Select(
+    DB.Products.Project((ctx, p) => new {
+        p.ProductId,
+        SomeUnitId = DB.Units.Limit(1).Project(u => u.UnitId).AsExpression(ctx),
+    })
+);
+```
+
+Translated to SQL:
+
+```sql
+SELECT a.ProductId, (SELECT b.UnitId FROM Unit b LIMIT 1) SomeUnitId
+FROM Product a
+```
+
+## Important classes
+
+### The DatabaseContext class
+
+`DatabaseContext` is the base class for a database schema. Any members having type `FromQuery` in derived classes are automatically instantiated by the constructor. This class is independent of the database connection.
+
+### The SelectorContext class
+
+Most query expression take a parameter of type `SelectorContext` or `SelectorContext<T>` for keeping track of intermediate state during in-memory evaluation.
+The context is a required parameter in many `Function.*` helper methods like `Sum` or `Average`.
+
+### The InsertBuilder class
+
+The `InsertBuilder` class is used in insert and update statements to assign to SQL fields in a typed way.
+It has a single public method `Value()` which takes two parameters: a property selector expression and the value to assign the selected property.
 
 ## Basic usage with SQL Server
 
@@ -280,7 +375,7 @@ services.AddScoped<IQueryRunner>(provider =>
 services.AddSingleton<TestDataContext>();
 ```
 
-## SQL types
+## Default SQL types
 
 |.NET Type|SQL Type|
 |-|-|
@@ -297,6 +392,23 @@ services.AddSingleton<TestDataContext>();
 |`double`|`REAL`|
 |`string`|`NVARCHAR(MAX)` in SQL Server<br>`VARCHAR(1024)` in MySQL|
 |`DateTime`|`DATETIME2` in SQL Server<br>`DATETIME` in MySQL|
+
+## SQL type modifier attributes
+
+Properties may be decorated with attributes to specify the default types:
+
+```c#
+public class Example {
+    // NVARCHAR(100) on SqlServer
+    // VARCHAR(100) on MySql
+    [SqlString(Length = 100, NVarChar = true)]
+    public string Length100Unicode { get; set; }
+
+    // DECIMAL(10,7)
+    [SqlDecimal(Precision = 10, Scale = 7)]
+    public decimal DecimalPrecision { get; set; }
+};
+```
 
 ## SQL functions and operators
 
