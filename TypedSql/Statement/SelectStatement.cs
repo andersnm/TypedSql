@@ -8,25 +8,29 @@ namespace TypedSql
 {
     public interface ISelectStatement : IStatement
     {
-        // NOTE: one or two rgs! TODO: like project
-        Query SelectQuery { get; }
         List<object> EvaluateInMemory(InMemoryQueryRunner runner);
     }
 
     public class SelectStatement<TFrom, T> : ISelectStatement
     {
-        public Query SelectQuery { get; }
-        internal Query<TFrom, T> SelectQueryT { get; }
+        internal Query<TFrom, T> SelectQuery { get; }
 
         public SelectStatement(Query<TFrom, T> parent)
         {
-            SelectQueryT = parent;
-            SelectQuery = SelectQueryT;
+            SelectQuery = parent;
         }
 
         public List<object> EvaluateInMemory(InMemoryQueryRunner runner)
         {
-            return SelectQueryT.InMemorySelect(runner).Cast<object>().ToList();
+            return SelectQuery.InMemorySelect(runner).Cast<object>().ToList();
+        }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            return new SqlSelect()
+            {
+                FromSource = parser.ParseQuery(SelectQuery),
+            };
         }
     }
 
@@ -44,6 +48,15 @@ namespace TypedSql
         public List<object> EvaluateInMemory(InMemoryQueryRunner runner)
         {
             return SelectQueryTResult.InMemorySelect(runner).Cast<object>().ToList();
+        }
+
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            return new SqlSelect()
+            {
+                FromSource = parser.ParseQuery(SelectQuery)
+            };
         }
     }
 }

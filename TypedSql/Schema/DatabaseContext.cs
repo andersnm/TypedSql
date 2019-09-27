@@ -24,7 +24,7 @@ namespace TypedSql
             }
         }
 
-        public void CreateDatabase(IFormatter formatter, IQueryRunner runner)
+        public void CreateDatabase(CommonFormatter formatter, IQueryRunner runner)
         {
             var stmtList = new SqlStatementList();
 
@@ -36,7 +36,7 @@ namespace TypedSql
             runner.ExecuteNonQuery(stmtList);
         }
 
-        public void DropDatabase(IFormatter formatter, IQueryRunner runner)
+        public void DropDatabase(CommonFormatter formatter, IQueryRunner runner)
         {
             var stmtList = new SqlStatementList();
 

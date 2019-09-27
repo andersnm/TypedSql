@@ -1,25 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace TypedSql
 {
     public interface IUpdateStatement : IStatement
     {
-        Query Parent { get; }
-        IFromQuery FromQuery { get; }
-        LambdaExpression InsertExpression { get; }
-
         int EvaluateInMemory(IQueryRunner runner);
     }
 
     public class UpdateStatement<T, TJoin> : IUpdateStatement where T: new()
     {
-        public Query Parent { get; }
-        public IFromQuery FromQuery { get; }
-        public LambdaExpression InsertExpression { get; }
+        public Expression<Action<TJoin, InsertBuilder<T>>> InsertExpression { get; }
 
-        private Query<T, TJoin> ParentTJoin { get; }
-        private FromQuery<T> FromQueryT { get; }
+        private Query<T, TJoin> Parent { get; }
+        private FromQuery<T> FromQuery { get; }
         private Action<TJoin, InsertBuilder<T>> InsertFunction { get; }
 
         /// <summary>
@@ -28,9 +23,7 @@ namespace TypedSql
         public UpdateStatement(FlatQuery<T, TJoin> query, Expression<Action<TJoin, InsertBuilder<T>>> insertExpr)
         {
             Parent = query;
-            ParentTJoin = query;
             FromQuery = query.GetFromQuery<T>();
-            FromQueryT = query.GetFromQuery<T>();
             InsertExpression = insertExpr;
             InsertFunction = insertExpr.Compile();
         }
@@ -39,19 +32,35 @@ namespace TypedSql
         {
             var lastNonQueryResult = 0;
 
-            var items = ParentTJoin.InMemorySelect(runner);
+            var items = Parent.InMemorySelect(runner);
 
             foreach (var item in items)
             {
-                var fromRow = ParentTJoin.FromRowMapping[item];
+                var fromRow = Parent.FromRowMapping[item];
                 var builder = new InsertBuilder<T>();
                 InsertFunction(item, builder);
 
-                FromQueryT.UpdateObject(fromRow, builder.BuilderType, builder);
+                FromQuery.UpdateObject(fromRow, builder.BuilderType, builder);
                 lastNonQueryResult++;
             }
 
             return lastNonQueryResult;
+        }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            var queryResult = parser.ParseQuery(Parent);
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
+            parameters[InsertExpression.Parameters[0].Name] = queryResult.SelectResult; // item
+            // parameters[stmt.InsertExpression.Parameters[1].Name] = ; // builder
+
+            var inserts = parser.ParseInsertBuilder(FromQuery, InsertExpression, parameters);
+
+            return new SqlUpdate()
+            {
+                FromSource = queryResult,
+                Inserts = inserts,
+            };
         }
     }
 }

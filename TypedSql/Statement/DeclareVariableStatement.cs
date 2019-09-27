@@ -5,15 +5,11 @@ namespace TypedSql
 {
     public interface IDeclareVariableStatement : IStatement
     {
-        string VariableName { get; }
-        Type Type { get; }
-        SqlTypeInfo SqlTypeInfo { get; set; }
     }
 
     public class DeclareVariableStatement<T> : IDeclareVariableStatement
     {
         public string VariableName { get; }
-        public Type Type { get; } = typeof(T);
         public SqlTypeInfo SqlTypeInfo { get; set; }
 
         public DeclareVariableStatement(string variableName)
@@ -26,6 +22,17 @@ namespace TypedSql
         {
             VariableName = variableName;
             SqlTypeInfo = sqlTypeInfo;
+        }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            return new SqlDeclareVariable()
+            {
+                VariableName = VariableName,
+                VariableType = typeof(T),
+                SqlTypeInfo = SqlTypeInfo,
+                
+            };
         }
     }
 }

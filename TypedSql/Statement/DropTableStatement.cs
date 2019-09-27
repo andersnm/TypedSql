@@ -2,7 +2,6 @@
 {
     public interface IDropTableStatement : IStatement
     {
-        IFromQuery Table { get; }
     }
 
     public class DropTableStatement : IDropTableStatement
@@ -12,6 +11,15 @@
         public DropTableStatement(IFromQuery table)
         {
             Table = table;
+        }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            return new SqlDropTable()
+            {
+                TableName = Table.TableName,
+                // Columns = Table.Columns,
+            };
         }
     }
 }

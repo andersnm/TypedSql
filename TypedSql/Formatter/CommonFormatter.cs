@@ -6,7 +6,7 @@ using TypedSql.Schema;
 
 namespace TypedSql
 {
-    public abstract class CommonFormatter : IFormatter
+    public abstract class CommonFormatter
     {
         public abstract string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo);
         public abstract void WriteCreateTableColumn(Column column, StringBuilder writer);
@@ -19,6 +19,80 @@ namespace TypedSql
         public abstract void WriteUpdateQuery(List<InsertInfo> inserts, SqlQuery queryObject, StringBuilder writer);
         public abstract void WriteLastIdentityExpression(StringBuilder writer);
         public abstract void WriteIfNullExpression(SqlExpression testExpr, SqlExpression ifNullExpr, StringBuilder writer);
+
+        public void WriteStatement(SqlStatement stmt, StringBuilder sb)
+        {
+            switch (stmt)
+            {
+                case SqlInsert insert:
+                    WriteInsertBuilderQuery(insert.Inserts, insert.TableName, sb);
+                    return;
+                case SqlInsertSelect insertSelect:
+                    WriteInsertBuilderQuery(insertSelect.FromSource, insertSelect.Inserts, insertSelect.TableName, sb);
+                    return;
+                case SqlSelect select:
+                    WriteSelectQuery(select.FromSource, sb);
+                    sb.AppendLine(";");
+                    return;
+                case SqlUpdate update:
+                    WriteUpdateQuery(update.Inserts, update.FromSource, sb);
+                    return;
+                case SqlDelete delete:
+                    WriteDeleteQuery(delete.FromSource, sb);
+                    return;
+                case SqlDeclareVariable declareVariable:
+                    WriteDeclareSqlVariable(declareVariable.VariableName, declareVariable.VariableType, declareVariable.SqlTypeInfo, sb);
+                    return;
+                case SqlSet set:
+                    WriteSetSqlVariable(set.Variable, set.Expression, sb);
+                    return;
+                case SqlCreateTable createTable:
+                    CreateTableSql(createTable.TableName, createTable.Columns, sb);
+                    return;
+                case SqlDropTable dropTable:
+                    DropTableSql(dropTable.TableName, true, sb);
+                    return;
+                case SqlIf ifStmt:
+                    WriteIf(ifStmt.Expression, ifStmt.Block, ifStmt.Block2, sb);
+                    return;
+            }
+
+            throw new Exception("Unsupported statement " + stmt.GetType().Name);
+        }
+
+        void CreateTableSql(string fromTableName, List<Column> columns, StringBuilder writer)
+        {
+            writer.Append("CREATE TABLE ");
+            WriteTableName(fromTableName, writer);
+            writer.Append(" (");
+
+            for (var i = 0; i < columns.Count; i++)
+            {
+                var column = columns[i];
+                if (i > 0)
+                {
+                    writer.Append(", ");
+                }
+
+                WriteCreateTableColumn(column, writer);
+            }
+
+            writer.Append(")");
+            writer.AppendLine(";");
+        }
+
+        void DropTableSql(string fromTableName, bool useIfExists, StringBuilder writer)
+        {
+            // TODO: override for sql server <2016
+            writer.Append("DROP TABLE ");
+            if (useIfExists)
+            {
+                writer.Append("IF EXISTS ");
+            }
+
+            WriteTableName(fromTableName, writer);
+            writer.AppendLine(";");
+        }
 
         public virtual void WriteExpression(SqlExpression node, StringBuilder writer)
         {
@@ -430,11 +504,13 @@ namespace TypedSql
             {
                 WriteFromQuery(queryObject, writer);
             }
+
+            // writer.AppendLine(";");
         }
 
-        public virtual void WriteInsertBuilderQuery(List<InsertInfo> inserts, IFromQuery query, StringBuilder writer)
+        public virtual void WriteInsertBuilderQuery(List<InsertInfo> inserts, string fromTableName, StringBuilder writer)
         {
-            WriteInsertBuilderPrefix(inserts, query, writer);
+            WriteInsertBuilderPrefix(inserts, fromTableName, writer);
             writer.Append("VALUES (");
 
             for (var i = 0; i < inserts.Count; i++)
@@ -452,9 +528,9 @@ namespace TypedSql
             writer.AppendLine(");");
         }
 
-        public virtual void WriteInsertBuilderQuery(SqlQuery parentQueryResult, List<InsertInfo> inserts, IFromQuery query, StringBuilder writer)
+        public virtual void WriteInsertBuilderQuery(SqlQuery parentQueryResult, List<InsertInfo> inserts, string fromTableName, StringBuilder writer)
         {
-            WriteInsertBuilderPrefix(inserts, query, writer);
+            WriteInsertBuilderPrefix(inserts, fromTableName, writer);
             writer.Append("SELECT ");
 
             for (var i = 0; i < inserts.Count; i++)
@@ -473,10 +549,10 @@ namespace TypedSql
             writer.AppendLine(";");
         }
 
-        protected virtual void WriteInsertBuilderPrefix(List<InsertInfo> inserts, IFromQuery query, StringBuilder writer)
+        protected virtual void WriteInsertBuilderPrefix(List<InsertInfo> inserts, string fromTableName, StringBuilder writer)
         {
             writer.Append("INSERT INTO ");
-            WriteTableName(query.TableName, writer);
+            WriteTableName(fromTableName, writer);
             writer.Append(" (");
 
             for (var i = 0; i < inserts.Count; i++)
@@ -629,6 +705,30 @@ namespace TypedSql
                 WriteSelectQuery(subQueryFromSource.FromQuery, writer);
                 writer.Append(")");
             }
+        }
+
+        public void WriteIf(SqlExpression testExpression, List<SqlStatement> ifStatements, List<SqlStatement> elseStatements, StringBuilder writer)
+        {
+            writer.Append("IF ");
+            WriteExpression(testExpression, writer);
+            writer.AppendLine(" THEN");
+            foreach (var stmt in ifStatements)
+            {
+                WriteStatement(stmt, writer);
+            }
+
+            if (elseStatements != null && elseStatements.Count > 0)
+            {
+                writer.AppendLine("ELSE");
+
+                foreach (var stmt in elseStatements)
+                {
+                    WriteStatement(stmt, writer);
+                }
+            }
+
+            writer.AppendLine("END IF;");
+            // writer.AppendLine(";");
         }
     }
 }

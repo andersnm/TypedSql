@@ -8,24 +8,18 @@ namespace TypedSql
 {
     public interface IInsertStatement : IStatement
     {
-        IFromQuery FromQuery { get; }
-        LambdaExpression InsertExpression { get; }
-
         int EvaluateInMemory(InMemoryQueryRunner runner, out int identity);
     }
 
     public class InsertStatement<T> : IInsertStatement where T: new()
     {
-        public IFromQuery FromQuery { get; }
-        public LambdaExpression InsertExpression { get; }
-
-        internal FromQuery<T> FromQueryT { get; }
+        internal FromQuery<T> FromQuery { get; }
+        public Expression<Action<InsertBuilder<T>>> InsertExpression { get; }
         internal Action<InsertBuilder<T>> InsertFunction { get; }
 
         public InsertStatement(FromQuery<T> parent, Expression<Action<InsertBuilder<T>>> insertExpr)
         {
             FromQuery = parent;
-            FromQueryT = parent;
             InsertExpression = insertExpr;
             InsertFunction = insertExpr.Compile();
         }
@@ -34,8 +28,20 @@ namespace TypedSql
         {
             var builder = new InsertBuilder<T>();
             InsertFunction(builder);
-            FromQueryT.InsertImpl(builder, out identity);
+            FromQuery.InsertImpl(builder, out identity);
             return 1;
+        }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
+            var inserts = parser.ParseInsertBuilder(FromQuery, InsertExpression, parameters);
+
+            return new SqlInsert()
+            {
+                Inserts = inserts,
+                TableName = FromQuery.TableName,
+            };
         }
     }
 }

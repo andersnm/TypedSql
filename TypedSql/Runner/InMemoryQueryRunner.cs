@@ -27,7 +27,7 @@ namespace TypedSql.InMemory
 
         public IEnumerable<T> ExecuteQuery<T>(StatementResult<T> statementList)
         {
-            foreach (var query in statementList.StatementList.Queries)
+            foreach (var query in statementList.StatementList.RootScope.Queries)
             {
                 WriteStatement(query);
             }
@@ -81,6 +81,11 @@ namespace TypedSql.InMemory
                 case IDropTableStatement dropTableStatement:
                     WriteDropTableStatement(dropTableStatement);
                     break;
+                case IIfStatement ifStatement:
+                    WriteIfStatement(ifStatement);
+                    break;
+                default:
+                    throw new Exception("Unsupported statement " + stmt.GetType().Name);
             }
         }
 
@@ -135,6 +140,11 @@ namespace TypedSql.InMemory
         void WriteDropTableStatement(IDropTableStatement dropTableStatement)
         {
             lastStatementResult = 1;
+        }
+
+        void WriteIfStatement(IIfStatement ifStatement)
+        {
+            ifStatement.EvaluateInMemory(this);
         }
 
     }

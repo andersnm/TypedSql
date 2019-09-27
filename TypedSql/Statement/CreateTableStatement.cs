@@ -2,7 +2,6 @@
 {
     public interface ICreateTableStatement : IStatement
     {
-        IFromQuery Table { get; }
     }
 
     public class CreateTableStatement : ICreateTableStatement
@@ -13,5 +12,15 @@
         {
             Table = table;
         }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            return new SqlCreateTable()
+            {
+                TableName = Table.TableName,
+                Columns = Table.Columns,
+            };
+        }
     }
+
 }

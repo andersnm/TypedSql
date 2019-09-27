@@ -9,28 +9,21 @@ namespace TypedSql
 {
     public interface IInsertSelectStatement : IStatement
     {
-        IFromQuery FromQuery { get; }
-        LambdaExpression InsertExpression { get; }
-        Query SelectQuery { get; }
         int EvaluateInMemory(InMemoryQueryRunner runner, out int identity);
     }
 
     public class InsertSelectStatement<T, STFrom, ST> : IInsertSelectStatement where T: new()
     {
-        public IFromQuery FromQuery { get; }
-        public LambdaExpression InsertExpression { get; }
-        public Query SelectQuery { get; }
+        private FromQuery<T> FromQuery { get; }
+        private Query<STFrom, ST> SelectQuery { get; }
+        public Expression<Action<ST, InsertBuilder<T>>> InsertExpression { get; }
 
-        private FromQuery<T> FromQueryT { get; }
-        private Query<STFrom, ST> SelectQueryST { get; }
         private Action<ST, InsertBuilder<T>> InsertFunction { get; }
 
         public InsertSelectStatement(FromQuery<T> parent, Query<STFrom, ST> insertSelectQuery, Expression<Action<ST, InsertBuilder<T>>> insertExpr)
         {
             FromQuery = parent;
-            FromQueryT = parent;
             SelectQuery = insertSelectQuery;
-            SelectQueryST = insertSelectQuery;
             InsertExpression = insertExpr;
             InsertFunction = insertExpr.Compile();
         }
@@ -40,17 +33,34 @@ namespace TypedSql
             var lastNonQueryResult = 0;
             identity = 0;
 
-            var items = SelectQueryST.InMemorySelect(runner);
+            var items = SelectQuery.InMemorySelect(runner);
             foreach (var item in items)
             {
                 var builder = new InsertBuilder<T>();
                 InsertFunction(item, builder);
 
-                FromQueryT.InsertImpl(builder, out identity);
+                FromQuery.InsertImpl(builder, out identity);
                 lastNonQueryResult++;
             }
 
             return lastNonQueryResult;
+        }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            var parentQueryResult = parser.ParseQuery(SelectQuery);
+
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
+            parameters[InsertExpression.Parameters[0].Name] = parentQueryResult.SelectResult;
+
+            var inserts = parser.ParseInsertBuilder(FromQuery, InsertExpression, parameters);
+
+            return new SqlInsertSelect()
+            {
+                FromSource = parentQueryResult,
+                Inserts = inserts,
+                TableName = FromQuery.TableName,
+            };
         }
     }
 }

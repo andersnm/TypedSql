@@ -7,6 +7,7 @@ namespace TypedSql
 {
     public interface IStatement
     {
+        SqlStatement Parse(SqlQueryParser parser);
     }
 
     public class StatementResult<TResult>
@@ -17,11 +18,19 @@ namespace TypedSql
 
     public class SqlStatementList
     {
-        public List<IStatement> Queries { get; set; }
+        public List<IStatement> Queries { get; }
+        public SqlStatementList Scope { get; }
+        public SqlStatementList RootScope => Scope != null ? Scope.RootScope : this;
 
         public SqlStatementList()
         {
             Queries = new List<IStatement>();
+        }
+
+        public SqlStatementList(SqlStatementList scope)
+        {
+            Queries = new List<IStatement>();
+            Scope = scope;
         }
 
         public void Add(IStatement query)
@@ -100,6 +109,11 @@ namespace TypedSql
         public void SetSqlVariable<T>(SqlPlaceholder<T> placeholder, Expression<Func<SelectorContext<T>, T>> node) where T : IComparable, IConvertible
         {
             Queries.Add(new SetVariableStatement<T>(placeholder, node));
+        }
+
+        public void If(Expression<Func<bool>> testExpression, SqlStatementList ifStatements, SqlStatementList elseStatements)
+        {
+            Queries.Add(new IfStatement(testExpression, ifStatements, elseStatements));
         }
     }
 }

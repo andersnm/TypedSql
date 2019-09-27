@@ -8,37 +8,43 @@ namespace TypedSql
 {
     public interface ISetVariableStatement : IStatement
     {
-        SqlPlaceholder Variable { get; }
-        LambdaExpression ValueExpression { get; }
         void EvaluateInMemory(IQueryRunner runner);
     }
 
     public class SetVariableStatement<T> : ISetVariableStatement where T : IComparable, IConvertible
     {
-        public SqlPlaceholder Variable { get; }
-        public SqlPlaceholder<T> VariableT { get; }
-        public LambdaExpression ValueExpression { get; }
+        public SqlPlaceholder<T> Variable { get; }
+        public Expression<Func<SelectorContext<T>, T>> ValueExpression { get; }
         private Func<SelectorContext<T>, T> ValueFunction { get; }
 
         public SetVariableStatement(SqlPlaceholder<T> variable, Expression<Func<SelectorContext<T>, T>> valueExpr)
         {
             Variable = variable;
-            VariableT = variable;
             ValueExpression = valueExpr;
             ValueFunction = valueExpr.Compile();
         }
 
         public void EvaluateInMemory(IQueryRunner runner)
         {
-            if (VariableT.PlaceholderType == SqlPlaceholderType.SessionVariableName)
+            if (Variable.PlaceholderType == SqlPlaceholderType.SessionVariableName)
             {
                 var context = new SelectorContext<T>(runner, null);
-                VariableT.Value = ValueFunction(context);
+                Variable.Value = ValueFunction(context);
             }
             else
             {
                 throw new InvalidOperationException("Uhndlet vrbitype");
             }
         }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            return new SqlSet()
+            {
+                Expression = parser.ParseExpression(ValueExpression),
+                Variable = Variable,
+            };
+        }
+
     }
 }

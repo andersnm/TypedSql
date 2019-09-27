@@ -4,35 +4,40 @@ namespace TypedSql
 {
     public interface IDeleteStatement : IStatement
     {
-        Query Parent { get; }
         int EvaluateInMemory(IQueryRunner runner);
     }
 
     public class DeleteStatement<T, TJoin> : IDeleteStatement where T: new()
     {
-        public Query Parent { get; }
-        private Query<T, TJoin> ParentTJoin { get; }
-        private FromQuery<T> FromQueryT { get; }
+        private Query<T, TJoin> Parent { get; }
+        private FromQuery<T> FromQuery { get; }
 
         public DeleteStatement(FlatQuery<T, TJoin> parent)
         {
             Parent = parent;
-            ParentTJoin = parent;
-            FromQueryT = parent.GetFromQuery<T>();
+            FromQuery = parent.GetFromQuery<T>();
         }
 
         public int EvaluateInMemory(IQueryRunner runner)
         {
-            var items = ParentTJoin.InMemorySelect(runner).ToList();
+            var items = Parent.InMemorySelect(runner).ToList();
             var lastNonQueryResult = 0;
 
             foreach (var item in items)
             {
-                var fromRow = ParentTJoin.FromRowMapping[item];
-                lastNonQueryResult += FromQueryT.DeleteObject(fromRow);
+                var fromRow = Parent.FromRowMapping[item];
+                lastNonQueryResult += FromQuery.DeleteObject(fromRow);
             }
 
             return lastNonQueryResult;
+        }
+
+        public SqlStatement Parse(SqlQueryParser parser)
+        {
+            return new SqlDelete()
+            {
+                FromSource = parser.ParseQuery(Parent),
+            };
         }
     }
 }

@@ -58,13 +58,43 @@ namespace TypedSql.Test
             stmtList.SetSqlVariable(testVariable,
                 varctx => DB.Products.Where(p => p.ProductId == 1).Project((ctx, p) => p.ProductId).AsExpression(varctx));
 
-            var select = stmtList.Select(ctx => new { Result = testVariable.Value } );
+            var select = stmtList.Select(ctx => new { Result = testVariable.Value });
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
             var results = runner.ExecuteQuery(select).ToList();
             Assert.AreEqual(1, results.Count, "Should be 1 result");
             Assert.AreEqual(1, results[0].Result, "Selected variable should be 1");
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        [Ignore("TODO: IF in stored procedures")]
+        public void TestIf(Type runnerType)
+        {
+            var stmtList = new SqlStatementList();
+            var testVariable = stmtList.DeclareSqlVariable<int>("test");
+            stmtList.SetSqlVariable(testVariable, varctx => 1);
+
+            var ifScope = new SqlStatementList(stmtList);
+            var elseScope = new SqlStatementList(stmtList);
+            stmtList.If(() => testVariable.Value == 1, ifScope, elseScope);
+
+            var select = ifScope.Select(ctx => new { Result = "IF" });
+            elseScope.Select(ctx => new { Result = "ELSE" });
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            // var sql = runner.GetSql(stmtList, out _);
+            // throw new Exception(sql);
+
+            // TODO: this executes only whts inside the IF
+            var results = runner.ExecuteQuery(select).ToList();
+            Assert.AreEqual(1, results.Count, "Should be 1 result");
+            Assert.AreEqual("IF", results[0].Result, "Selected result should be 'IF'");
         }
     }
 }
