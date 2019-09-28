@@ -11,7 +11,7 @@ namespace TypedSql
         void EvaluateInMemory(IQueryRunner runner);
     }
 
-    public class SetVariableStatement<T> : ISetVariableStatement where T : IComparable, IConvertible
+    public class SetVariableStatement<T> : ISetVariableStatement
     {
         public SqlPlaceholder<T> Variable { get; }
         public Expression<Func<SelectorContext<T>, T>> ValueExpression { get; }

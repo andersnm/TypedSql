@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using TypedSql.Schema;
 
@@ -124,10 +125,14 @@ namespace TypedSql.SqlServer
 
         public override void WriteDeclareSqlVariable(string name, Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer)
         {
+            var propertyTypeInfo = type.GetTypeInfo();
+            var nullable = (propertyTypeInfo.IsGenericType && propertyTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
+            var baseType = nullable ? Nullable.GetUnderlyingType(type) : type;
+
             writer.Append("DECLARE @");
             writer.Append(name);
             writer.Append(" ");
-            writer.Append(WriteColumnType(type, sqlTypeInfo));
+            writer.Append(WriteColumnType(baseType, sqlTypeInfo));
             writer.AppendLine(";");
         }
 

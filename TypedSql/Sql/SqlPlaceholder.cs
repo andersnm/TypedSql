@@ -16,7 +16,7 @@ namespace TypedSql
         public SqlPlaceholderType PlaceholderType { get; set; }
     }
 
-    public class SqlPlaceholder<T> : SqlPlaceholder where T : IComparable, IConvertible
+    public class SqlPlaceholder<T> : SqlPlaceholder
     {
         public override Type ValueType
         {

@@ -26,7 +26,8 @@ namespace TypedSql.Test
             var decimalVar = stmtList.DeclareSqlVariable<decimal>("decimalVar");
             stmtList.SetSqlVariable(decimalVar, ctx => 2.23M);
 
-            //var intNullableVar = stmtList.DeclareSqlVariable<int?>("intNullableVar");
+            var intNullableVar = stmtList.DeclareSqlVariable<int?>("intNullableVar");
+            stmtList.SetSqlVariable(intNullableVar, ctx => 42);
 
             var stringVar = stmtList.DeclareSqlVariable<string>("stringVar");
             stmtList.SetSqlVariable(stringVar, ctx => "test");
@@ -34,7 +35,7 @@ namespace TypedSql.Test
             var select = stmtList.Select(ctx => new {
                 intVar = intVar.Value,
                 decimalVar = decimalVar.Value,
-                //intNullableVar = intNullableVar.Value,
+                intNullableVar = intNullableVar.Value,
                 stringVar = stringVar.Value
             });
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -43,6 +44,7 @@ namespace TypedSql.Test
             var results = runner.ExecuteQuery(select).ToList();
             Assert.AreEqual(1, results.Count, "Should be 1 result");
             Assert.AreEqual(1, results[0].intVar, "intVar should be 1");
+            Assert.AreEqual(42, results[0].intNullableVar, "intNullableVar should be 42");
             Assert.AreEqual(2.23M, results[0].decimalVar, "decimalVar should be 2.23");
             Assert.AreEqual("test", results[0].stringVar, "stringVar should be 'test'");
         }

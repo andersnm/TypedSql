@@ -95,7 +95,7 @@ namespace TypedSql
             Queries.Add(new InsertSelectStatement<T, STFrom, ST>(query, subQuery, insertExpr));
         }
 
-        public SqlPlaceholder<T> DeclareSqlVariable<T>(string name) where T : IComparable, IConvertible
+        public SqlPlaceholder<T> DeclareSqlVariable<T>(string name)
         {
             Queries.Add(new DeclareVariableStatement<T>(name));
 
@@ -106,7 +106,7 @@ namespace TypedSql
             };
         }
 
-        public void SetSqlVariable<T>(SqlPlaceholder<T> placeholder, Expression<Func<SelectorContext<T>, T>> node) where T : IComparable, IConvertible
+        public void SetSqlVariable<T>(SqlPlaceholder<T> placeholder, Expression<Func<SelectorContext<T>, T>> node)
         {
             Queries.Add(new SetVariableStatement<T>(placeholder, node));
         }
