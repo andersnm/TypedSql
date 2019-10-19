@@ -17,7 +17,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValues(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product"));
 
@@ -34,7 +34,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValuesSelectIdentity(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product"));
             var identity = stmtList.DeclareSqlVariable<int>("myident");
             stmtList.SetSqlVariable(identity, (ctx) => Function.LastInsertIdentity(ctx));
@@ -55,7 +55,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValuesSelect(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             stmtList.Insert(DB.Products, DB.Units, (x, insert) => insert.Value(p => p.Name, "Product from " + x.Name));
 

@@ -15,7 +15,7 @@ namespace TypedSql
     public class SqlCreateTable : SqlStatement
     {
         public string TableName { get; set; }
-        public List<Schema.Column> Columns { get; set; }
+        public List<SqlColumn> Columns { get; set; }
     }
 
     public class SqlDropTable : SqlStatement
@@ -71,4 +71,58 @@ namespace TypedSql
         public List<SqlStatement> Block { get; set; }
         public List<SqlStatement> Block2 { get; set; }
     }
+
+    public class SqlAddForeignKey : SqlStatement
+    {
+        public string TableName { get; set; }
+        public SqlForeignKey ForeignKey { get; set; }
+    }
+
+    public class SqlDropForeignKey : SqlStatement
+    {
+        public string TableName { get; set; }
+        public string ForeignKeyName { get; set; }
+    }
+
+    public class SqlAddIndex : SqlStatement
+    {
+        public string TableName { get; set; }
+        public SqlIndex Index { get; set; }
+    }
+
+    public class SqlDropIndex : SqlStatement
+    {
+        public string TableName { get; set; }
+        public string IndexName { get; set; }
+    }
+
+    public class SqlModifyIndex : SqlStatement
+    {
+        public string TableName { get; set; }
+        public string IndexName { get; set; }
+        public List<string> Columns { get; set; }
+    }
+
+    public class SqlAddColumn : SqlStatement
+    {
+        public string TableName { get; set; }
+        public string ColumnName { get; set; }
+        public Type Type { get; set; }
+        public SqlTypeInfo SqlType { get; set; }
+    }
+
+    public class SqlDropColumn : SqlStatement
+    {
+        public string TableName { get; set; }
+        public string ColumnName { get; set; }
+    }
+
+    public class SqlModifyColumn : SqlStatement
+    {
+        public string TableName { get; set; }
+        public string ColumnName { get; set; }
+        public Type Type { get; set; }
+        public SqlTypeInfo SqlType { get; set; }
+    }
+
 }

@@ -16,9 +16,9 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void DeleteOne(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             stmtList.Delete(
-                DB.Products.Where(p => p.ProductId == 1));
+                DB.Products.Where(p => p.ProductId == 2));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);

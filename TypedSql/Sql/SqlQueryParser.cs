@@ -33,7 +33,7 @@ namespace TypedSql {
             SubqueryParameters = subqueryParameters;
         }
 
-        public List<SqlStatement> ParseStatementList(SqlStatementList stmtList)
+        public List<SqlStatement> ParseStatementList(StatementList stmtList)
         {
             var result = new List<SqlStatement>();
             foreach (var stmt in stmtList.Queries)

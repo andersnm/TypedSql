@@ -6,7 +6,7 @@ using TypedSql.Schema;
 
 namespace TypedSql.SqlServer
 {
-    public class SqlServerFormatter : CommonFormatter
+    public class SqlServerFormatter : SqlBaseFormatter
     {
         public override void WriteColumnName(string columnName, StringBuilder writer) {
             writer.Append("[");
@@ -21,12 +21,12 @@ namespace TypedSql.SqlServer
             writer.Append("]");
         }
 
-        public override void WriteCreateTableColumn(Schema.Column column, StringBuilder writer)
+        public override void WriteCreateTableColumn(SqlColumn column, StringBuilder writer)
         {
-            WriteColumnName(column.SqlName, writer);
+            WriteColumnName(column.Name, writer);
             writer.Append(" ");
 
-            writer.Append(WriteColumnType(column.BaseType, column.SqlType));
+            writer.Append(WriteColumnType(column.Type, column.SqlType));
 
             if (column.Nullable)
             {
@@ -243,5 +243,22 @@ namespace TypedSql.SqlServer
             WriteJoins(queryObject, writer);
             WriteFinalQuery(queryObject, writer);
         }
+
+        protected override void WriteAddForeignKeyOn(StringBuilder writer)
+        {
+            writer.Append("ON DELETE NO ACTION ");
+            writer.AppendLine("ON UPDATE NO ACTION;");
+        }
+
+        protected override void WriteDropForeignKey(string fromTableName, string foreignKeyName, StringBuilder writer)
+        {
+            writer.AppendLine("ALTER TABLE " + fromTableName + " DROP CONSTRAINT " + foreignKeyName + ";");
+
+            /*writer.AppendLine("IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME='" + foreignKeyName + "')");
+            writer.AppendLine("BEGIN");
+            writer.AppendLine("  ALTER TABLE " + fromTableName + " DROP CONSTRAINT " + foreignKeyName + ";");
+            writer.AppendLine("END");*/
+        }
+
     }
 }

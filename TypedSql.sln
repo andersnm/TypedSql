@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.489
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TypedSql", "TypedSql\TypedSql.csproj", "{2A491496-614D-497E-A564-D8A249004931}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TypedSql.MySql", "TypedSql.MySql\TypedSql.MySql.csproj", "{3FE53E92-7D92-456B-9A2A-EA5B7176789F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TypedSql.Test", "TypedSql.Test\TypedSql.Test.csproj", "{10AF6A80-30D7-4337-90E7-FA4185C566EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TypedSql.CliTool", "TypedSql.CliTool\TypedSql.CliTool.csproj", "{1DC6A0B7-E958-4141-8EE5-81BDADF70D2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{10AF6A80-30D7-4337-90E7-FA4185C566EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10AF6A80-30D7-4337-90E7-FA4185C566EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10AF6A80-30D7-4337-90E7-FA4185C566EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DC6A0B7-E958-4141-8EE5-81BDADF70D2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DC6A0B7-E958-4141-8EE5-81BDADF70D2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DC6A0B7-E958-4141-8EE5-81BDADF70D2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DC6A0B7-E958-4141-8EE5-81BDADF70D2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

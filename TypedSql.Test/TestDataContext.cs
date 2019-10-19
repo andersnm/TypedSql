@@ -7,6 +7,11 @@
         public string Name { get; set; }
     }
 
+    [ForeignKey(Name = "fk_unit_product",
+        Columns = new[] { nameof(ProductId) },
+        ReferenceColumns = new[] { nameof(Product.ProductId) },
+        ReferenceTableType = typeof(Product))
+    ]
     public class Unit
     {
         [PrimaryKey(AutoIncrement = true)]
@@ -17,6 +22,11 @@
     }
 
     [SqlTable(Name = "inventory_db")]
+    [ForeignKey(Name = "fk_inventory_unit",
+        Columns = new[] { nameof(UnitId) }, 
+        ReferenceColumns = new[] { nameof(Unit.UnitId) }, 
+        ReferenceTableType = typeof(Unit))
+    ]
     public class Inventory
     {
         [PrimaryKey(AutoIncrement = true)]

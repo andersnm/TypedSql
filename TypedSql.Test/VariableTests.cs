@@ -18,7 +18,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SetVariableTypes(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var intVar = stmtList.DeclareSqlVariable<int>("intVar");
             stmtList.SetSqlVariable(intVar, ctx => 1);
@@ -55,7 +55,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SetVariableFromSelect(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var testVariable = stmtList.DeclareSqlVariable<int>("test");
             stmtList.SetSqlVariable(testVariable,
                 varctx => DB.Products.Where(p => p.ProductId == 1).Project((ctx, p) => p.ProductId).AsExpression(varctx));
@@ -76,12 +76,12 @@ namespace TypedSql.Test
         [Ignore("TODO: IF in stored procedures")]
         public void TestIf(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var testVariable = stmtList.DeclareSqlVariable<int>("test");
             stmtList.SetSqlVariable(testVariable, varctx => 1);
 
-            var ifScope = new SqlStatementList(stmtList);
-            var elseScope = new SqlStatementList(stmtList);
+            var ifScope = new StatementList(stmtList);
+            var elseScope = new StatementList(stmtList);
             stmtList.If(() => testVariable.Value == 1, ifScope, elseScope);
 
             var select = ifScope.Select(ctx => new { Result = "IF" });

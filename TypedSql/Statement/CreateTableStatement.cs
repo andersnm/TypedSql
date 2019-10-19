@@ -1,4 +1,6 @@
-﻿namespace TypedSql
+﻿using System.Linq;
+
+namespace TypedSql
 {
     public interface ICreateTableStatement : IStatement
     {
@@ -18,9 +20,16 @@
             return new SqlCreateTable()
             {
                 TableName = Table.TableName,
-                Columns = Table.Columns,
+                Columns = Table.Columns.Select(c => new SqlColumn()
+                {
+                    Name = c.SqlName,
+                    Type = c.BaseType,
+                    Nullable = c.Nullable,
+                    PrimaryKey = c.PrimaryKey,
+                    PrimaryKeyAutoIncrement = c.PrimaryKeyAutoIncrement,
+                    SqlType = c.SqlType,
+                }).ToList(),
             };
         }
     }
-
 }

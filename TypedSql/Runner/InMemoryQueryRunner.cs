@@ -10,12 +10,12 @@ namespace TypedSql.InMemory
         {
         }
 
-        public string GetSql(SqlStatementList statementList, out List<KeyValuePair<string, object>> constants)
+        public string GetSql(StatementList statementList, out List<KeyValuePair<string, object>> constants)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<T> ExecuteQuery<T>(SqlStatementList statementList)
+        public IEnumerable<T> ExecuteQuery<T>(StatementList statementList)
         {
             foreach (var query in statementList.Queries)
             {
@@ -35,7 +35,7 @@ namespace TypedSql.InMemory
             return lastResult.Cast<T>();
         }
 
-        public int ExecuteNonQuery(SqlStatementList statementList)
+        public int ExecuteNonQuery(StatementList statementList)
         {
             foreach (var query in statementList.Queries)
             {
@@ -44,7 +44,6 @@ namespace TypedSql.InMemory
 
             return lastStatementResult;
         }
-
 
         List<object> lastResult;
         int lastStatementResult;
@@ -83,6 +82,11 @@ namespace TypedSql.InMemory
                     break;
                 case IIfStatement ifStatement:
                     WriteIfStatement(ifStatement);
+                    break;
+                case IDropForeignKeyStatement dropForeignKey:
+                case IAddForeignKeyStatement addForeignKey:
+                case IAddIndexStatement addIndex:
+                case IDropIndexStatement dropIndex:
                     break;
                 default:
                     throw new Exception("Unsupported statement " + stmt.GetType().Name);

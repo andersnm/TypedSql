@@ -18,7 +18,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConstants(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(ctx => new {
                 X = 1,
                 Y = true,
@@ -56,7 +56,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConstantsIntoClass(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(ctx => new TestClass() { X = 1, Y = true, Z = "test" });
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -76,7 +76,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectTableIntoClass(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .Where(p => p.ProductId == 1)
@@ -102,7 +102,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectTable(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .Join(DB.Units,
@@ -128,7 +128,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectScalar(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .Join(DB.Units,
@@ -154,7 +154,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectRenamedTableWithRenamedField(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(DB.Inventories);
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -174,7 +174,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinTable(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .Join(
@@ -200,7 +200,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinTableObject(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .Join(
@@ -227,7 +227,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectLeftJoinTable(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .LeftJoin(
@@ -267,7 +267,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectNullProp(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .LeftJoin(
@@ -298,7 +298,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinSubquery(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var subquery = DB.Units.GroupBy(u => new { u.ProductId }, (ctx, ur) => new { ur.ProductId, UnitCount = Function.Count(ctx, t => t.UnitId) });
 
@@ -325,7 +325,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinSubqueryNames(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var select = stmtList.Select(
                 DB.Units
@@ -351,7 +351,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectCountSubquery(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var subquery = DB.Units.Select((ctx, ur) => ur);
 
             var select = stmtList.Select(
@@ -371,7 +371,7 @@ namespace TypedSql.Test
         // [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereNull(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(DB.Products.Where(p => p.Name == null));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -391,7 +391,7 @@ namespace TypedSql.Test
         public void SelectWhereContains(Type runnerType)
         {
             var productIds = new[] { 1, 200, 300 };
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(
                 DB.Products
                     .Where(
@@ -410,7 +410,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereContainsInline(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(DB.Products.Where(p => Function.Contains(p.ProductId, new[] { 1, 200, 300 })));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -426,7 +426,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConcatExpression(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var select = stmtList.Select(DB.Products.Project((ctx, p) => new { Name = "Product: " + p.Name }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -447,7 +447,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectPlaceholder(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var testvar = stmtList.DeclareSqlVariable<int>("testvar");
             stmtList.SetSqlVariable(testvar, ctx => 1234);
 
@@ -471,7 +471,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWherePlaceholder(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             var testvar = stmtList.DeclareSqlVariable<int>("testvar");
             stmtList.SetSqlVariable(testvar, ctx => 1);
 
@@ -495,7 +495,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectOrderByDesc(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var select = stmtList.Select(DB.Products.OrderBy(false, p => p.Name));
 
@@ -513,7 +513,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectOrderByAsc(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var select = stmtList.Select(DB.Products.OrderBy(true, p => p.Name));
 
@@ -531,7 +531,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectGroupByCount(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var select = stmtList.Select(
                 DB.Products
@@ -564,7 +564,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectGroupBySum(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var select = stmtList.Select(
                 DB.Products
@@ -597,7 +597,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectComplexResult(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var select = stmtList.Select(
                 DB.Products
@@ -635,7 +635,7 @@ namespace TypedSql.Test
 
         void SelectAggregated<T>(Type runnerType, Expression<Func<SelectorContext<TypeValue>, TypeValue, Aggregated<T>>> func) where T : struct
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             var select = stmtList.Select(
                 DB.TypeValues.Project(func));
@@ -759,5 +759,27 @@ namespace TypedSql.Test
             });
         }
 
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectPredicate(Type runnerType)
+        {
+            var stmtList = new StatementList();
+
+            var orBuilder = new PredicateBuilder<Product>(x => x.ProductId == 1);
+            orBuilder.OrElse(y => y.ProductId == 2);
+            orBuilder.OrElse(z => z.ProductId == 3);
+
+            var select = stmtList.Select(
+                DB.Products.Where(orBuilder.GetPredicate()));
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+            Assert.AreEqual(1, results[0].ProductId);
+            Assert.AreEqual(2, results[1].ProductId);
+        }
     }
 }

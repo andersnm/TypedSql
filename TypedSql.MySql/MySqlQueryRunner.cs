@@ -1,8 +1,7 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
+using MySql.Data.MySqlClient;
 
 namespace TypedSql.MySql
 {
@@ -15,11 +14,11 @@ namespace TypedSql.MySql
             Connection = connection;
         }
 
-        public override int ExecuteNonQuery(SqlStatementList statementList)
+        public override int ExecuteNonQuery(List<SqlStatement> statements, List<KeyValuePair<string, object>> constants)
         {
             using (var selectCommand = Connection.CreateCommand())
             {
-                var sql = GetSql(statementList, out var constants);
+                var sql = GetSql(statements);
                 selectCommand.CommandText = sql;
 
                 foreach (var parameter in constants)
@@ -38,16 +37,11 @@ namespace TypedSql.MySql
             }
         }
 
-        public override IEnumerable<T> ExecuteQuery<T>(SqlStatementList statementList)
-        {
-            return ExecuteQueryImpl<T>(statementList);
-        }
-
-        private IEnumerable<T> ExecuteQueryImpl<T>(SqlStatementList statementList)
+        public override IEnumerable<T> ExecuteQuery<T>(List<SqlStatement> statements, List<KeyValuePair<string, object>> constants)
         {
             using (var selectCommand = Connection.CreateCommand())
             {
-                var sql = GetSql(statementList, out var constants);
+                var sql = GetSql(statements);
                 selectCommand.CommandText = sql;
 
                 foreach (var parameter in constants)

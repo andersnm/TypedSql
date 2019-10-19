@@ -31,6 +31,8 @@ namespace TypedSql {
         string TableName { get; }
         List<Column> Columns { get; }
         List<ForeignKey> ForeignKeys { get; }
+        List<Index> Indices { get; }
+        DatabaseContext Context { get; }
     }
 
     public class FromQuery<T> : FlatQuery<T, T>, IFromQuery where T: new()
@@ -39,10 +41,13 @@ namespace TypedSql {
         public string TableName { get; private set; }
         public List<Column> Columns { get; } = new List<Column>();
         public List<ForeignKey> ForeignKeys { get; } = new List<ForeignKey>();
+        public List<Index> Indices { get; } = new List<Index>();
+        public DatabaseContext Context { get; }
         internal List<T> Data { get; } = new List<T>();
         internal int Identity { get; set; } = 1;
 
-        public FromQuery() : base(null) {
+        public FromQuery(DatabaseContext context) : base(null) {
+            Context = context;
             ParseAttributes();
         }
 
@@ -162,15 +167,36 @@ namespace TypedSql {
                 });
             }
 
-            var foreignKeys = new List<ForeignKey>();
-            var foreignKeyAttributes = typeInfo.GetCustomAttributes(typeof(ForeignKeyAttribute)).Cast<ForeignKeyAttribute>();
+            var foreignKeyAttributes = typeInfo.GetCustomAttributes<ForeignKeyAttribute>();
             foreach (var foreignKeyAttribute in foreignKeyAttributes)
             {
-                foreignKeys.Add(new ForeignKey()
+                if (string.IsNullOrEmpty(foreignKeyAttribute.Name))
                 {
+                    throw new InvalidOperationException("ForeignKey attribute must specify a name");
+                }
+
+                ForeignKeys.Add(new ForeignKey()
+                {
+                    Name = foreignKeyAttribute.Name,
                     Columns = foreignKeyAttribute.Columns.ToList() ?? new List<string>(),
                     ReferenceTableType = foreignKeyAttribute.ReferenceTableType,
                     ReferenceColumns = foreignKeyAttribute.ReferenceColumns.ToList() ?? new List<string>()
+                });
+            }
+
+            var indexAttributes = typeInfo.GetCustomAttributes<IndexAttribute>();
+            foreach (var indexAttribute in indexAttributes)
+            {
+                if (string.IsNullOrEmpty(indexAttribute.Name))
+                {
+                    throw new InvalidOperationException("Index attribute must specify a name");
+                }
+
+                Indices.Add(new Index()
+                {
+                    Name =  indexAttribute.Name,
+                    Columns = indexAttribute.Columns.ToList() ?? new List<string>(),
+                    Unique = indexAttribute.Unique,
                 });
             }
         }

@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using TypedSql.Migration;
 using TypedSql.Schema;
 
 namespace TypedSql
 {
-    public abstract class CommonFormatter
+    public abstract class SqlBaseFormatter
     {
         public abstract string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo);
-        public abstract void WriteCreateTableColumn(Column column, StringBuilder writer);
+        public abstract void WriteCreateTableColumn(SqlColumn column, StringBuilder writer);
         public abstract void WriteDeclareSqlVariable(string name, Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer);
         public abstract void WriteDeleteQuery(SqlQuery queryObject, StringBuilder writer);
         public abstract void WritePlaceholder(SqlPlaceholder placeholder, StringBuilder writer);
@@ -47,20 +49,32 @@ namespace TypedSql
                     WriteSetSqlVariable(set.Variable, set.Expression, sb);
                     return;
                 case SqlCreateTable createTable:
-                    CreateTableSql(createTable.TableName, createTable.Columns, sb);
+                    WriteCreateTable(createTable.TableName, createTable.Columns, sb);
                     return;
                 case SqlDropTable dropTable:
-                    DropTableSql(dropTable.TableName, true, sb);
+                    WriteDropTable(dropTable.TableName, true, sb);
                     return;
                 case SqlIf ifStmt:
                     WriteIf(ifStmt.Expression, ifStmt.Block, ifStmt.Block2, sb);
+                    return;
+                case SqlAddForeignKey addForeignKey:
+                    WriteAddForeignKey(addForeignKey.TableName, addForeignKey.ForeignKey, sb);
+                    return;
+                case SqlDropForeignKey dropForeignKey:
+                    WriteDropForeignKey(dropForeignKey.TableName, dropForeignKey.ForeignKeyName, sb);
+                    return;
+                case SqlAddIndex addIndex:
+                    WriteAddIndex(addIndex.TableName, addIndex.Index, sb);
+                    return;
+                case SqlDropIndex dropIndex:
+                    WriteDropIndex(dropIndex.TableName, dropIndex.IndexName, sb);
                     return;
             }
 
             throw new Exception("Unsupported statement " + stmt.GetType().Name);
         }
 
-        void CreateTableSql(string fromTableName, List<Column> columns, StringBuilder writer)
+        void WriteCreateTable(string fromTableName, List<SqlColumn> columns, StringBuilder writer)
         {
             writer.Append("CREATE TABLE ");
             WriteTableName(fromTableName, writer);
@@ -81,7 +95,7 @@ namespace TypedSql
             writer.AppendLine(";");
         }
 
-        void DropTableSql(string fromTableName, bool useIfExists, StringBuilder writer)
+        void WriteDropTable(string fromTableName, bool useIfExists, StringBuilder writer)
         {
             // TODO: override for sql server <2016
             writer.Append("DROP TABLE ");
@@ -92,6 +106,55 @@ namespace TypedSql
 
             WriteTableName(fromTableName, writer);
             writer.AppendLine(";");
+        }
+
+
+        protected virtual void WriteAddForeignKey(string fromTableName, SqlForeignKey foreignKey, StringBuilder writer)
+        {
+            WriteAddForeignKeyReference(fromTableName, foreignKey, writer);
+            WriteAddForeignKeyOn(writer);
+        }
+
+        protected virtual void WriteAddForeignKeyReference(string fromTableName, SqlForeignKey foreignKey, StringBuilder writer)
+        {
+            /*var foreignQuery = context.FromQueries.Where(q => q.TableType == foreignKey.ReferenceTableType).FirstOrDefault();
+            if (foreignQuery == null)
+            {
+                throw new InvalidOperationException("Foreign key referenced an invalid table type: " + foreignKey.ReferenceTableType.Name);
+            }
+
+            var fromQuery = context.FromQueries.Where(f => f.TableName == fromTableName).First();
+            if (fromQuery == null)
+            {
+                throw new InvalidOperationException("Foreign key invalid table type: " + fromTableName);
+            }
+            */
+            writer.Append("ALTER TABLE " + fromTableName + " ADD CONSTRAINT " + foreignKey.Name + " FOREIGN KEY (");
+
+            // var columns = GetFieldNamesFromMemberNames(fromQuery, foreignKey.Columns);
+
+            writer.Append(string.Join(", ", foreignKey.Columns));
+            writer.Append(") REFERENCES ");
+
+            WriteTableName(foreignKey.ReferenceTableName, writer);
+            writer.Append(" (");
+
+            // var referenceColumns = GetFieldNamesFromMemberNames(foreignQuery, foreignKey.ReferenceColumns);
+
+            writer.Append(string.Join(", ", foreignKey.ReferenceColumns));
+            writer.Append(") ");
+        }
+
+        protected abstract void WriteAddForeignKeyOn(StringBuilder writer);
+
+        protected abstract void WriteDropForeignKey(string fromTableName, string foreignKeyName, StringBuilder writer);
+
+        void WriteAddIndex(string fromTableName, SqlIndex index, StringBuilder writer)
+        {
+        }
+
+        void WriteDropIndex(string fromTableName, string indexName, StringBuilder writer)
+        {
         }
 
         public virtual void WriteExpression(SqlExpression node, StringBuilder writer)

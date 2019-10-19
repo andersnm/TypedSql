@@ -16,7 +16,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void UpdateFromConstants(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             stmtList.Update(
                 DB.Products.Where(p => p.ProductId == 1),
                 (_, builder) => builder.Value(b => b.Name, "Not tonight"));
@@ -34,7 +34,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void UpdateWithJoin(Type runnerType)
         {
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
 
             stmtList.Update(
                 DB.Units

@@ -3,11 +3,10 @@ using System.Collections.Generic;
 
 namespace TypedSql.Schema
 {
-    public class ForeignKey
+    public class Index
     {
         public string Name { get; set; }
         public List<string> Columns { get; set; }
-        public Type ReferenceTableType { get; set; }
-        public List<string> ReferenceColumns { get; set; }
+        public bool Unique { get; set; }
     }
 }

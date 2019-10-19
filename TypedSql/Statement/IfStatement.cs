@@ -12,10 +12,10 @@ namespace TypedSql
     {
         public Expression<Func<bool>> TestExpression { get; }
         public Func<bool> TestExpressionFunction { get; }
-        public SqlStatementList IfStatements { get; }
-        public SqlStatementList ElseStatements { get; }
+        public StatementList IfStatements { get; }
+        public StatementList ElseStatements { get; }
 
-        public IfStatement(Expression<Func<bool>> testExpression, SqlStatementList ifStatements, SqlStatementList elseStatements)
+        public IfStatement(Expression<Func<bool>> testExpression, StatementList ifStatements, StatementList elseStatements)
         {
             TestExpression = testExpression;
             TestExpressionFunction = testExpression.Compile();

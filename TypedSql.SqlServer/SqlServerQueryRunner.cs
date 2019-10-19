@@ -17,12 +17,12 @@ namespace TypedSql.SqlServer
             Connection = connection;
         }
 
-        public override int ExecuteNonQuery(SqlStatementList statementList)
+        public override int ExecuteNonQuery(List<SqlStatement> statements, List<KeyValuePair<string, object>> constants)
         {
             var sb = new StringBuilder();
             sb.AppendLine("BEGIN TRY");
             sb.AppendLine("BEGIN TRANSACTION");
-            sb.AppendLine(GetSql(statementList, out var constants));
+            sb.AppendLine(GetSql(statements));
             sb.AppendLine("COMMIT TRANSACTION");
             sb.AppendLine("END TRY");
             sb.AppendLine("BEGIN CATCH");
@@ -44,21 +44,18 @@ namespace TypedSql.SqlServer
 
                     return selectCommand.ExecuteNonQuery();
                 }
-            } catch (SqlException e) {
+            }
+            catch (SqlException e)
+            {
                 throw new InvalidOperationException(e.Message + " in " + sb.ToString());
             }
         }
 
-        public override IEnumerable<T> ExecuteQuery<T>(SqlStatementList statementList)
-        {
-            return ExecuteQueryImpl<T>(statementList);
-        }
-
-        private IEnumerable<T> ExecuteQueryImpl<T>(SqlStatementList statementList)
+        public override IEnumerable<T> ExecuteQuery<T>(List<SqlStatement> statements, List<KeyValuePair<string, object>> constants)
         {
             using (var selectCommand = Connection.CreateCommand())
             {
-                var sql = GetSql(statementList, out var constants);
+                var sql = GetSql(statements);
                 selectCommand.CommandText = sql;
 
                 foreach (var parameter in constants)

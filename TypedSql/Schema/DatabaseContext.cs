@@ -6,7 +6,7 @@ namespace TypedSql
 {
     public abstract class DatabaseContext
     {
-        internal List<IFromQuery> FromQueries { get; } = new List<IFromQuery>();
+        public List<IFromQuery> FromQueries { get; } = new List<IFromQuery>();
 
         public DatabaseContext()
         {
@@ -17,35 +17,11 @@ namespace TypedSql
             {
                 if (typeof(IFromQuery).GetTypeInfo().IsAssignableFrom(property.PropertyType))
                 {
-                    var fromQuery = (IFromQuery)Activator.CreateInstance(property.PropertyType);
+                    var fromQuery = (IFromQuery)Activator.CreateInstance(property.PropertyType, this);
                     property.SetValue(this, fromQuery);
                     FromQueries.Add(fromQuery);
                 }
             }
-        }
-
-        public void CreateDatabase(CommonFormatter formatter, IQueryRunner runner)
-        {
-            var stmtList = new SqlStatementList();
-
-            foreach (var table in FromQueries)
-            {
-                stmtList.Add(new CreateTableStatement(table));
-            }
-
-            runner.ExecuteNonQuery(stmtList);
-        }
-
-        public void DropDatabase(CommonFormatter formatter, IQueryRunner runner)
-        {
-            var stmtList = new SqlStatementList();
-
-            foreach (var table in FromQueries)
-            {
-                stmtList.Add(new DropTableStatement(table));
-            }
-
-            runner.ExecuteNonQuery(stmtList);
         }
     }
 }

@@ -93,23 +93,66 @@ namespace TypedSql.Test
             TestScope = RootProvider.CreateScope();
             Provider = TestScope.ServiceProvider;
             DB = new TestDataContext();
+
+            var runnerType = (Type)TestContext.CurrentContext.Test.Arguments[0];
+            var queryRunner = Provider.GetRequiredService(runnerType);
+            if (queryRunner is SqlQueryRunner runner)
+            {
+                UpDb(runner);
+            }
         }
 
         [TearDown]
         public void BaseTearDown()
         {
+            var runnerType = (Type)TestContext.CurrentContext.Test.Arguments[0];
+            var queryRunner = Provider.GetRequiredService(runnerType);
+            if (queryRunner is SqlQueryRunner runner)
+            {
+                DownDb(runner);
+            }
+
             Provider = null;
             TestScope.Dispose();
             TestScope = null;
         }
 
+        protected void UpDb(SqlQueryRunner runner)
+        {
+            try
+            {
+                var migrator = new Migration.Migrator();
+                migrator.ReadAssemblyMigrations(GetType().Assembly);
+                migrator.ReadAppliedMigrations(runner);
+                migrator.MigrateToLatest(runner);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        protected void DownDb(SqlQueryRunner runner)
+        {
+            try
+            {
+                var migrator = new Migration.Migrator();
+                migrator.ReadAssemblyMigrations(GetType().Assembly);
+                migrator.ReadAppliedMigrations(runner);
+                while (migrator.AppliedMigrations.Count > 0)
+                {
+                    migrator.MigrateDown(runner);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
         protected void ResetDb(IQueryRunner runner)
         {
-            var formatter = new MySqlFormatter();
-            DB.DropDatabase(formatter, runner);
-            DB.CreateDatabase(formatter, runner);
-
-            var stmtList = new SqlStatementList();
+            var stmtList = new StatementList();
             stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "Happy T-Shirt"));
 
             var product1Id = stmtList.DeclareSqlVariable<int>("product1Id");

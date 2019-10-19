@@ -12,22 +12,22 @@ namespace TypedSql
 
     public class StatementResult<TResult>
     {
-        public SqlStatementList StatementList { get; set; }
+        public StatementList StatementList { get; set; }
         public ISelectStatement Statement { get; set; }
     }
 
-    public class SqlStatementList
+    public class StatementList
     {
         public List<IStatement> Queries { get; }
-        public SqlStatementList Scope { get; }
-        public SqlStatementList RootScope => Scope != null ? Scope.RootScope : this;
+        public StatementList Scope { get; }
+        public StatementList RootScope => Scope != null ? Scope.RootScope : this;
 
-        public SqlStatementList()
+        public StatementList()
         {
             Queries = new List<IStatement>();
         }
 
-        public SqlStatementList(SqlStatementList scope)
+        public StatementList(StatementList scope)
         {
             Queries = new List<IStatement>();
             Scope = scope;
@@ -69,12 +69,12 @@ namespace TypedSql
         /// <summary>
         /// UPDATE tbl JOIN tbl2 SET tbl.X = tbl2.Y ...
         /// </summary>
-        public void Update<T, TJoin>(FlatQuery<T, TJoin> query, Expression<Action<TJoin, InsertBuilder<T>>> insertExpr) where T: new()
+        public void Update<T, TJoin>(FlatQuery<T, TJoin> query, Expression<Action<TJoin, InsertBuilder<T>>> insertExpr) where T : new()
         {
             Queries.Add(new UpdateStatement<T, TJoin>(query, insertExpr));
         }
 
-        public void Delete<T, TJoin>(FlatQuery<T, TJoin> query) where T: new()
+        public void Delete<T, TJoin>(FlatQuery<T, TJoin> query) where T : new()
         {
             Queries.Add(new DeleteStatement<T, TJoin>(query));
         }
@@ -82,7 +82,7 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) VALUES ( ...)
         /// </summary>
-        public void Insert<T>(FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr) where T: new()
+        public void Insert<T>(FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr) where T : new()
         {
             Queries.Add(new InsertStatement<T>(query, insertExpr));
         }
@@ -111,9 +111,61 @@ namespace TypedSql
             Queries.Add(new SetVariableStatement<T>(placeholder, node));
         }
 
-        public void If(Expression<Func<bool>> testExpression, SqlStatementList ifStatements, SqlStatementList elseStatements)
+        public void If(Expression<Func<bool>> testExpression, StatementList ifStatements, StatementList elseStatements)
         {
             Queries.Add(new IfStatement(testExpression, ifStatements, elseStatements));
+        }
+
+        public void AddForeignKey(IFromQuery table, Schema.ForeignKey foreignKey)
+        {
+            Queries.Add(new AddForeignKeyStatement(table, foreignKey));
+        }
+
+        public void AddIndex(IFromQuery table, Schema.Index index)
+        {
+            Queries.Add(new AddIndexStatement(table, index));
+        }
+
+        public void CreateAllTables(DatabaseContext context)
+        {
+            foreach (var table in context.FromQueries)
+            {
+                Add(new CreateTableStatement(table));
+            }
+
+            foreach (var table in context.FromQueries)
+            {
+                foreach (var foreignKey in table.ForeignKeys)
+                {
+                    AddForeignKey(table, foreignKey);
+                }
+
+                foreach (var index in table.Indices)
+                {
+                    AddIndex(table, index);
+                }
+            }
+        }
+
+        public void DropAllTables(DatabaseContext context)
+        {
+            foreach (var table in context.FromQueries)
+            {
+                foreach (var index in table.Indices)
+                {
+                    Add(new DropIndexStatement(table, index));
+                }
+
+                foreach (var foreignKey in table.ForeignKeys)
+                {
+                    Add(new DropForeignKeyStatement(table, foreignKey));
+                }
+            }
+
+            foreach (var table in context.FromQueries)
+            {
+                Add(new DropTableStatement(table));
+            }
         }
     }
 }

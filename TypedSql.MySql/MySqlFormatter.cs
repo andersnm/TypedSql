@@ -5,7 +5,7 @@ using TypedSql.Schema;
 
 namespace TypedSql.MySql
 {
-    public class MySqlFormatter : CommonFormatter
+    public class MySqlFormatter : SqlBaseFormatter
     {
         public override void WriteColumnName(string columnName, StringBuilder writer)
         {
@@ -86,12 +86,12 @@ namespace TypedSql.MySql
             }
         }
 
-        public override void WriteCreateTableColumn(Column column, StringBuilder writer)
+        public override void WriteCreateTableColumn(SqlColumn column, StringBuilder writer)
         {
-            WriteColumnName(column.SqlName, writer);
+            WriteColumnName(column.Name, writer);
             writer.Append(" ");
 
-            writer.Append(WriteColumnType(column.BaseType, column.SqlType));
+            writer.Append(WriteColumnType(column.Type, column.SqlType));
 
             if (column.Nullable)
             {
@@ -219,6 +219,30 @@ namespace TypedSql.MySql
             writer.Append(" ");
             WriteJoins(queryObject, writer);
             WriteFinalQuery(queryObject, writer);
+        }
+
+        protected override void WriteAddForeignKeyOn(StringBuilder writer)
+        {
+            writer.Append("ON DELETE RESTRICT ");
+            writer.AppendLine("ON UPDATE RESTRICT;");
+        }
+
+        protected override void WriteDropForeignKey(string fromTableName, string foreignKeyName, StringBuilder writer)
+        {
+            writer.AppendLine("ALTER TABLE " + fromTableName + " DROP FOREIGN KEY " + foreignKeyName + ";");
+            /*
+            writer.AppendLine("SELECT COUNT(*) INTO @FOREIGN_KEY_my_foreign_key_ON_TABLE_my_table_EXISTS");
+            writer.AppendLine("FROM `information_schema`.`table_constraints`");
+            writer.AppendLine("WHERE `table_schema` = 'typedsqltest'");
+            writer.AppendLine("  AND `table_name` = '" + fromTableName + "'");
+            writer.AppendLine("  AND `constraint_name` = '" + foreignKeyName + "'");
+            writer.AppendLine("  AND `constraint_type` = 'FOREIGN KEY';");
+            writer.AppendLine("SET @statement := IF(");
+            writer.AppendLine("  @FOREIGN_KEY_my_foreign_key_ON_TABLE_my_table_EXISTS > 0,");
+            writer.AppendLine("  'ALTER TABLE " + fromTableName + " DROP FOREIGN KEY " + foreignKeyName + "',");
+            writer.AppendLine("  'SELECT 1');");
+            writer.AppendLine("PREPARE statement FROM @statement;");
+            writer.AppendLine("EXECUTE statement;");*/
         }
     }
 }
