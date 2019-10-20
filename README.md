@@ -27,6 +27,7 @@ TypedSql is inspired by and somewhat similar to Entity Framework and Linq2Sql, b
 - Batch multiple SQL statements
 - Composable SQL subqueries
 - Implementations for SQL Server, MySQL and in-memory
+- Migrations
 
 ## Getting the binaries
 
@@ -77,7 +78,7 @@ Query in C#:
 
 var runner = new InMemoryQueryRunner();
 var db = new TestDataContext();
-var stmtList = new SqlStatementList();
+var stmtList = new StatementList();
 var query = stmtList.Select(db.Products.Where(p => p.ProductId == 1));
 
 foreach (var row in runner.ExecuteQuery(query)) {
@@ -242,7 +243,7 @@ FROM Unit a
 
 ### UPDATE
 
-Update (and isnert) statements use the `InsertBuilder` class to assign to SQL fields in a typed way:
+Update (and insert) statements use the `InsertBuilder` class to assign to SQL fields in a typed way:
 
 ```c#
 stmtList.Update(
@@ -432,3 +433,47 @@ TypedSql supports SQL functions and operators through a static `Function` class 
 |`Function.Month(dateTime)`|`MONTH()`|
 |`Function.Day(dateTime)`|`DAY()`|
 
+## Migrations
+
+### Migration tool
+
+The migration tool requires .NET Core 3.0 SDK or newer, and is installed as a local tool in your database project directory.
+
+The migration tool does the following:
+
+* Load the database project assembly
+* Scan for a class inheriting from DatabaseContext and existing migration classes
+* Generate a migration class with the current database state, and Up()/Down() methods migrating the database from the previous to the current state
+
+There are limitations what kind of assemblies can be loaded dynamically by the tool. 
+The tool supports any .NET standard class library and most netcoreapp3.0 application assemblies. Only application assemblies referencing version 3.0 of the shared frameworks Microsoft.NETCore.App, Microsoft.AspNetCore.App and/or Microsoft.WindowsDesktop.App are supported.
+
+This means f.ex if you develop for ASP.NET Core 2.x and want to use TypedSql migrations, the DatabaseContext class should reside in a separate class library outside of the web project.
+
+Install and use the tool in a shell from the database project directory:
+
+```bash
+# Run this once if you haven't installed any local tools yet
+dotnet new tool-manifest
+
+# Run this once to install the TypedSql CLI tool
+dotnet tool install TypedSql.CliTool
+
+# Show available commands
+dotnet typedsql --help
+
+# Generate a new migration class named "Initial" in ./Migrations
+dotnet typedsql add-migration -a ./path/to/your/assembly.dll -n Initial
+```
+
+### Applying migrations
+
+The application can apply migrations using the `TypedSql.Migrator` class:
+
+```c#
+SqlQueryRunner runner = /* ... */
+var migrator = new Migrator();
+migrator.ReadAssemblyMigrations(typeof(MyDatabaseContext).Assembly);
+migrator.ReadAppliedMigrations(runner);
+migrator.MigrateToLatest(runner);
+```

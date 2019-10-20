@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Title>dotnet-typedsql</Title>
+    <AssemblyName>dotnet-typedsql</AssemblyName>
+    <PackageId>TypedSql.CliTool</PackageId>
     <Version>0.0.6</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -12,6 +15,11 @@
 
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.4.2" />
+
+    <!-- This is here so the cli tool can load assemblies targeting ASP.NET Core or Windows Desktop -->
+    <!-- https://github.com/dotnet/core-setup/issues/4975 -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
   </ItemGroup>
 
   <ItemGroup>
