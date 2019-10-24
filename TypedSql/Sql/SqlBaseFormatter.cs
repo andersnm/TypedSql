@@ -57,6 +57,12 @@ namespace TypedSql
                 case SqlIf ifStmt:
                     WriteIf(ifStmt.Expression, ifStmt.Block, ifStmt.Block2, sb);
                     return;
+                case SqlAddColumn addColumn:
+                    WriteAddColumn(addColumn.TableName, addColumn.Column, sb);
+                    return;
+                case SqlDropColumn dropColumn:
+                    WriteDropColumn(dropColumn.TableName, dropColumn.ColumnName, sb);
+                    return;
                 case SqlAddForeignKey addForeignKey:
                     WriteAddForeignKey(addForeignKey.TableName, addForeignKey.ForeignKey, sb);
                     return;
@@ -105,6 +111,24 @@ namespace TypedSql
             }
 
             WriteTableName(fromTableName, writer);
+            writer.AppendLine(";");
+        }
+
+        protected virtual void WriteAddColumn(string fromTableName, SqlColumn column, StringBuilder writer)
+        {
+            writer.Append("ALTER TABLE ");
+            WriteTableName(fromTableName, writer);
+            writer.Append(" ADD COLUMN ");
+            WriteCreateTableColumn(column, writer);
+            writer.AppendLine(";");
+        }
+
+        protected virtual void WriteDropColumn(string fromTableName, string columnName, StringBuilder writer)
+        {
+            writer.Append("ALTER TABLE ");
+            WriteTableName(fromTableName, writer);
+            writer.Append(" DROP COLUMN ");
+            WriteColumnName(columnName, writer);
             writer.AppendLine(";");
         }
 

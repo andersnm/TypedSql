@@ -1,4 +1,6 @@
-﻿namespace TypedSql.Test
+﻿using System;
+
+namespace TypedSql.Test
 {
     public class Product
     {
@@ -50,6 +52,8 @@
         public long LongValue { get; set; }
         public decimal DecimalValue { get; set; }
         public double DoubleValue { get; set; }
+        public DateTime DateTimeValue { get; set; }
+        public string StringValue { get; set; }
 
         // Not supported on SQL Server:
         // public sbyte SbyteValue { get; set; }

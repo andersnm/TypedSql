@@ -106,9 +106,7 @@ namespace TypedSql
     public class SqlAddColumn : SqlStatement
     {
         public string TableName { get; set; }
-        public string ColumnName { get; set; }
-        public Type Type { get; set; }
-        public SqlTypeInfo SqlType { get; set; }
+        public SqlColumn Column { get; set; }
     }
 
     public class SqlDropColumn : SqlStatement

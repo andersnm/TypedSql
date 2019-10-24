@@ -103,9 +103,11 @@ namespace TypedSql.CliTool
                     statements.Add(new SqlAddColumn()
                     {
                         TableName = nextTable.TableName,
-                        ColumnName = nextColumn.Name,
-                        Type = nextColumn.Type,
-                        SqlType = nextColumn.SqlType,
+                        Column = new SqlColumn() { 
+                            Name = nextColumn.Name,
+                            Type = nextColumn.Type,
+                            SqlType = nextColumn.SqlType,
+                        },
                     });
                 }
                 else

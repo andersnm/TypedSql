@@ -763,6 +763,45 @@ namespace TypedSql.Test
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateDateTime(Type runnerType)
+        {
+            var d = new DateTime(1970, 1, 1);
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<DateTime>()
+            {
+                Sum = d,
+                Count = Function.Count(ctx, x => x.DateTimeValue),
+                Average = d, // TODO: new DateTime(1970, 1, 1),
+                Min = Function.Min(ctx, x => x.DateTimeValue),
+                Max = Function.Max(ctx, x => x.DateTimeValue),
+            });
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateString(Type runnerType)
+        {
+            var stmtList = new StatementList();
+
+            var select = stmtList.Select(
+                DB.TypeValues.Project((ctx, t) => new
+                {
+                    Count = Function.Count(ctx, x => x.StringValue),
+                    Min = Function.Min(ctx, x => x.StringValue),
+                    Max = Function.Max(ctx, x => x.StringValue),
+                }));
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectPredicate(Type runnerType)
         {
             var stmtList = new StatementList();

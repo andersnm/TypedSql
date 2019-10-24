@@ -136,5 +136,45 @@ namespace TypedSql
 
             return result;
         }
+
+        public static DateTime? Max<T>(SelectorContext<T> t, Func<T, DateTime?> selector)
+        {
+            var result = (DateTime?)null;
+            foreach (var item in t.Items)
+            {
+                var value = selector(item);
+                if (!result.HasValue)
+                {
+                    result = value;
+                }
+                else if (value.HasValue)
+                {
+                    var selectorValue = selector(item).Value;
+                    result = result.Value > selectorValue ? result.Value : selectorValue;
+                }
+            }
+
+            return result;
+        }
+
+        public static string Max<T>(SelectorContext<T> t, Func<T, string> selector)
+        {
+            var result = (string)null;
+            foreach (var item in t.Items)
+            {
+                var value = selector(item);
+                if (result == null)
+                {
+                    result = value;
+                }
+                else if (value != null)
+                {
+                    var selectorValue = selector(item);
+                    result = result.CompareTo(selectorValue) > 0 ? result : selectorValue;
+                }
+            }
+
+            return result;
+        }
     }
 }
