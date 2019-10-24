@@ -17,13 +17,9 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValues(Type runnerType)
         {
-            var stmtList = new StatementList();
-
-            stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product"));
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
-            var results = runner.ExecuteNonQuery(stmtList);
+            var results = runner.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product"));
 
             Assert.AreEqual(1, results, "Should be 1 result");
         }
@@ -55,13 +51,10 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValuesSelect(Type runnerType)
         {
-            var stmtList = new StatementList();
-
-            stmtList.Insert(DB.Products, DB.Units, (x, insert) => insert.Value(p => p.Name, "Product from " + x.Name));
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
-            var results = runner.ExecuteNonQuery(stmtList);
+
+            var results = runner.Insert(DB.Products, DB.Units, (x, insert) => insert.Value(p => p.Name, "Product from " + x.Name));
 
             Assert.AreEqual(3, results, "Should be 3 results");
         }

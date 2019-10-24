@@ -18,8 +18,10 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConstants(Type runnerType)
         {
-            var stmtList = new StatementList();
-            var select = stmtList.Select(ctx => new {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.Select(ctx => new {
                 X = 1,
                 Y = true,
                 Z = "test",
@@ -27,12 +29,8 @@ namespace TypedSql.Test
                 DecimalValue = 4.5M,
                 DoubleValue = 1.23D,
                 FloatValue = 6.4f,
-            });
+            }).ToList();
 
-            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
-            ResetDb(runner);
-
-            var results = runner.ExecuteQuery(select).ToList();
             Assert.AreEqual(1, results.Count, "Should be 1 result");
             Assert.AreEqual(1, results[0].X, "X should be 1");
             Assert.AreEqual(true, results[0].Y, "X should be true");
@@ -56,13 +54,10 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConstantsIntoClass(Type runnerType)
         {
-            var stmtList = new StatementList();
-            var select = stmtList.Select(ctx => new TestClass() { X = 1, Y = true, Z = "test" });
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
-            var results = runner.ExecuteQuery(select).ToList();
+            var results = runner.Select(ctx => new TestClass() { X = 1, Y = true, Z = "test" }).ToList();
             Assert.AreEqual(1, results.Count, "Should be 1 result");
             Assert.AreEqual(1, results[0].X, "X should be 1");
             Assert.AreEqual(true, results[0].Y, "X should be true");
@@ -76,20 +71,18 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectTableIntoClass(Type runnerType)
         {
-            var stmtList = new StatementList();
-            var select = stmtList.Select(
-                DB.Products
-                    .Where(p => p.ProductId == 1)
-                    .Project((ctx, a) => new TestClass() {
-                        X = a.ProductId,
-                        Y = true,
-                        Z = a.Name
-                    }));
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
-            var results = runner.ExecuteQuery(select).ToList();
+            var results = runner.Select(
+                DB.Products
+                    .Where(p => p.ProductId == 1)
+                    .Project((ctx, a) => new TestClass()
+                    {
+                        X = a.ProductId,
+                        Y = true,
+                        Z = a.Name
+                    })).ToList();
             Assert.AreEqual(1, results.Count, "Should be 1 result");
             Assert.AreEqual(1, results[0].X, "X should be 1");
             Assert.AreEqual(true, results[0].Y, "Y should be true");

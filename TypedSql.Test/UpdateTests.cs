@@ -16,15 +16,12 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void UpdateFromConstants(Type runnerType)
         {
-            var stmtList = new StatementList();
-            stmtList.Update(
-                DB.Products.Where(p => p.ProductId == 1),
-                (_, builder) => builder.Value(b => b.Name, "Not tonight"));
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
-            var results = runner.ExecuteNonQuery(stmtList);
+            var results = runner.Update(
+                DB.Products.Where(p => p.ProductId == 1),
+                (_, builder) => builder.Value(b => b.Name, "Not tonight"));
             Assert.AreEqual(1, results, "Should be 1 result");
         }
 

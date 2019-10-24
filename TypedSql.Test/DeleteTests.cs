@@ -16,14 +16,11 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void DeleteOne(Type runnerType)
         {
-            var stmtList = new StatementList();
-            stmtList.Delete(
-                DB.Products.Where(p => p.ProductId == 2));
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
-            var results = runner.ExecuteNonQuery(stmtList);
+            var results = runner.Delete(
+                DB.Products.Where(p => p.ProductId == 2));
             Assert.AreEqual(1, results, "Should be 1 result");
         }
     }
