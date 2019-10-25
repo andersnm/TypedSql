@@ -52,5 +52,41 @@ namespace TypedSql.Test
             var results = runner.ExecuteNonQuery(stmtList);
             Assert.AreEqual(3, results, "Should be 3 result");
         }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void UpdateDynamically(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            // Insert a record to update
+            runner.Insert(DB.TypeValues, insert => insert
+                .Value(t => t.ByteValue, (byte)1) // TODO: 
+                .Value(t => t.BoolValue, false)
+                .Value(t => t.DateTimeValue, DateTime.Now)
+                .Value(t => t.DecimalValue, 0.0M)
+                .Value(t => t.DoubleValue, 0.0)
+                .Value(t => t.FloatValue, 0.0f)
+                .Value(t => t.IntValue, 0)
+                .Value(t => t.LongValue, (long)0)
+                .Value(t => t.ShortValue, (short)0)
+                .Value(t => t.StringValue, string.Empty)
+            );
+
+            var updater = new InsertBuilder<TypeValue>()
+                .Value(p => p.StringValue, "Not tonight")
+                .Value(p => p.IntValue, 47);
+
+            updater.Value(p => p.BoolValue, true);
+
+            var results = runner.Update(
+                DB.TypeValues.Where(p => p.ByteValue == 1),
+                (_, builder) => builder.Values(updater));
+            Assert.AreEqual(1, results, "Should be 1 result");
+        }
+
     }
 }

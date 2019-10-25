@@ -927,32 +927,37 @@ namespace TypedSql {
             }
 
             var callExpression = (MethodCallExpression)insertExpr.Body;
-            if (callExpression.Method.Name != nameof(InsertBuilder<bool>.Value) || callExpression.Method.DeclaringType.GetGenericTypeDefinition() != typeof(InsertBuilder<>))
-            {
-                throw new InvalidOperationException("Insert expression can only call InsertBuilder<T>.Value()");
-            }
-
             var values = new List<InsertInfo>();
             while (true)
             {
-                var fieldSelectorUnary = (UnaryExpression)callExpression.Arguments[0];
-                var fieldSelector = (LambdaExpression)fieldSelectorUnary.Operand;
-                var fieldSelectorBody = (MemberExpression)fieldSelector.Body;
-
-                var column = fromQuery.Columns.Where(c => c.MemberName == fieldSelectorBody.Member.Name).FirstOrDefault();
-                if (column == null)
+                if (callExpression.Method.DeclaringType.GetGenericTypeDefinition() != typeof(InsertBuilder<>))
                 {
-                    throw new InvalidOperationException("Not a valid column in InsertBuilder " + fieldSelectorBody.Member.Name);
+                    throw new InvalidOperationException("Expected InsertBuilder<T> in insert expression");
                 }
 
-                var valueExpression = callExpression.Arguments[1];
-                var memberValueExpression = ParseExpression(valueExpression, parameters);
-
-                values.Add(new InsertInfo()
+                if (callExpression.Method.Name == nameof(InsertBuilder<bool>.Values))
                 {
-                    Expression = memberValueExpression,
-                    SqlName = column.SqlName,
-                });
+                    var builder = (IInsertBuilder)ResolveConstant(callExpression.Arguments[0], out var argumentType);
+                    foreach (var selector in builder.Selectors)
+                    {
+                        var constExpr = GetConstantExpression(selector.Value, selector.Value.GetType());
+                        var insertInfo = ParseInsertBuilderValue(fromQuery, selector.Selector, constExpr);
+                        values.Add(insertInfo);
+                    }
+                }
+                else if (callExpression.Method.Name == nameof(InsertBuilder<bool>.Value))
+                {
+                    var fieldSelectorUnary = (UnaryExpression)callExpression.Arguments[0];
+                    var fieldSelector = (LambdaExpression)fieldSelectorUnary.Operand;
+                    var valueExpression = callExpression.Arguments[1];
+                    var memberValueExpression = ParseExpression(valueExpression, parameters);
+                    var insertInfo = ParseInsertBuilderValue(fromQuery, fieldSelector, memberValueExpression);
+                    values.Add(insertInfo);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Insert expression can only call InsertBuilder<T>.Value() or .Values()");
+                }
 
                 if (callExpression.Object.NodeType == ExpressionType.Parameter)
                 {
@@ -963,6 +968,24 @@ namespace TypedSql {
             }
 
             return values;
+        }
+
+        InsertInfo ParseInsertBuilderValue(IFromQuery fromQuery, LambdaExpression fieldSelector, SqlExpression valueExpression)
+        {
+            var fieldSelectorBody = (MemberExpression)fieldSelector.Body;
+
+            var column = fromQuery.Columns.Where(c => c.MemberName == fieldSelectorBody.Member.Name).FirstOrDefault();
+            if (column == null)
+            {
+                throw new InvalidOperationException("Not a valid column in InsertBuilder " + fieldSelectorBody.Member.Name);
+            }
+
+            return new InsertInfo()
+            {
+                Expression = valueExpression,
+                SqlName = column.SqlName,
+            };
+
         }
 
         string RegisterConstant(object value)

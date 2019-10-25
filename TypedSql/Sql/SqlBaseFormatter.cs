@@ -282,6 +282,12 @@ namespace TypedSql
             {
                 if (castExpr.TargetType.IsConstructedGenericType && castExpr.TargetType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
+                    // Unwrap nullable cast
+                    WriteExpression(castExpr.Operand, writer);
+                }
+                else if (IsNumericType(castExpr.TargetType) && IsNumericType(castExpr.Operand.GetExpressionType()))
+                {
+                    // Unwrap numeric<->numeric casts
                     WriteExpression(castExpr.Operand, writer);
                 }
                 else
@@ -463,6 +469,20 @@ namespace TypedSql
             testExpression = condTestLeftExpr;
             ifNullExpression = condExpr.IfFalse;
             return true;
+        }
+
+        protected bool IsNumericType(Type type) {
+            return type == typeof(byte)
+                || type == typeof(sbyte)
+                || type == typeof(ushort)
+                || type == typeof(uint)
+                || type == typeof(ulong)
+                || type == typeof(short)
+                || type == typeof(int)
+                || type == typeof(long)
+                || type == typeof(float)
+                || type == typeof(double)
+                || type == typeof(decimal);
         }
 
         /// <summary>

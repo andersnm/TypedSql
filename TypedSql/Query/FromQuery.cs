@@ -13,15 +13,26 @@ namespace TypedSql {
         public object Value { get; set; }
     }
 
-    public class InsertBuilder<T>
+    public interface IInsertBuilder
+    {
+        List<SelectorValue> Selectors { get; }
+        Type BuilderType { get; }
+    }
+
+    public class InsertBuilder<T> : IInsertBuilder
     {
         public List<SelectorValue> Selectors { get; } = new List<SelectorValue>();
         public Type BuilderType { get; } = typeof(T);
 
         public InsertBuilder<T> Value<FT>(Expression<Func<T, FT>> selector, FT value)
         {
-            var m = (MemberExpression)selector.Body;
             Selectors.Add(new SelectorValue() { Selector = selector, Value = value });
+            return this;
+        }
+
+        public InsertBuilder<T> Values(InsertBuilder<T> other)
+        {
+            Selectors.AddRange(other.Selectors);
             return this;
         }
     }
