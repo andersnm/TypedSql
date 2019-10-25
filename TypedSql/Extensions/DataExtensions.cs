@@ -29,6 +29,12 @@ namespace TypedSql
             return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
+        static bool IsEnumType(Type type)
+        {
+            var typeInfo = type.GetTypeInfo();
+            return typeInfo.IsEnum;
+        }
+
         static bool IsAnonymousType(Type type)
         {
             var typeInfo = type.GetTypeInfo();
@@ -187,14 +193,26 @@ namespace TypedSql
                     return Activator.CreateInstance(propertyType, null);
                 }
 
-                var underlyingValue = Convert.ChangeType(value, Nullable.GetUnderlyingType(propertyType));
+                var underlyingValue = ChangeTypeOrEnum(value, Nullable.GetUnderlyingType(propertyType));
                 return Activator.CreateInstance(propertyType, underlyingValue);
             }
             else
             {
                 usedOrdinals = 1;
+                return ChangeTypeOrEnum(value, propertyType);
+            }
+        }
+
+        static object ChangeTypeOrEnum(object value, Type conversionType)
+        {
+            if (IsEnumType(conversionType))
+            {
+                return Enum.ToObject(conversionType, value);
+            }
+            else
+            {
                 // NOTE: if this throws, check for left joins not casting to nullable
-                return Convert.ChangeType(value, propertyType);
+                return Convert.ChangeType(value, conversionType);
             }
         }
     }

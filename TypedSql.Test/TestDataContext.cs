@@ -42,6 +42,14 @@ namespace TypedSql.Test
         public int Stock { get; set; }
     }
 
+    public enum IntEnumType : int
+    {
+        TestValue0 = 0,
+        TestValue1 = 1,
+        TestValue2 = 2,
+        TestValue3 = 3,
+    }
+
     public class TypeValue
     {
         public bool BoolValue { get; set; }
@@ -54,6 +62,7 @@ namespace TypedSql.Test
         public double DoubleValue { get; set; }
         public DateTime DateTimeValue { get; set; }
         public string StringValue { get; set; }
+        public IntEnumType IntEnumValue { get; set; }
 
         // Not supported on SQL Server:
         // public sbyte SbyteValue { get; set; }

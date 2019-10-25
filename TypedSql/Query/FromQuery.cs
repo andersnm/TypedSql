@@ -146,6 +146,12 @@ namespace TypedSql {
 
                 var propertyTypeInfo = property.PropertyType.GetTypeInfo();
                 var nullable = (propertyTypeInfo.IsGenericType && propertyTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
+                var baseType = nullable ? Nullable.GetUnderlyingType(property.PropertyType) : property.PropertyType;
+                var baseTypeInfo = baseType.GetTypeInfo();
+                if (baseTypeInfo.IsEnum)
+                {
+                    baseType = baseTypeInfo.GetEnumUnderlyingType();
+                }
 
                 string propertyName;
                 var attr = property.GetCustomAttribute<SqlFieldAttribute>();
@@ -165,7 +171,7 @@ namespace TypedSql {
                     PrimaryKey = primaryKeyAttribute != null,
                     PrimaryKeyAutoIncrement = primaryKeyAttribute?.AutoIncrement??false,
                     OriginalType = property.PropertyType,
-                    BaseType = nullable ? Nullable.GetUnderlyingType(property.PropertyType) : property.PropertyType,
+                    BaseType = baseType,
                     Nullable = nullable,
                     PropertyInfo = property,
                     SqlType = new SqlTypeInfo()
