@@ -98,5 +98,27 @@ namespace TypedSql.Test
             Assert.AreEqual(1, results.Count, "Should be 1 result");
             Assert.AreEqual("IF", results[0].Result, "Selected result should be 'IF'");
         }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SetVariableIdentityExpression(Type runnerType)
+        {
+            var stmtList = new StatementList();
+            stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product"));
+            var identity = stmtList.DeclareSqlVariable<int>("myident");
+            stmtList.SetSqlVariable(identity, (ctx) => Function.LastInsertIdentity<int>(ctx));
+
+            var select = stmtList.Select(ctx => new { Identity = identity.Value });
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+
+            Assert.AreEqual(1, results.Count, "Should be 1 result");
+            Assert.AreEqual(3, results[0].Identity, "New identity should be 3");
+        }
     }
 }

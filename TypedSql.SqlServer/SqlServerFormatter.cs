@@ -154,7 +154,7 @@ namespace TypedSql.SqlServer
 
         public override void WriteLastIdentityExpression(StringBuilder writer)
         {
-            writer.Append("SELECT CAST(SCOPE_IDENTITY() AS INT)");
+            writer.Append("(SELECT CAST(SCOPE_IDENTITY() AS INT))");
         }
 
         public override void WriteIfNullExpression(SqlExpression testExpr, SqlExpression ifNullExpr, StringBuilder writer)

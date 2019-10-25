@@ -30,19 +30,11 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValuesSelectIdentity(Type runnerType)
         {
-            var stmtList = new StatementList();
-            stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product"));
-            var identity = stmtList.DeclareSqlVariable<int>("myident");
-            stmtList.SetSqlVariable(identity, (ctx) => Function.LastInsertIdentity(ctx));
-
-            var select = stmtList.Select(ctx => new { Identity = identity.Value });
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
-            var results = runner.ExecuteQuery(select).ToList();
 
-            Assert.AreEqual(1, results.Count, "Should be 1 result");
-            Assert.AreEqual(3, results[0].Identity, "New identity should be 3");
+            var identity = runner.Insert<Product, int>(DB.Products, insert => insert.Value(p => p.Name, "test insert product"));
+            Assert.AreEqual(3, identity, "New identity should be 3");
         }
 
         [Test]

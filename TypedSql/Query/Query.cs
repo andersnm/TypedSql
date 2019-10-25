@@ -15,14 +15,13 @@ namespace TypedSql {
         }
     }
 
-    public class SelectorContext<T>
+    public class SelectorContext<T> : SelectorContext
     {
-        internal readonly IQueryRunner Runner;
         internal readonly List<T> Items;
 
         public SelectorContext(IQueryRunner runner, List<T> items)
+            :base(runner)
         {
-            Runner = runner;
             Items = items;
         }
     }

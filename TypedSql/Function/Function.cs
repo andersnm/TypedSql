@@ -29,7 +29,7 @@ namespace TypedSql
             return sq.Contains(value);
         }
 
-        public static T LastInsertIdentity<T>(SelectorContext<T> context)
+        public static T LastInsertIdentity<T>(SelectorContext context)
         {
             return (T)((InMemoryQueryRunner)context.Runner).LastIdentity;
         }

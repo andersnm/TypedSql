@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 
@@ -52,6 +53,17 @@ namespace TypedSql
             var stmtList = new StatementList();
             stmtList.Insert(query, insertExpr);
             return runner.ExecuteNonQuery(stmtList);
+        }
+
+        /// <summary>
+        /// INSERT INTO (...) VALUES ( ...); SELECT LAST_IDENTITY()
+        /// </summary>
+        public static TIdentity Insert<T, TIdentity>(this IQueryRunner runner, FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr) where T : new()
+        {
+            var stmtList = new StatementList();
+            stmtList.Insert(query, insertExpr);
+            var select = stmtList.Select(ctx => Function.LastInsertIdentity<TIdentity>(ctx));
+            return runner.ExecuteQuery(select).FirstOrDefault();
         }
 
         /// <summary>
