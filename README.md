@@ -3,6 +3,7 @@
 **EXPERIMENTAL** Write database queries in C# and syntax as close to real SQL as possible.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/luv9d8m96u2nweqk?svg=true)](https://ci.appveyor.com/project/andersnm/typedsql)
+[![Code coverage](https://codecov.io/gh/andersnm/TypedSql/branch/master/graph/badge.svg)](https://codecov.io/gh/andersnm/TypedSql)
 
 ## About
 
