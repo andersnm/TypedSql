@@ -192,6 +192,38 @@ namespace TypedSql.Test
                 .Value(p => p.UnitId, unit2Id.Value)
                 .Value(p => p.Stock, 50));
 
+            var date1 = new DateTime(2000, 1, 1, 14, 00, 00);
+            var date2 = new DateTime(2000, 1, 1, 14, 00, 10);
+
+            // Insert some records to aggregate
+            stmtList.Insert(DB.TypeValues, insert => insert
+                .Value(t => t.ByteValue, (byte)1) // TODO: 
+                .Value(t => t.BoolValue, false)
+                .Value(t => t.DateTimeValue, date1)
+                .Value(t => t.DecimalValue, 1.0M)
+                .Value(t => t.DoubleValue, 1.0)
+                .Value(t => t.FloatValue, 1.0f)
+                .Value(t => t.IntValue, 1)
+                .Value(t => t.LongValue, (long)1)
+                .Value(t => t.ShortValue, (short)1)
+                .Value(t => t.StringValue, "1")
+                .Value(t => t.IntEnumValue, IntEnumType.TestValue1)
+            );
+
+            stmtList.Insert(DB.TypeValues, insert => insert
+                .Value(t => t.ByteValue, (byte)10) // TODO: 
+                .Value(t => t.BoolValue, false)
+                .Value(t => t.DateTimeValue, date2)
+                .Value(t => t.DecimalValue, 10.0M)
+                .Value(t => t.DoubleValue, 10.0)
+                .Value(t => t.FloatValue, 10.0f)
+                .Value(t => t.IntValue, 10)
+                .Value(t => t.LongValue, (long)10)
+                .Value(t => t.ShortValue, (short)10)
+                .Value(t => t.StringValue, "10")
+                .Value(t => t.IntEnumValue, IntEnumType.TestValue2)
+            );
+
             runner.ExecuteNonQuery(stmtList);
 
         }

@@ -63,21 +63,6 @@ namespace TypedSql.Test
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
-            // Insert a record to update
-            runner.Insert(DB.TypeValues, insert => insert
-                .Value(t => t.ByteValue, (byte)1) // TODO: 
-                .Value(t => t.BoolValue, false)
-                .Value(t => t.DateTimeValue, DateTime.Now)
-                .Value(t => t.DecimalValue, 0.0M)
-                .Value(t => t.DoubleValue, 0.0)
-                .Value(t => t.FloatValue, 0.0f)
-                .Value(t => t.IntValue, 0)
-                .Value(t => t.LongValue, (long)0)
-                .Value(t => t.ShortValue, (short)0)
-                .Value(t => t.StringValue, string.Empty)
-                .Value(t => t.IntEnumValue, IntEnumType.TestValue1)
-            );
-
             var updater = new InsertBuilder<TypeValue>()
                 .Value(p => p.StringValue, "Not tonight")
                 .Value(p => p.IntValue, 47);

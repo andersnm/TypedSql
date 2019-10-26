@@ -628,16 +628,26 @@ namespace TypedSql.Test
 
         void SelectAggregated<T>(Type runnerType, Expression<Func<SelectorContext<TypeValue>, TypeValue, Aggregated<T>>> func) where T : struct
         {
-            var stmtList = new StatementList();
-
-            var select = stmtList.Select(
-                DB.TypeValues.Project(func));
-
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
-            var results = runner.ExecuteQuery(select).ToList();
-            // Assert.AreEqual(1, results.Count, "Should be 1 result");
+            var date1 = new DateTime(2000, 1, 1, 14, 00, 00);
+            var date2 = new DateTime(2000, 1, 1, 14, 00, 10);
+
+            var results = runner.Select(DB.TypeValues.Project(func)).ToList();
+            Assert.AreEqual(1, results.Count, "Should be 1 result");
+            if (typeof(T) == typeof(DateTime))
+            {
+                Assert.AreEqual(date2, results[0].Max, "Max should be date2");
+                Assert.AreEqual(date1, results[0].Min, "Min should be date1");
+            }
+            else
+            {
+                Assert.AreEqual(10, results[0].Max, "Max should be 10");
+                Assert.AreEqual(1, results[0].Min, "Min should be 1");
+                Assert.AreEqual(11, results[0].Sum, "Sum should be 11");
+            }
+            Assert.AreEqual(2, results[0].Count, "Count should be 2");
         }
 
         [Test]
@@ -789,6 +799,9 @@ namespace TypedSql.Test
             ResetDb(runner);
 
             var results = runner.ExecuteQuery(select).ToList();
+            Assert.AreEqual("10", results[0].Max, "Max should be 10");
+            Assert.AreEqual("1", results[0].Min, "Min should be 1");
+            Assert.AreEqual(2, results[0].Count, "Count should be 2");
         }
 
         [Test]
