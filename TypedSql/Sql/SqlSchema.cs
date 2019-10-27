@@ -33,6 +33,7 @@ namespace TypedSql
     public class SqlIndex
     {
         public string Name { get; set; }
+        public bool Unique { get; set; }
         public List<string> Columns { get; set; }
     }
 

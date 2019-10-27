@@ -74,20 +74,6 @@ namespace TypedSql.InMemory
                 case ISetVariableStatement setStmt:
                     WriteSetSqlVariable(setStmt);
                     break;
-                case ICreateTableStatement createTableStatement:
-                    WriteCreateTableStatement(createTableStatement);
-                    break;
-                case IDropTableStatement dropTableStatement:
-                    WriteDropTableStatement(dropTableStatement);
-                    break;
-                case IIfStatement ifStatement:
-                    WriteIfStatement(ifStatement);
-                    break;
-                case IDropForeignKeyStatement dropForeignKey:
-                case IAddForeignKeyStatement addForeignKey:
-                case IAddIndexStatement addIndex:
-                case IDropIndexStatement dropIndex:
-                    break;
                 default:
                     throw new Exception("Unsupported statement " + stmt.GetType().Name);
             }
@@ -135,21 +121,5 @@ namespace TypedSql.InMemory
         {
             stmt.EvaluateInMemory(this);
         }
-
-        void WriteCreateTableStatement(ICreateTableStatement createTableStatement)
-        {
-            lastStatementResult = 1;
-        }
-
-        void WriteDropTableStatement(IDropTableStatement dropTableStatement)
-        {
-            lastStatementResult = 1;
-        }
-
-        void WriteIfStatement(IIfStatement ifStatement)
-        {
-            ifStatement.EvaluateInMemory(this);
-        }
-
     }
 }

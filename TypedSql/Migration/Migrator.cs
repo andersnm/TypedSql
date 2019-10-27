@@ -63,11 +63,12 @@ namespace TypedSql.Migration
 
         public void EnsureMigrationTable(SqlQueryRunner runner)
         {
-            var stmtList = new StatementList();
-            stmtList.Queries.Add(new CreateTableStatement(Context.Migrations));
+            var parser = new SqlSchemaParser();
+            var createTable = parser.ParseCreateTable(Context.Migrations);
+
             try
             {
-                runner.ExecuteNonQuery(stmtList);
+                runner.ExecuteNonQuery(new List<SqlStatement>() { createTable }, new List<KeyValuePair<string, object>>());
             }
             catch (Exception)
             {

@@ -175,10 +175,37 @@ namespace TypedSql
 
         void WriteAddIndex(string fromTableName, SqlIndex index, StringBuilder writer)
         {
+            writer.Append("CREATE ");
+            if (index.Unique)
+            {
+                writer.Append("UNIQUE ");
+            }
+            writer.Append("INDEX ");
+            WriteTableName(index.Name, writer); // ?? not a table, but want quotes
+            writer.Append(" ON ");
+            WriteTableName(fromTableName, writer);
+            writer.Append(" (");
+            for (var i = 0; i < index.Columns.Count; i++)
+            {
+                if (i > 0)
+                {
+                    writer.Append(", ");
+                }
+
+                var column = index.Columns[i];
+                WriteColumnName(column, writer);
+            }
+
+            writer.AppendLine(");");
         }
 
         void WriteDropIndex(string fromTableName, string indexName, StringBuilder writer)
         {
+            writer.Append("DROP INDEX ");
+            WriteTableName(indexName, writer); // ?? not a table, but want quotes
+            writer.Append(" ON ");
+            WriteTableName(fromTableName, writer);
+            writer.AppendLine(";");
         }
 
         public virtual void WriteExpression(SqlExpression node, StringBuilder writer)

@@ -98,24 +98,24 @@ namespace TypedSql.CliTool
 
         static List<SqlTable> ParseMetadata(DatabaseContext context)
         {
-            var parser = new SqlQueryParser(new SqlAliasProvider(), new Dictionary<string, SqlSubQueryResult>());
+            var parser = new SqlSchemaParser();
             var metadata = new List<SqlTable>();
             foreach (var fromQuery in context.FromQueries)
             {
-                var stmt = (SqlCreateTable)(new CreateTableStatement(fromQuery)).Parse(parser);
+                var stmt = parser.ParseCreateTable(fromQuery);
                 var columns = stmt.Columns;
 
                 var foreignKeys = new List<SqlForeignKey>();
                 foreach (var foreignKey in fromQuery.ForeignKeys)
                 {
-                    var foreignKeyStmt = (SqlAddForeignKey)new AddForeignKeyStatement(fromQuery, foreignKey).Parse(parser);
+                    var foreignKeyStmt = parser.ParseAddForeignKey(fromQuery, foreignKey);
                     foreignKeys.Add(foreignKeyStmt.ForeignKey);
                 }
 
                 var indices = new List<SqlIndex>();
                 foreach (var index in fromQuery.Indices)
                 {
-                    var indexStmt = (SqlAddIndex)new AddIndexStatement(fromQuery, index).Parse(parser);
+                    var indexStmt = parser.ParseAddIndex(fromQuery, index);
                     indices.Add(indexStmt.Index);
                 }
 
