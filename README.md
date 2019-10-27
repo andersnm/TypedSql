@@ -311,7 +311,36 @@ The context is a required parameter in many `Function.*` helper methods like `Su
 ### The InsertBuilder class
 
 The `InsertBuilder` class is used in insert and update statements to assign to SQL fields in a typed way.
-It has a single public method `Value()` which takes two parameters: a property selector expression and the value to assign the selected property.
+
+Use the `Value()` method to assign a value to field. The syntax is a bit unusual, f.ex the following assigns a constant string to the ProductName property of a table type:
+
+```c#
+builder.Value(p => p.ProductName, "New name")` 
+```
+
+Use the `Values()` method to copy fields and values to set from another InsertBuilder instance. F.ex to selectively update/insert specific fields:
+
+```c#
+var productId = /* ... */
+var productName = /* ... */
+
+var builder = new InsertBuilder<Product>();
+builder.Value(p => p.UpdateDate, DateTime.Now);
+
+// Only update if specified
+if (productName != null)
+{
+    builder.Value(p => p.ProductName, "New name")` 
+}
+
+runner.Update(
+    db.Products.Where(p => p.ProductId == productId),
+    (p, insert) => insert.Values(builder));
+```
+
+### The StatementList class
+
+The `StatementList` class defines a batch of SQL statements to send to the database server.
 
 ## Basic usage with SQL Server
 
@@ -438,9 +467,9 @@ TypedSql supports SQL functions and operators through a static `Function` class 
 
 ### Migration tool
 
-The migration tool requires .NET Core 3.0 SDK or newer, and is installed as a local tool in your database project directory.
+The migration tool requires .NET Core 3.0 SDK or newer, and is installed as a local tool in the database project directory.
 
-The migration tool does the following:
+The migration tool is a simple code generator and implements a single "add-migration" command which does the following:
 
 * Load the database project assembly
 * Scan for a class inheriting from DatabaseContext and existing migration classes
@@ -449,7 +478,13 @@ The migration tool does the following:
 There are limitations what kind of assemblies can be loaded dynamically by the tool. 
 The tool supports any .NET standard class library and most netcoreapp3.0 application assemblies. Only application assemblies referencing version 3.0 of the shared frameworks Microsoft.NETCore.App, Microsoft.AspNetCore.App and/or Microsoft.WindowsDesktop.App are supported.
 
-This means f.ex if you develop for ASP.NET Core 2.x and want to use TypedSql migrations, the DatabaseContext class should reside in a separate class library outside of the web project.
+This means f.ex when developing for ASP.NET Core 2.x and want to use TypedSql migrations, the DatabaseContext class should reside in a separate class library outside of the web project.
+
+Some times during development, users might want to unapply and remove a migration before generating a new migration with improvements. In these cases, please note the following:
+
+- The tool does not support to connect to a database and apply/unapply migrations. This is left to the user to implement.
+- The tool does not support to remove generated migration classes. Instead the user should delete the generated files.
+- Remember to build the database project after deleting a migration, before generating a new migration. Some times a full rebuild might be required for the build tools to detect deleted files.
 
 Install and use the tool in a shell from the database project directory:
 
@@ -460,8 +495,12 @@ dotnet new tool-manifest
 # Run this once to install the TypedSql CLI tool
 dotnet tool install TypedSql.CliTool
 
+# Run this later to update the TypedSql CLI tool
+dotnet tool update TypedSql.CliTool
+
 # Show available commands
 dotnet typedsql --help
+dotnet typedsql add-migration --help
 
 # Generate a new migration class named "Initial" in ./Migrations
 dotnet typedsql add-migration -a ./path/to/your/assembly.dll -n Initial
