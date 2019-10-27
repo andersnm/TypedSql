@@ -871,8 +871,11 @@ namespace TypedSql.Test
             orBuilder.OrElse(y => y.ProductId == 2);
             orBuilder.OrElse(z => z.ProductId == 3);
 
+            var andBuilder = new PredicateBuilder<Product>(x => Function.Like(x.Name, "%"));
+            andBuilder.AndAlso(orBuilder.GetPredicate());
+
             var select = stmtList.Select(
-                DB.Products.Where(orBuilder.GetPredicate()));
+                DB.Products.Where(andBuilder.GetPredicate()));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);

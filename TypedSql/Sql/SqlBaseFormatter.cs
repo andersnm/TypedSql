@@ -54,9 +54,6 @@ namespace TypedSql
                 case SqlDropTable dropTable:
                     WriteDropTable(dropTable.TableName, true, sb);
                     return;
-                case SqlIf ifStmt:
-                    WriteIf(ifStmt.Expression, ifStmt.Block, ifStmt.Block2, sb);
-                    return;
                 case SqlAddColumn addColumn:
                     WriteAddColumn(addColumn.TableName, addColumn.Column, sb);
                     return;
@@ -118,7 +115,7 @@ namespace TypedSql
         {
             writer.Append("ALTER TABLE ");
             WriteTableName(fromTableName, writer);
-            writer.Append(" ADD COLUMN ");
+            writer.Append(" ADD ");
             WriteCreateTableColumn(column, writer);
             writer.AppendLine(";");
         }
@@ -839,30 +836,6 @@ namespace TypedSql
                 WriteSelectQuery(subQueryFromSource.FromQuery, writer);
                 writer.Append(")");
             }
-        }
-
-        public void WriteIf(SqlExpression testExpression, List<SqlStatement> ifStatements, List<SqlStatement> elseStatements, StringBuilder writer)
-        {
-            writer.Append("IF ");
-            WriteExpression(testExpression, writer);
-            writer.AppendLine(" THEN");
-            foreach (var stmt in ifStatements)
-            {
-                WriteStatement(stmt, writer);
-            }
-
-            if (elseStatements != null && elseStatements.Count > 0)
-            {
-                writer.AppendLine("ELSE");
-
-                foreach (var stmt in elseStatements)
-                {
-                    WriteStatement(stmt, writer);
-                }
-            }
-
-            writer.AppendLine("END IF;");
-            // writer.AppendLine(";");
         }
     }
 }

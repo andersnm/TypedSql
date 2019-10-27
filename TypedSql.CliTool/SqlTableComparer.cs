@@ -65,13 +65,7 @@ namespace TypedSql.CliTool
                     statements.Add(new SqlAddForeignKey()
                     {
                         TableName = nextTable.TableName,
-                        ForeignKey = new SqlForeignKey()
-                        {
-                            Name = foreignKey.Name,
-                            Columns = foreignKey.Columns,
-                            ReferenceTableName = foreignKey.ReferenceTableName,
-                            ReferenceColumns = foreignKey.ReferenceColumns,
-                        }
+                        ForeignKey = foreignKey,
                     });
                 }
             }
@@ -114,12 +108,15 @@ namespace TypedSql.CliTool
                 {
                     if (CheckColumnChanged(previousColumn, nextColumn))
                     {
-                        statements.Add(new SqlModifyColumn()
+                        statements.Add(new SqlDropColumn()
                         {
                             TableName = nextTable.TableName,
-                            ColumnName = nextColumn.Name,
-                            Type = nextColumn.Type,
-                            SqlType = nextColumn.SqlType,
+                            ColumnName = previousColumn.Name,
+                        });
+                        statements.Add(new SqlAddColumn()
+                        {
+                            TableName = nextTable.TableName,
+                            Column = nextColumn,
                         });
                     }
                 }
@@ -206,12 +203,15 @@ namespace TypedSql.CliTool
                 {
                     if (CheckIndexChanged(previousIndex, nextIndex))
                     {
-                        // TODO: drop+add?
-                        statements.Add(new SqlModifyIndex()
+                        statements.Add(new SqlDropIndex()
                         {
                             TableName = nextTable.TableName,
-                            IndexName = nextIndex.Name,
-                            Columns = nextIndex.Columns,
+                            IndexName = previousIndex.Name,
+                        });
+                        statements.Add(new SqlAddIndex()
+                        {
+                            TableName = nextTable.TableName,
+                            Index = nextIndex,
                         });
                     }
                 }

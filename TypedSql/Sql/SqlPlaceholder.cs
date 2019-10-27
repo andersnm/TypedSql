@@ -27,18 +27,5 @@ namespace TypedSql
         }
 
         public T Value { get; set; }
-
-        public static implicit operator SqlPlaceholder<T>(T value)
-        {
-            return new SqlPlaceholder<T>()
-            {
-                Value = value
-            };
-        }
-
-        public static explicit operator T(SqlPlaceholder<T> value)
-        {
-            return value.Value;
-        }
     }
 }

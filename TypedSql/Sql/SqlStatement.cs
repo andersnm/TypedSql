@@ -65,13 +65,6 @@ namespace TypedSql
         public SqlExpression Expression { get; set; }
     }
 
-    public class SqlIf : SqlStatement
-    {
-        public SqlExpression Expression { get; set; }
-        public List<SqlStatement> Block { get; set; }
-        public List<SqlStatement> Block2 { get; set; }
-    }
-
     public class SqlAddForeignKey : SqlStatement
     {
         public string TableName { get; set; }
@@ -96,13 +89,6 @@ namespace TypedSql
         public string IndexName { get; set; }
     }
 
-    public class SqlModifyIndex : SqlStatement
-    {
-        public string TableName { get; set; }
-        public string IndexName { get; set; }
-        public List<string> Columns { get; set; }
-    }
-
     public class SqlAddColumn : SqlStatement
     {
         public string TableName { get; set; }
@@ -114,13 +100,4 @@ namespace TypedSql
         public string TableName { get; set; }
         public string ColumnName { get; set; }
     }
-
-    public class SqlModifyColumn : SqlStatement
-    {
-        public string TableName { get; set; }
-        public string ColumnName { get; set; }
-        public Type Type { get; set; }
-        public SqlTypeInfo SqlType { get; set; }
-    }
-
 }

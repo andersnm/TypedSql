@@ -31,6 +31,33 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        public void TestCreateDropColumn(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var sqlRunner = (SqlQueryRunner)runner;
+            var parser = new SqlSchemaParser();
+
+            var column = new Schema.Column()
+            {
+                SqlName = "COL_TEST",
+                BaseType = typeof(int),
+                Nullable = true,
+                OriginalType = typeof(int?),
+                SqlType = new Schema.SqlTypeInfo(),
+            };
+
+            var addColumn = parser.ParseAddColumn(DB.Units, column);
+            sqlRunner.ExecuteNonQuery(new List<SqlStatement>() { addColumn }, new List<KeyValuePair<string, object>>());
+
+            var dropColumn = parser.ParseDropColumn(DB.Units, column);
+            sqlRunner.ExecuteNonQuery(new List<SqlStatement>() { dropColumn }, new List<KeyValuePair<string, object>>());
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
         public void TestCreateDropForeignKey(Type runnerType)
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);

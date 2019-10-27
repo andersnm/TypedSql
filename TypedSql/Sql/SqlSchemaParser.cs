@@ -32,6 +32,32 @@ namespace TypedSql
             };
         }
 
+        public SqlAddColumn ParseAddColumn(IFromQuery table, Column column)
+        {
+            return new SqlAddColumn()
+            {
+                TableName = table.TableName,
+                Column = new SqlColumn()
+                {
+                    Name = column.SqlName,
+                    Nullable = column.Nullable,
+                    PrimaryKey = column.PrimaryKey,
+                    PrimaryKeyAutoIncrement = column.PrimaryKeyAutoIncrement,
+                    SqlType = column.SqlType,
+                    Type = column.BaseType,
+                },
+            };
+        }
+
+        public SqlDropColumn ParseDropColumn(IFromQuery table, Column column)
+        {
+            return new SqlDropColumn()
+            {
+                TableName = table.TableName,
+                ColumnName = column.SqlName,
+            };
+        }
+
         public SqlAddForeignKey ParseAddForeignKey(IFromQuery table, ForeignKey foreignKey)
         {
             var foreignQuery = table.Context.FromQueries.Where(q => q.TableType == foreignKey.ReferenceTableType).FirstOrDefault();
