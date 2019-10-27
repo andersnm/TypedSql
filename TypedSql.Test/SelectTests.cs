@@ -218,6 +218,61 @@ namespace TypedSql.Test
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectComplexObject(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.Select(ctx =>
+                new
+                {
+                    StringValue = "Test",
+                    ObjectValue = new
+                    {
+                        InnerString = "InnerString",
+                        InnerObject = new
+                        {
+                            InnestString = "InnestString",
+                            IsSuccess = true,
+                        },
+                        NullObject = new
+                        {
+                            Nullable1 = (int?)null,
+                            Nullable2 = (decimal?)null,
+                        },
+                        InnerInt = 4321,
+                        TestObject = new TestClass()
+                        {
+                            X = 123,
+                        },
+                    },
+                    IntValue = 1234,
+                }).ToList();
+
+            Assert.AreEqual(1, results.Count, "Should be 1 result");
+            Assert.AreEqual("Test", results[0].StringValue, "Should be Test");
+            Assert.AreEqual(1234, results[0].IntValue, "Should be 1234");
+            Assert.AreEqual("InnerString", results[0].ObjectValue.InnerString, "Should be InnerString");
+            Assert.AreEqual(4321, results[0].ObjectValue.InnerInt, "Should be 4321");
+
+            // TODO?? normalize behaviour
+            if (runner is InMemoryQueryRunner)
+            {
+                Assert.AreNotEqual(null, results[0].ObjectValue.NullObject, "Should be null from DBs, but non-null in-memory");
+            }
+            else
+            {
+                Assert.AreEqual(null, results[0].ObjectValue.NullObject, "Should be null from DBs, but non-null in-memory");
+            }
+            Assert.AreEqual("InnestString", results[0].ObjectValue.InnerObject.InnestString, "Should be InnestString");
+            Assert.AreEqual(true, results[0].ObjectValue.InnerObject.IsSuccess, "Should be true");
+            Assert.AreEqual(123, results[0].ObjectValue.TestObject.X, "Should be 123");
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectLeftJoinTable(Type runnerType)
         {
             var stmtList = new StatementList();

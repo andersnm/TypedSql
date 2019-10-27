@@ -169,16 +169,36 @@ namespace TypedSql
                     return null;
                 }
 
-                var obj = Activator.CreateInstance(propertyType);
-                usedOrdinals = 0;
-                foreach (var objectMember in tableExpression.TableResult.Members)
+                if (IsAnonymousType(propertyType))
                 {
-                    var memberValue = GetValue(reader, objectMember, ordinal, out var usedMemberOrdinals);
-                    objectMember.MemberInfo.SetValue(obj, memberValue);
-                    usedOrdinals += usedMemberOrdinals;
-                }
+                    var constructorArguments = new List<object>();
+                    usedOrdinals = 0;
+                    foreach (var objectMember in tableExpression.TableResult.Members)
+                    {
+                        var memberValue = GetValue(reader, objectMember, ordinal, out var usedMemberOrdinals);
+                        constructorArguments.Add(memberValue);
+                        usedOrdinals += usedMemberOrdinals;
+                        ordinal += usedMemberOrdinals;
+                    }
 
-                return obj;
+                    var obj = Activator.CreateInstance(propertyType, constructorArguments.ToArray());
+                    return obj;
+                }
+                else
+                {
+
+                    var obj = Activator.CreateInstance(propertyType);
+                    usedOrdinals = 0;
+                    foreach (var objectMember in tableExpression.TableResult.Members)
+                    {
+                        var memberValue = GetValue(reader, objectMember, ordinal, out var usedMemberOrdinals);
+                        objectMember.MemberInfo.SetValue(obj, memberValue);
+                        usedOrdinals += usedMemberOrdinals;
+                        ordinal += usedMemberOrdinals;
+                    }
+
+                    return obj;
+                }
             }
 
             var isNull = reader.IsDBNull(ordinal);

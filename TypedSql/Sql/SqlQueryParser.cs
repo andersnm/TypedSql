@@ -677,7 +677,54 @@ namespace TypedSql {
                     IfTrue = ParseExpression(condExpr.IfTrue, parameters),
                     IfFalse = ParseExpression(condExpr.IfFalse, parameters),
                 };
-                
+            }
+            else if (node is NewExpression newExpression)
+            {
+                var members = new List<SqlMember>();
+                for (var i = 0; i < newExpression.Arguments.Count; i++)
+                {
+                    var argumentExpression = newExpression.Arguments[i];
+                    var member = newExpression.Members[i];
+
+                    var exprResult = ParseExpression(argumentExpression, parameters);
+                    ParseSelectNewExpression(exprResult, member, members);
+                }
+
+                return new SqlTableExpression()
+                {
+                    TableResult = new SqlSubQueryResult()
+                    {
+                        Members = members,
+                    }
+                };
+            }
+            else if (node is MemberInitExpression initExpression)
+            {
+                var members = new List<SqlMember>();
+                for (var i = 0; i < initExpression.Bindings.Count; i++)
+                {
+                    var binding = initExpression.Bindings[i];
+                    var member = binding.Member;
+
+                    if (binding.BindingType == MemberBindingType.Assignment)
+                    {
+                        var assignment = (MemberAssignment)binding;
+                        var exprResult = ParseExpression(assignment.Expression, parameters);
+                        ParseSelectNewExpression(exprResult, member, members);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException(binding.BindingType.ToString());
+                    }
+                }
+
+                return new SqlTableExpression()
+                {
+                    TableResult = new SqlSubQueryResult()
+                    {
+                        Members = members,
+                    }
+                };
             }
             else
             {
@@ -828,71 +875,23 @@ namespace TypedSql {
 
         public List<SqlMember> ParseSelectExpression(LambdaExpression selectExpression, Dictionary<string, SqlSubQueryResult> parameters)
         {
-            var members = new List<SqlMember>();
-            if (selectExpression.Body.NodeType == ExpressionType.New)
+            var expr = ParseExpression(selectExpression.Body, parameters);
+            if (expr is SqlTableExpression tableExpression)
             {
-                var newExpression = selectExpression.Body as NewExpression;
-
-                for (var i = 0; i < newExpression.Arguments.Count; i++)
-                {
-                    var argumentExpression = newExpression.Arguments[i];
-                    var member = newExpression.Members[i];
-
-                    var exprResult = ParseExpression(argumentExpression, parameters);
-                    ParseSelectNewExpression(exprResult, member, members);
-                }
+                // Select all table members
+                return tableExpression.TableResult.Members;
             }
-            else if (selectExpression.Body.NodeType == ExpressionType.Parameter)
+            else if (expr is SqlTableFieldExpression fieldExpression)
             {
-                var paramExpr = selectExpression.Body as ParameterExpression;
-                var queryObject = parameters[paramExpr.Name];
-                return queryObject.Members;
-            }
-            else if (selectExpression.Body.NodeType == ExpressionType.MemberInit) {
-                var newExpression = selectExpression.Body as MemberInitExpression;
-
-                for (var i = 0; i < newExpression.Bindings.Count; i++)
+                // Select scalar field
+                return new List<SqlMember>()
                 {
-                    var binding = newExpression.Bindings[i];
-                    var member = binding.Member;
-
-                    if (binding.BindingType == MemberBindingType.Assignment)
-                    {
-                        var assignment = (MemberAssignment)binding;
-                        var exprResult = ParseExpression(assignment.Expression, parameters);
-                        ParseSelectNewExpression(exprResult, member, members);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException(binding.BindingType.ToString());
-                    }
-                }
-            }
-            else if (selectExpression.Body is MemberExpression memberExpression)
-            {
-                var memberRef = ParseParameterMemberExpression(memberExpression, parameters);
-                if (memberRef is SqlExpressionMember memberExprRef && memberExprRef.Expression is SqlTableExpression memberRefExprTable)
-                {
-                    // Select all members in a table
-                    return memberRefExprTable.TableResult.Members;
-                }
-                else if (memberRef is SqlTableFieldMember)
-                {
-                    // Select scalar
-                    return new List<SqlMember>()
-                    {
-                        memberRef,
-                    };
-                }
-                else
-                {
-                    throw new ArgumentException("Select Member Expression should refer to a table or scalar");
-                }
+                    fieldExpression.TableFieldRef,
+                };
             }
             else
             {
-                // Parse scalar expression result
-                var expr = ParseExpression(selectExpression.Body, parameters);
+                // Select scalar expression result
                 return new List<SqlMember>()
                 {
                     new SqlExpressionMember() {
@@ -903,8 +902,6 @@ namespace TypedSql {
                     }
                 };
             }
-
-            return members;
         }
 
         void ParseSelectNewExpression(SqlExpression exprResult, MemberInfo member, List<SqlMember> members)
