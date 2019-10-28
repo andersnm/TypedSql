@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using TypedSql.Migration;
 using TypedSql.Schema;
@@ -311,7 +312,7 @@ namespace TypedSql
                 }
                 else if (IsNumericType(castExpr.TargetType) && IsNumericType(castExpr.Operand.GetExpressionType()))
                 {
-                    // Unwrap numeric<->numeric casts
+                    // Unwrap numeric<->numeric and enum<->numeric casts
                     WriteExpression(castExpr.Operand, writer);
                 }
                 else
@@ -506,7 +507,8 @@ namespace TypedSql
                 || type == typeof(long)
                 || type == typeof(float)
                 || type == typeof(double)
-                || type == typeof(decimal);
+                || type == typeof(decimal)
+                || type.GetTypeInfo().IsEnum;
         }
 
         /// <summary>

@@ -672,6 +672,22 @@ namespace TypedSql.Test
             Assert.AreEqual(null, results[3].Unit, "Row 3: Unit == null");
         }
 
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectWhereEnum(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.Select(
+                DB.TypeValues.Where(t => t.IntEnumValue == IntEnumType.TestValue1)).ToList();
+
+            Assert.AreEqual(1, results.Count, "Should be 1 results");
+            Assert.AreEqual(IntEnumType.TestValue1, results[0].IntEnumValue, "Should be TestValue1");
+        }
+
         class Aggregated<T> where T : struct
         {
             public T? Sum { get; set; }
