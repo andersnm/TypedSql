@@ -6,10 +6,11 @@ using TypedSql.Schema;
 
 public partial class Initial : IMigration
 {
-    public void Up(SqlQueryRunner runner)
+    public string Name => "201910291042_Initial";
+
+    public List<SqlTable> Tables => new List<SqlTable>()
     {
-        var stmtList = new List<SqlStatement>();
-        stmtList.Add(new SqlCreateTable()
+        new SqlTable()
         {
             TableName = "Product",
             Columns = new List<SqlColumn>()
@@ -37,8 +38,14 @@ public partial class Initial : IMigration
                     },
                 },
             },
-        });
-        stmtList.Add(new SqlCreateTable()
+            ForeignKeys = new List<SqlForeignKey>()
+            {
+            },
+            Indices = new List<SqlIndex>()
+            {
+            },
+        },
+        new SqlTable()
         {
             TableName = "Unit",
             Columns = new List<SqlColumn>()
@@ -86,8 +93,27 @@ public partial class Initial : IMigration
                     },
                 },
             },
-        });
-        stmtList.Add(new SqlCreateTable()
+            ForeignKeys = new List<SqlForeignKey>()
+            {
+                new SqlForeignKey()
+                {
+                    Name = "fk_unit_product",
+                    ReferenceTableName = "Product",
+                    Columns = new List<String>()
+                    {
+                        "ProductId",
+                    },
+                    ReferenceColumns = new List<String>()
+                    {
+                        "ProductId",
+                    },
+                },
+            },
+            Indices = new List<SqlIndex>()
+            {
+            },
+        },
+        new SqlTable()
         {
             TableName = "inventory_db",
             Columns = new List<SqlColumn>()
@@ -125,8 +151,27 @@ public partial class Initial : IMigration
                     },
                 },
             },
-        });
-        stmtList.Add(new SqlCreateTable()
+            ForeignKeys = new List<SqlForeignKey>()
+            {
+                new SqlForeignKey()
+                {
+                    Name = "fk_inventory_unit",
+                    ReferenceTableName = "Unit",
+                    Columns = new List<String>()
+                    {
+                        "unit_id",
+                    },
+                    ReferenceColumns = new List<String>()
+                    {
+                        "UnitId",
+                    },
+                },
+            },
+            Indices = new List<SqlIndex>()
+            {
+            },
+        },
+        new SqlTable()
         {
             TableName = "TypeValue",
             Columns = new List<SqlColumn>()
@@ -223,6 +268,17 @@ public partial class Initial : IMigration
                 },
                 new SqlColumn()
                 {
+                    Name = "NullableDateTimeValue",
+                    Type = typeof(DateTime),
+                    Nullable = true,
+                    SqlType = new SqlTypeInfo()
+                    {
+                        DecimalPrecision = 13,
+                        DecimalScale = 5,
+                    },
+                },
+                new SqlColumn()
+                {
                     Name = "StringValue",
                     Type = typeof(String),
                     SqlType = new SqlTypeInfo()
@@ -252,8 +308,14 @@ public partial class Initial : IMigration
                     },
                 },
             },
-        });
-        stmtList.Add(new SqlCreateTable()
+            ForeignKeys = new List<SqlForeignKey>()
+            {
+            },
+            Indices = new List<SqlIndex>()
+            {
+            },
+        },
+        new SqlTable()
         {
             TableName = "AttributeValue",
             Columns = new List<SqlColumn>()
@@ -281,77 +343,12 @@ public partial class Initial : IMigration
                     },
                 },
             },
-        });
-        stmtList.Add(new SqlAddForeignKey()
-        {
-            TableName = "Unit",
-            ForeignKey = new SqlForeignKey()
+            ForeignKeys = new List<SqlForeignKey>()
             {
-                Name = "fk_unit_product",
-                ReferenceTableName = "Product",
-                Columns = new List<String>()
-                {
-                    "ProductId",
-                },
-                ReferenceColumns = new List<String>()
-                {
-                    "ProductId",
-                },
             },
-        });
-        stmtList.Add(new SqlAddForeignKey()
-        {
-            TableName = "inventory_db",
-            ForeignKey = new SqlForeignKey()
+            Indices = new List<SqlIndex>()
             {
-                Name = "fk_inventory_unit",
-                ReferenceTableName = "Unit",
-                Columns = new List<String>()
-                {
-                    "unit_id",
-                },
-                ReferenceColumns = new List<String>()
-                {
-                    "UnitId",
-                },
             },
-        });
-        runner.ExecuteNonQuery(stmtList, new List<KeyValuePair<string, object>>());
-    }
-
-    public void Down(SqlQueryRunner runner)
-    {
-        var stmtList = new List<SqlStatement>();
-        stmtList.Add(new SqlDropForeignKey()
-        {
-            TableName = "Unit",
-            ForeignKeyName = "fk_unit_product",
-        });
-        stmtList.Add(new SqlDropForeignKey()
-        {
-            TableName = "inventory_db",
-            ForeignKeyName = "fk_inventory_unit",
-        });
-        stmtList.Add(new SqlDropTable()
-        {
-            TableName = "Product",
-        });
-        stmtList.Add(new SqlDropTable()
-        {
-            TableName = "Unit",
-        });
-        stmtList.Add(new SqlDropTable()
-        {
-            TableName = "inventory_db",
-        });
-        stmtList.Add(new SqlDropTable()
-        {
-            TableName = "TypeValue",
-        });
-        stmtList.Add(new SqlDropTable()
-        {
-            TableName = "AttributeValue",
-        });
-        runner.ExecuteNonQuery(stmtList, new List<KeyValuePair<string, object>>());
-    }
+        },
+    };
 }

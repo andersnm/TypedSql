@@ -436,6 +436,19 @@ namespace TypedSql.Test
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectWhereAndOrPrecedence(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.Select(DB.TypeValues.Where(t => (t.IntEnumValue == IntEnumType.TestValue1 || t.IntEnumValue == IntEnumType.TestValue2) && t.NullableDateTimeValue != null && t.NullableDateTimeValue < DateTime.Now)).ToList();
+            Assert.AreEqual(1, results.Count, "Should be 1 results");
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereContains(Type runnerType)
         {
             var productIds = new[] { 1, 200, 300 };

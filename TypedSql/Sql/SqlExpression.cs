@@ -58,6 +58,21 @@ namespace TypedSql
 
         public override Type GetExpressionType()
         {
+            // Handle boolean expressions
+            switch (Op)
+            {
+                case ExpressionType.Equal:
+                case ExpressionType.NotEqual:
+                case ExpressionType.GreaterThan:
+                case ExpressionType.GreaterThanOrEqual:
+                case ExpressionType.LessThan:
+                case ExpressionType.LessThanOrEqual:
+                case ExpressionType.AndAlso:
+                case ExpressionType.OrElse:
+                    return typeof(bool);
+            }
+
+            // Assume any other operators require same type on both sides
             var leftType = Left.GetExpressionType();
             var rightType = Right.GetExpressionType();
 

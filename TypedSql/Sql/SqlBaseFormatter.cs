@@ -251,6 +251,7 @@ namespace TypedSql
                 }
                 else
                 {
+                    writer.Append("(");
                     WriteExpression(binary.Left, writer);
                     if (binary.Op == ExpressionType.Equal)
                     {
@@ -301,6 +302,7 @@ namespace TypedSql
                         throw new Exception("Unhandled binary operation " + binary.Op.ToString());
                     }
                     WriteExpression(binary.Right, writer);
+                    writer.Append(")");
                 }
             }
             else if (node is SqlCastExpression castExpr)

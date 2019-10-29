@@ -206,6 +206,7 @@ namespace TypedSql.Test
                 .Value(t => t.ByteValue, (byte)1) // TODO: 
                 .Value(t => t.BoolValue, false)
                 .Value(t => t.DateTimeValue, date1)
+                .Value(t => t.NullableDateTimeValue, null)
                 .Value(t => t.DecimalValue, 1.0M)
                 .Value(t => t.DoubleValue, 1.0)
                 .Value(t => t.FloatValue, 1.0f)
@@ -221,6 +222,7 @@ namespace TypedSql.Test
                 .Value(t => t.ByteValue, (byte)10) // TODO: 
                 .Value(t => t.BoolValue, false)
                 .Value(t => t.DateTimeValue, date2)
+                .Value(t => t.NullableDateTimeValue, date2)
                 .Value(t => t.DecimalValue, 10.0M)
                 .Value(t => t.DoubleValue, 10.0)
                 .Value(t => t.FloatValue, 10.0f)

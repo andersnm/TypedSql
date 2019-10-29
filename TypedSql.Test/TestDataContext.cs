@@ -61,6 +61,7 @@ namespace TypedSql.Test
         public decimal DecimalValue { get; set; }
         public double DoubleValue { get; set; }
         public DateTime DateTimeValue { get; set; }
+        public DateTime? NullableDateTimeValue { get; set; }
         public string StringValue { get; set; }
         public IntEnumType IntEnumValue { get; set; }
         public byte[] BlobValue { get; set; }
