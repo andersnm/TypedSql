@@ -63,6 +63,7 @@ namespace TypedSql.Test
         public DateTime DateTimeValue { get; set; }
         public string StringValue { get; set; }
         public IntEnumType IntEnumValue { get; set; }
+        public byte[] BlobValue { get; set; }
 
         // Not supported on SQL Server:
         // public sbyte SbyteValue { get; set; }

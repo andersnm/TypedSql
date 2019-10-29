@@ -761,8 +761,8 @@ namespace TypedSql {
 
         SqlExpression GetConstantExpression(object value, Type type)
         {
-            // var type = value.GetType();
-            if (value is IEnumerable enumerable && !(value is string))
+            // byte array = blob
+            if (!(value is byte[]) && value is IEnumerable enumerable && !(value is string))
             {
                 return new SqlConstantArrayExpression()
                 {

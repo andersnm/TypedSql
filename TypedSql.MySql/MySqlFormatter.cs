@@ -80,6 +80,10 @@ namespace TypedSql.MySql
             {
                 return "BIT";
             }
+            else if (type == typeof(byte[]))
+            {
+                return "MEDIUMBLOB";
+            }
             else
             {
                 throw new InvalidOperationException("FormatType unsupported type " + type.ToString());

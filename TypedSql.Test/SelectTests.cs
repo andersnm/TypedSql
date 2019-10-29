@@ -900,5 +900,23 @@ namespace TypedSql.Test
             Assert.AreEqual(1, results[0].ProductId);
             Assert.AreEqual(2, results[1].ProductId);
         }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectBlob(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.Select(DB.TypeValues).ToList();
+
+            Assert.IsNotNull(results[0].BlobValue);
+            Assert.AreEqual(200, results[0].BlobValue.Length, "Blob length should be 200");
+            for (var i = 0; i < results[0].BlobValue.Length; i++) {
+                Assert.AreEqual(i, results[0].BlobValue[i]);
+            }
+        }
     }
 }

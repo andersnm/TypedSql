@@ -108,6 +108,10 @@ namespace TypedSql.SqlServer
             {
                 return "BIT";
             }
+            else if (type == typeof(byte[]))
+            {
+                return "VARBINARY(MAX)";
+            }
             else
             {
                 throw new InvalidOperationException("FormatType unsupported type " + type.ToString());

@@ -6,7 +6,7 @@ using TypedSql.Schema;
 
 public partial class Initial : IMigration
 {
-    public string Name => "201910252239_Initial";
+    public string Name => "201910290826_Initial";
 
     public List<SqlTable> Tables => new List<SqlTable>()
     {
@@ -280,6 +280,16 @@ public partial class Initial : IMigration
                 {
                     Name = "IntEnumValue",
                     Type = typeof(Int32),
+                    SqlType = new SqlTypeInfo()
+                    {
+                        DecimalPrecision = 13,
+                        DecimalScale = 5,
+                    },
+                },
+                new SqlColumn()
+                {
+                    Name = "BlobValue",
+                    Type = typeof(Byte[]),
                     SqlType = new SqlTypeInfo()
                     {
                         DecimalPrecision = 13,

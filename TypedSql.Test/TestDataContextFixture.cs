@@ -195,6 +195,12 @@ namespace TypedSql.Test
             var date1 = new DateTime(2000, 1, 1, 14, 00, 00);
             var date2 = new DateTime(2000, 1, 1, 14, 00, 10);
 
+            var bytes = new byte[200];
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)i;
+            }
+
             // Insert some records to aggregate
             stmtList.Insert(DB.TypeValues, insert => insert
                 .Value(t => t.ByteValue, (byte)1) // TODO: 
@@ -208,6 +214,7 @@ namespace TypedSql.Test
                 .Value(t => t.ShortValue, (short)1)
                 .Value(t => t.StringValue, "1")
                 .Value(t => t.IntEnumValue, IntEnumType.TestValue1)
+                .Value(t => t.BlobValue, bytes)
             );
 
             stmtList.Insert(DB.TypeValues, insert => insert
@@ -222,6 +229,7 @@ namespace TypedSql.Test
                 .Value(t => t.ShortValue, (short)10)
                 .Value(t => t.StringValue, "10")
                 .Value(t => t.IntEnumValue, IntEnumType.TestValue2)
+                .Value(t => t.BlobValue, bytes)
             );
 
             runner.ExecuteNonQuery(stmtList);

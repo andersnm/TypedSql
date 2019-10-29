@@ -241,6 +241,16 @@ public partial class Initial : IMigration
                         DecimalScale = 5,
                     },
                 },
+                new SqlColumn()
+                {
+                    Name = "BlobValue",
+                    Type = typeof(Byte[]),
+                    SqlType = new SqlTypeInfo()
+                    {
+                        DecimalPrecision = 13,
+                        DecimalScale = 5,
+                    },
+                },
             },
         });
         stmtList.Add(new SqlCreateTable()
