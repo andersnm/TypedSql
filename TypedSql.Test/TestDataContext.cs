@@ -56,6 +56,7 @@ namespace TypedSql.Test
         public byte ByteValue { get; set; }
         public short ShortValue { get; set; }
         public int IntValue { get; set; }
+        public int? NullableIntValue { get; set; }
         public float FloatValue { get; set; }
         public long LongValue { get; set; }
         public decimal DecimalValue { get; set; }
@@ -63,6 +64,8 @@ namespace TypedSql.Test
         public DateTime DateTimeValue { get; set; }
         public DateTime? NullableDateTimeValue { get; set; }
         public string StringValue { get; set; }
+        [SqlNullable]
+        public string NullableStringValue { get; set; }
         public IntEnumType IntEnumValue { get; set; }
         public byte[] BlobValue { get; set; }
 

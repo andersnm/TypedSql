@@ -787,6 +787,22 @@ namespace TypedSql.Test
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectAggregateNullableInt(Type runnerType)
+        {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<int>()
+            {
+                Sum = Function.Sum(ctx, x => x.NullableIntValue),
+                Count = Function.Count(ctx, x => x.NullableIntValue),
+                Average = Function.Average(ctx, x => x.NullableIntValue),
+                Min = Function.Min(ctx, x => x.NullableIntValue),
+                Max = Function.Max(ctx, x => x.NullableIntValue),
+            });
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateLong(Type runnerType)
         {
             SelectAggregated(runnerType, (ctx, t) => new Aggregated<long>()

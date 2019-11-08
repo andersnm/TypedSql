@@ -6,11 +6,10 @@ using TypedSql.Schema;
 
 public partial class Initial : IMigration
 {
-    public string Name => "201910291042_Initial";
-
-    public List<SqlTable> Tables => new List<SqlTable>()
+    public void Up(SqlQueryRunner runner)
     {
-        new SqlTable()
+        var stmtList = new List<SqlStatement>();
+        stmtList.Add(new SqlCreateTable()
         {
             TableName = "Product",
             Columns = new List<SqlColumn>()
@@ -23,8 +22,6 @@ public partial class Initial : IMigration
                     PrimaryKeyAutoIncrement = true,
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -33,19 +30,11 @@ public partial class Initial : IMigration
                     Type = typeof(String),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
             },
-            ForeignKeys = new List<SqlForeignKey>()
-            {
-            },
-            Indices = new List<SqlIndex>()
-            {
-            },
-        },
-        new SqlTable()
+        });
+        stmtList.Add(new SqlCreateTable()
         {
             TableName = "Unit",
             Columns = new List<SqlColumn>()
@@ -58,8 +47,6 @@ public partial class Initial : IMigration
                     PrimaryKeyAutoIncrement = true,
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -68,8 +55,6 @@ public partial class Initial : IMigration
                     Type = typeof(Int32),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -78,8 +63,6 @@ public partial class Initial : IMigration
                     Type = typeof(String),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -88,32 +71,11 @@ public partial class Initial : IMigration
                     Type = typeof(Int32),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
             },
-            ForeignKeys = new List<SqlForeignKey>()
-            {
-                new SqlForeignKey()
-                {
-                    Name = "fk_unit_product",
-                    ReferenceTableName = "Product",
-                    Columns = new List<String>()
-                    {
-                        "ProductId",
-                    },
-                    ReferenceColumns = new List<String>()
-                    {
-                        "ProductId",
-                    },
-                },
-            },
-            Indices = new List<SqlIndex>()
-            {
-            },
-        },
-        new SqlTable()
+        });
+        stmtList.Add(new SqlCreateTable()
         {
             TableName = "inventory_db",
             Columns = new List<SqlColumn>()
@@ -126,8 +88,6 @@ public partial class Initial : IMigration
                     PrimaryKeyAutoIncrement = true,
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -136,8 +96,6 @@ public partial class Initial : IMigration
                     Type = typeof(Int32),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -146,32 +104,11 @@ public partial class Initial : IMigration
                     Type = typeof(Int32),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
             },
-            ForeignKeys = new List<SqlForeignKey>()
-            {
-                new SqlForeignKey()
-                {
-                    Name = "fk_inventory_unit",
-                    ReferenceTableName = "Unit",
-                    Columns = new List<String>()
-                    {
-                        "unit_id",
-                    },
-                    ReferenceColumns = new List<String>()
-                    {
-                        "UnitId",
-                    },
-                },
-            },
-            Indices = new List<SqlIndex>()
-            {
-            },
-        },
-        new SqlTable()
+        });
+        stmtList.Add(new SqlCreateTable()
         {
             TableName = "TypeValue",
             Columns = new List<SqlColumn>()
@@ -182,8 +119,6 @@ public partial class Initial : IMigration
                     Type = typeof(Boolean),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -192,8 +127,6 @@ public partial class Initial : IMigration
                     Type = typeof(Byte),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -202,8 +135,6 @@ public partial class Initial : IMigration
                     Type = typeof(Int16),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -212,8 +143,15 @@ public partial class Initial : IMigration
                     Type = typeof(Int32),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
+                    },
+                },
+                new SqlColumn()
+                {
+                    Name = "NullableIntValue",
+                    Type = typeof(Int32),
+                    Nullable = true,
+                    SqlType = new SqlTypeInfo()
+                    {
                     },
                 },
                 new SqlColumn()
@@ -222,8 +160,6 @@ public partial class Initial : IMigration
                     Type = typeof(Single),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -232,8 +168,6 @@ public partial class Initial : IMigration
                     Type = typeof(Int64),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -252,8 +186,6 @@ public partial class Initial : IMigration
                     Type = typeof(Double),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -262,8 +194,6 @@ public partial class Initial : IMigration
                     Type = typeof(DateTime),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -273,8 +203,6 @@ public partial class Initial : IMigration
                     Nullable = true,
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -283,8 +211,15 @@ public partial class Initial : IMigration
                     Type = typeof(String),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
+                    },
+                },
+                new SqlColumn()
+                {
+                    Name = "NullableStringValue",
+                    Type = typeof(String),
+                    Nullable = true,
+                    SqlType = new SqlTypeInfo()
+                    {
                     },
                 },
                 new SqlColumn()
@@ -293,8 +228,6 @@ public partial class Initial : IMigration
                     Type = typeof(Int32),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -303,19 +236,11 @@ public partial class Initial : IMigration
                     Type = typeof(Byte[]),
                     SqlType = new SqlTypeInfo()
                     {
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
             },
-            ForeignKeys = new List<SqlForeignKey>()
-            {
-            },
-            Indices = new List<SqlIndex>()
-            {
-            },
-        },
-        new SqlTable()
+        });
+        stmtList.Add(new SqlCreateTable()
         {
             TableName = "AttributeValue",
             Columns = new List<SqlColumn>()
@@ -328,8 +253,6 @@ public partial class Initial : IMigration
                     {
                         StringLength = 100,
                         StringNVarChar = true,
-                        DecimalPrecision = 13,
-                        DecimalScale = 5,
                     },
                 },
                 new SqlColumn()
@@ -343,12 +266,77 @@ public partial class Initial : IMigration
                     },
                 },
             },
-            ForeignKeys = new List<SqlForeignKey>()
+        });
+        stmtList.Add(new SqlAddForeignKey()
+        {
+            TableName = "Unit",
+            ForeignKey = new SqlForeignKey()
             {
+                Name = "fk_unit_product",
+                ReferenceTableName = "Product",
+                Columns = new List<String>()
+                {
+                    "ProductId",
+                },
+                ReferenceColumns = new List<String>()
+                {
+                    "ProductId",
+                },
             },
-            Indices = new List<SqlIndex>()
+        });
+        stmtList.Add(new SqlAddForeignKey()
+        {
+            TableName = "inventory_db",
+            ForeignKey = new SqlForeignKey()
             {
+                Name = "fk_inventory_unit",
+                ReferenceTableName = "Unit",
+                Columns = new List<String>()
+                {
+                    "unit_id",
+                },
+                ReferenceColumns = new List<String>()
+                {
+                    "UnitId",
+                },
             },
-        },
-    };
+        });
+        runner.ExecuteNonQuery(stmtList, new List<KeyValuePair<string, object>>());
+    }
+
+    public void Down(SqlQueryRunner runner)
+    {
+        var stmtList = new List<SqlStatement>();
+        stmtList.Add(new SqlDropForeignKey()
+        {
+            TableName = "Unit",
+            ForeignKeyName = "fk_unit_product",
+        });
+        stmtList.Add(new SqlDropForeignKey()
+        {
+            TableName = "inventory_db",
+            ForeignKeyName = "fk_inventory_unit",
+        });
+        stmtList.Add(new SqlDropTable()
+        {
+            TableName = "Product",
+        });
+        stmtList.Add(new SqlDropTable()
+        {
+            TableName = "Unit",
+        });
+        stmtList.Add(new SqlDropTable()
+        {
+            TableName = "inventory_db",
+        });
+        stmtList.Add(new SqlDropTable()
+        {
+            TableName = "TypeValue",
+        });
+        stmtList.Add(new SqlDropTable()
+        {
+            TableName = "AttributeValue",
+        });
+        runner.ExecuteNonQuery(stmtList, new List<KeyValuePair<string, object>>());
+    }
 }

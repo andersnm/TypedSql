@@ -143,6 +143,7 @@ namespace TypedSql {
                 var primaryKeyAttribute = property.GetCustomAttribute<PrimaryKeyAttribute>();
                 var stringAttribute = property.GetCustomAttribute<SqlStringAttribute>();
                 var decimalAttribute = property.GetCustomAttribute<SqlDecimalAttribute>();
+                var nullableAttribute = property.GetCustomAttribute<SqlNullableAttribute>();
 
                 var propertyTypeInfo = property.PropertyType.GetTypeInfo();
                 var nullable = (propertyTypeInfo.IsGenericType && propertyTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
@@ -151,6 +152,19 @@ namespace TypedSql {
                 if (baseTypeInfo.IsEnum)
                 {
                     baseType = baseTypeInfo.GetEnumUnderlyingType();
+                }
+
+                if (nullableAttribute != null)
+                {
+                    // Override if its a string, otherwise require consistency
+                    if (baseType == typeof(string))
+                    {
+                        nullable = true;
+                    }
+                    else if (!nullable)
+                    {
+                        throw new InvalidOperationException("Property with SqlNullable attribute must be nullable");
+                    }
                 }
 
                 string propertyName;
@@ -162,6 +176,22 @@ namespace TypedSql {
                 else
                 {
                     propertyName = property.Name;
+                }
+
+                var decimalPrecision = 0;
+                var decimalScale = 0;
+                if (baseType == typeof(decimal))
+                {
+                    if (decimalAttribute != null)
+                    {
+                        decimalPrecision = decimalAttribute.Precision;
+                        decimalScale = decimalAttribute.Scale;
+                    }
+                    else
+                    {
+                        decimalPrecision = 13;
+                        decimalScale = 5;
+                    }
                 }
 
                 Columns.Add(new Column()
@@ -178,8 +208,8 @@ namespace TypedSql {
                     {
                         StringLength = stringAttribute?.Length ?? 0,
                         StringNVarChar = stringAttribute?.NVarChar ?? false,
-                        DecimalPrecision = decimalAttribute?.Precision ?? 13,
-                        DecimalScale = decimalAttribute?.Scale ?? 5,
+                        DecimalPrecision = decimalPrecision,
+                        DecimalScale = decimalScale,
                     }
                 });
             }

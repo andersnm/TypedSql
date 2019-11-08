@@ -130,9 +130,11 @@ namespace TypedSql.Migration
             lastMigration.Down(runner);
             AppliedMigrations.Remove(appliedMigration);
 
-            var stmtList = new StatementList();
-            stmtList.Delete(Context.Migrations.Where(m => m.Name == appliedMigration.Name && m.Version == appliedMigration.Version));
-            runner.ExecuteNonQuery(stmtList);
+            var result = runner.Delete(Context.Migrations.Where(m => m.Name == appliedMigration.Name && m.Version == appliedMigration.Version));
+            if (result != 1)
+            {
+                throw new InvalidOperationException("Migrations out of sync");
+            }
         }
     }
 }
