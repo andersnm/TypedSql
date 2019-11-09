@@ -55,11 +55,14 @@ namespace TypedSql
 
             var inserts = parser.ParseInsertBuilder(FromQuery, InsertExpression, parameters);
 
+            var primaryKey = FromQuery.Columns.Where(c => c.PrimaryKeyAutoIncrement).FirstOrDefault();
+
             return new SqlInsertSelect()
             {
                 FromSource = parentQueryResult,
                 Inserts = inserts,
                 TableName = FromQuery.TableName,
+                AutoIncrementPrimaryKeyName = primaryKey?.SqlName,
             };
         }
     }

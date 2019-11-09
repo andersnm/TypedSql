@@ -5,7 +5,6 @@ namespace TypedSql
     public enum SqlPlaceholderType
     {
         None = 0,
-        RawSqlExpression,
         SessionVariableName,
     }
 

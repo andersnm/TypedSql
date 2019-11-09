@@ -146,10 +146,6 @@ namespace TypedSql.SqlServer
             {
                 writer.Append("@" + placeholder.RawSql);
             }
-            else if (placeholder.PlaceholderType == SqlPlaceholderType.RawSqlExpression)
-            {
-                writer.Append(placeholder.RawSql);
-            }
             else
             {
                 throw new InvalidOperationException("Unsupported placeholder " + placeholder.PlaceholderType);

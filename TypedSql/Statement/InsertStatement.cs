@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using TypedSql.InMemory;
@@ -37,10 +38,13 @@ namespace TypedSql
             var parameters = new Dictionary<string, SqlSubQueryResult>();
             var inserts = parser.ParseInsertBuilder(FromQuery, InsertExpression, parameters);
 
+            var primaryKey = FromQuery.Columns.Where(c => c.PrimaryKeyAutoIncrement).FirstOrDefault();
+
             return new SqlInsert()
             {
                 Inserts = inserts,
                 TableName = FromQuery.TableName,
+                AutoIncrementPrimaryKeyName = primaryKey?.SqlName,
             };
         }
     }

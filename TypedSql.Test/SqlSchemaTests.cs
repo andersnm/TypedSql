@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using TypedSql.MySql;
+using TypedSql.PostgreSql;
 using TypedSql.SqlServer;
 
 namespace TypedSql.Test
@@ -13,6 +14,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         public void TestDropAndCreateTable(Type runnerType)
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -31,6 +33,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         public void TestCreateDropColumn(Type runnerType)
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -58,6 +61,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         public void TestCreateDropForeignKey(Type runnerType)
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
@@ -85,6 +89,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         public void TestCreateDropIndex(Type runnerType)
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);

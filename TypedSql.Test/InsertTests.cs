@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using TypedSql.InMemory;
 using TypedSql.MySql;
 using TypedSql.SqlServer;
-using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
+using TypedSql.PostgreSql;
 
 namespace TypedSql.Test
 {
@@ -14,6 +14,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValues(Type runnerType)
         {
@@ -27,6 +28,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValuesSelectIdentity(Type runnerType)
         {
@@ -40,6 +42,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValuesSelect(Type runnerType)
         {
@@ -49,6 +52,24 @@ namespace TypedSql.Test
             var results = runner.Insert(DB.Products, DB.Units, (x, insert) => insert.Value(p => p.Name, "Product from " + x.Name));
 
             Assert.AreEqual(3, results, "Should be 3 results");
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void InsertValuesSelectNoResults(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.Insert(
+                DB.Products, 
+                DB.Units.Where(u => u.UnitId < 0),
+                (x, insert) => insert.Value(p => p.Name, "Product from " + x.Name));
+
+            Assert.AreEqual(0, results, "Should be 0 results");
         }
     }
 }

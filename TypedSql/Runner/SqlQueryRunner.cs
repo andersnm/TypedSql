@@ -7,7 +7,7 @@ namespace TypedSql
 {
     public abstract class SqlQueryRunner : IQueryRunner
     {
-        private SqlBaseFormatter Formatter { get; }
+        protected SqlBaseFormatter Formatter { get; }
         protected List<SqlMember> LastSelectMembers { get; set; }
 
         public SqlQueryRunner(SqlBaseFormatter formatter)
@@ -50,9 +50,10 @@ namespace TypedSql
         public string GetSql(List<SqlStatement> stmts)
         {
             var sb = new StringBuilder();
-            foreach (var stmt in stmts)
+            for (var i = 0; i < stmts.Count; i++)
             {
-                Formatter.WriteStatement(stmt, sb);
+                var stmt = stmts[i];
+                Formatter.WriteStatement(stmt, i == stmts.Count - 1, sb);
                 if (stmt is SqlSelect select)
                 {
                     LastSelectMembers = select.FromSource.SelectResult.Members;

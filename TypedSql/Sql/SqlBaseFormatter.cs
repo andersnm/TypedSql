@@ -23,15 +23,15 @@ namespace TypedSql
         public abstract void WriteLastIdentityExpression(StringBuilder writer);
         public abstract void WriteIfNullExpression(SqlExpression testExpr, SqlExpression ifNullExpr, StringBuilder writer);
 
-        public void WriteStatement(SqlStatement stmt, StringBuilder sb)
+        public void WriteStatement(SqlStatement stmt, bool isLastStatement, StringBuilder sb)
         {
             switch (stmt)
             {
                 case SqlInsert insert:
-                    WriteInsertBuilderQuery(insert.Inserts, insert.TableName, sb);
+                    WriteInsertQuery(insert.Inserts, insert.TableName, insert.AutoIncrementPrimaryKeyName, isLastStatement, sb);
                     return;
                 case SqlInsertSelect insertSelect:
-                    WriteInsertBuilderQuery(insertSelect.FromSource, insertSelect.Inserts, insertSelect.TableName, sb);
+                    WriteInsertQuery(insertSelect.FromSource, insertSelect.Inserts, insertSelect.TableName, insertSelect.AutoIncrementPrimaryKeyName, isLastStatement, sb);
                     return;
                 case SqlSelect select:
                     WriteSelectQuery(select.FromSource, sb);
@@ -139,32 +139,33 @@ namespace TypedSql
 
         protected virtual void WriteAddForeignKeyReference(string fromTableName, SqlForeignKey foreignKey, StringBuilder writer)
         {
-            /*var foreignQuery = context.FromQueries.Where(q => q.TableType == foreignKey.ReferenceTableType).FirstOrDefault();
-            if (foreignQuery == null)
-            {
-                throw new InvalidOperationException("Foreign key referenced an invalid table type: " + foreignKey.ReferenceTableType.Name);
-            }
+            writer.Append("ALTER TABLE ");
+            WriteTableName(fromTableName, writer);
+            writer.Append(" ADD CONSTRAINT ");
+            WriteColumnName(foreignKey.Name, writer); // NOTE: not a column name
+            writer.Append(" FOREIGN KEY (");
 
-            var fromQuery = context.FromQueries.Where(f => f.TableName == fromTableName).First();
-            if (fromQuery == null)
-            {
-                throw new InvalidOperationException("Foreign key invalid table type: " + fromTableName);
-            }
-            */
-            writer.Append("ALTER TABLE " + fromTableName + " ADD CONSTRAINT " + foreignKey.Name + " FOREIGN KEY (");
-
-            // var columns = GetFieldNamesFromMemberNames(fromQuery, foreignKey.Columns);
-
-            writer.Append(string.Join(", ", foreignKey.Columns));
+            WriteColumnNames(foreignKey.Columns, writer);
             writer.Append(") REFERENCES ");
 
             WriteTableName(foreignKey.ReferenceTableName, writer);
             writer.Append(" (");
 
-            // var referenceColumns = GetFieldNamesFromMemberNames(foreignQuery, foreignKey.ReferenceColumns);
-
-            writer.Append(string.Join(", ", foreignKey.ReferenceColumns));
+            WriteColumnNames(foreignKey.ReferenceColumns, writer);
             writer.Append(") ");
+        }
+
+        protected void WriteColumnNames(List<string> columnNames, StringBuilder writer)
+        {
+            for (var i = 0; i < columnNames.Count; i++)
+            {
+                if (i > 0)
+                {
+                    writer.Append(", ");
+                }
+
+                WriteColumnName(columnNames[i], writer);
+            }
         }
 
         protected abstract void WriteAddForeignKeyOn(StringBuilder writer);
@@ -179,25 +180,15 @@ namespace TypedSql
                 writer.Append("UNIQUE ");
             }
             writer.Append("INDEX ");
-            WriteTableName(index.Name, writer); // ?? not a table, but want quotes
+            WriteTableName(index.Name, writer); // NOTE: not a column name
             writer.Append(" ON ");
             WriteTableName(fromTableName, writer);
             writer.Append(" (");
-            for (var i = 0; i < index.Columns.Count; i++)
-            {
-                if (i > 0)
-                {
-                    writer.Append(", ");
-                }
-
-                var column = index.Columns[i];
-                WriteColumnName(column, writer);
-            }
-
+            WriteColumnNames(index.Columns, writer);
             writer.AppendLine(");");
         }
 
-        void WriteDropIndex(string fromTableName, string indexName, StringBuilder writer)
+        protected virtual void WriteDropIndex(string fromTableName, string indexName, StringBuilder writer)
         {
             writer.Append("DROP INDEX ");
             WriteTableName(indexName, writer); // ?? not a table, but want quotes
@@ -643,7 +634,14 @@ namespace TypedSql
             // writer.AppendLine(";");
         }
 
-        public virtual void WriteInsertBuilderQuery(List<InsertInfo> inserts, string fromTableName, StringBuilder writer)
+        public virtual void WriteInsertQuery(List<InsertInfo> inserts, string fromTableName, string autoIncrementPrimaryKeyName, bool isLastStatement, StringBuilder writer)
+        {
+            // autoIncrementPrimaryKeyName, isLastStatement are unused here, but used by the PostgreSQL override
+            WriteInsertBuilderQuery(inserts, fromTableName, writer);
+            writer.AppendLine(";");
+        }
+
+        protected virtual void WriteInsertBuilderQuery(List<InsertInfo> inserts, string fromTableName, StringBuilder writer)
         {
             WriteInsertBuilderPrefix(inserts, fromTableName, writer);
             writer.Append("VALUES (");
@@ -660,10 +658,17 @@ namespace TypedSql
                 WriteExpression(insert.Expression, writer);
             }
 
-            writer.AppendLine(");");
+            writer.Append(")");
         }
 
-        public virtual void WriteInsertBuilderQuery(SqlQuery parentQueryResult, List<InsertInfo> inserts, string fromTableName, StringBuilder writer)
+        public virtual void WriteInsertQuery(SqlQuery parentQueryResult, List<InsertInfo> inserts, string fromTableName, string autoIncrementPrimaryKeyName, bool isLastStatement, StringBuilder writer)
+        {
+            // autoIncrementPrimaryKeyName, isLastStatement are unused here, but used by the PostgreSQL override
+            WriteInsertBuilderQuery(parentQueryResult, inserts, fromTableName, writer);
+            writer.AppendLine(";");
+        }
+
+        protected virtual void WriteInsertBuilderQuery(SqlQuery parentQueryResult, List<InsertInfo> inserts, string fromTableName, StringBuilder writer)
         {
             WriteInsertBuilderPrefix(inserts, fromTableName, writer);
             writer.Append("SELECT ");
@@ -681,7 +686,6 @@ namespace TypedSql
             }
 
             WriteFromQuery(parentQueryResult, writer);
-            writer.AppendLine(";");
         }
 
         protected virtual void WriteInsertBuilderPrefix(List<InsertInfo> inserts, string fromTableName, StringBuilder writer)

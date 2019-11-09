@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using TypedSql.InMemory;
 using TypedSql.MySql;
 using TypedSql.SqlServer;
+using TypedSql.PostgreSql;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
 
@@ -15,6 +16,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConstants(Type runnerType)
         {
@@ -51,6 +53,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConstantsIntoClass(Type runnerType)
         {
@@ -68,6 +71,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectTableIntoClass(Type runnerType)
         {
@@ -92,6 +96,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectTable(Type runnerType)
         {
@@ -118,6 +123,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectScalar(Type runnerType)
         {
@@ -144,6 +150,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectRenamedTableWithRenamedField(Type runnerType)
         {
@@ -164,6 +171,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinTable(Type runnerType)
         {
@@ -190,6 +198,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinTableObject(Type runnerType)
         {
@@ -217,6 +226,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectComplexObject(Type runnerType)
         {
@@ -272,6 +282,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectLeftJoinTable(Type runnerType)
         {
@@ -312,6 +323,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectNullProp(Type runnerType)
         {
@@ -343,6 +355,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinSubquery(Type runnerType)
         {
@@ -370,6 +383,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectJoinSubqueryNames(Type runnerType)
         {
@@ -396,6 +410,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectCountSubquery(Type runnerType)
         {
@@ -416,6 +431,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         // [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereNull(Type runnerType)
         {
@@ -435,6 +451,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereAndOrPrecedence(Type runnerType)
         {
@@ -448,6 +465,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereContains(Type runnerType)
         {
@@ -468,6 +486,7 @@ namespace TypedSql.Test
         [Test, Ignore("TODO: Function.Contains with inline arrays")]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereContainsInline(Type runnerType)
         {
@@ -484,6 +503,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectConcatExpression(Type runnerType)
         {
@@ -505,6 +525,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectPlaceholder(Type runnerType)
         {
@@ -529,6 +550,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWherePlaceholder(Type runnerType)
         {
@@ -553,6 +575,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectOrderByDesc(Type runnerType)
         {
@@ -571,6 +594,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectOrderByAsc(Type runnerType)
         {
@@ -589,6 +613,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectGroupByCount(Type runnerType)
         {
@@ -600,6 +625,7 @@ namespace TypedSql.Test
                         DB.Units,
                         (qctx, q, wctx, w) => q.ProductId == w.ProductId,
                         (qctx, q, wctx, w) => new { Product = q, Unit = w })
+                    .OrderBy(true, p => p.Product.ProductId)
                     .GroupBy(
                         u => new { u.Product.ProductId }, 
                         (ctx, ur) => new {
@@ -622,6 +648,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectGroupBySum(Type runnerType)
         {
@@ -633,6 +660,7 @@ namespace TypedSql.Test
                         DB.Units,
                         (qctx, q, wctx, w) => q.ProductId == w.ProductId,
                         (qctx, q, wctx, w) => new { Product = q, Unit = w })
+                    .OrderBy(true, p => p.Product.ProductId)
                     .GroupBy(
                         u => new { u.Product.ProductId },
                         (ctx, ur) => new {
@@ -655,6 +683,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectComplexResult(Type runnerType)
         {
@@ -688,6 +717,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectWhereEnum(Type runnerType)
         {
@@ -737,6 +767,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateByte(Type runnerType)
         {
@@ -754,6 +785,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateShort(Type runnerType)
         {
@@ -770,6 +802,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateInt(Type runnerType)
         {
@@ -786,6 +819,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateNullableInt(Type runnerType)
         {
@@ -802,6 +836,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateLong(Type runnerType)
         {
@@ -818,6 +853,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateDecimal(Type runnerType)
         {
@@ -834,6 +870,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateFloat(Type runnerType)
         {
@@ -850,6 +887,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateDouble(Type runnerType)
         {
@@ -865,6 +903,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateDateTime(Type runnerType)
         {
@@ -882,6 +921,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateString(Type runnerType)
         {
@@ -907,6 +947,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectPredicate(Type runnerType)
         {
@@ -933,6 +974,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectBlob(Type runnerType)
         {

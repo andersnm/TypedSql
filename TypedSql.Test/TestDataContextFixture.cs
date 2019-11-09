@@ -3,10 +3,12 @@ using System.Data.SqlClient;
 using TypedSql.InMemory;
 using TypedSql.MySql;
 using TypedSql.SqlServer;
+using TypedSql.PostgreSql;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
+using Npgsql;
 
 namespace TypedSql.Test
 {
@@ -51,6 +53,15 @@ namespace TypedSql.Test
                 mscsb.Password = ConfigurationBinder.GetValue<string>(config, "SqlServer:Password");
             }
 
+            var pgcsb = new NpgsqlConnectionStringBuilder()
+            {
+                Host = ConfigurationBinder.GetValue<string>(config, "PostgreSql:Host"),
+                Port = ConfigurationBinder.GetValue<int>(config, "PostgreSql:Port"),
+                Username = ConfigurationBinder.GetValue<string>(config, "PostgreSql:Username"),
+                Password = ConfigurationBinder.GetValue<string>(config, "PostgreSql:Password"),
+                Database = ConfigurationBinder.GetValue<string>(config, "PostgreSql:Database"),
+            };
+
             var services = new ServiceCollection();
 
             services.AddScoped(provider =>
@@ -82,6 +93,17 @@ namespace TypedSql.Test
                 return new SqlServerQueryRunner(provider.GetRequiredService<SqlConnection>());
             });
 
+            services.AddScoped(provider =>
+            {
+                var connection = new NpgsqlConnection(pgcsb.ConnectionString);
+                connection.Open();
+                return connection;
+            });
+
+            services.AddScoped(provider =>
+            {
+                return new PostgreSqlQueryRunner(provider.GetRequiredService<NpgsqlConnection>());
+            });
 
             RootProvider = services.BuildServiceProvider();
         }

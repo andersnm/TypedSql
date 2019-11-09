@@ -28,6 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TypedSql.MySql\TypedSql.MySql.csproj" />
     <ProjectReference Include="..\TypedSql.SqlServer\TypedSql.SqlServer.csproj" />
+    <ProjectReference Include="..\TypedSql.PostgreSql\TypedSql.PostgreSql.csproj" />
     <ProjectReference Include="..\TypedSql\TypedSql.csproj" />
   </ItemGroup>
 </Project>

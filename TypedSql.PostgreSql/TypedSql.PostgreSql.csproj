@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>0.1.3</Version>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageTags>sql;database;pgsql;postgresql;orm;micro-orm</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>PostgreSQL support for TypedSql</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="4.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TypedSql\TypedSql.csproj" />
+  </ItemGroup>
+
+</Project>

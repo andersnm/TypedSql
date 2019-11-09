@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using TypedSql.InMemory;
 using TypedSql.MySql;
 using TypedSql.SqlServer;
-using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-using System.Linq;
+using TypedSql.PostgreSql;
 
 namespace TypedSql.Test
 {
@@ -14,6 +15,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void UpdateFromConstants(Type runnerType)
         {
@@ -29,6 +31,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void UpdateWithJoin(Type runnerType)
         {
@@ -57,6 +60,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void UpdateDynamically(Type runnerType)
         {

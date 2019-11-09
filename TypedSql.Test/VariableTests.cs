@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using TypedSql.InMemory;
 using TypedSql.MySql;
 using TypedSql.SqlServer;
-using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
+using TypedSql.PostgreSql;
 
 namespace TypedSql.Test
 {
@@ -15,6 +15,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SetVariableTypes(Type runnerType)
         {
@@ -52,6 +53,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SetVariableFromSelect(Type runnerType)
         {
@@ -72,6 +74,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SetVariableIdentityExpression(Type runnerType)
         {

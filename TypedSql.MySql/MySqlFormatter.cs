@@ -138,10 +138,6 @@ namespace TypedSql.MySql
             {
                 writer.Append("@" + placeholder.RawSql);
             }
-            else if (placeholder.PlaceholderType == SqlPlaceholderType.RawSqlExpression)
-            {
-                writer.Append(placeholder.RawSql);
-            }
             else
             {
                 throw new InvalidOperationException("Unsupported placeholder " + placeholder.PlaceholderType);
@@ -233,7 +229,11 @@ namespace TypedSql.MySql
 
         protected override void WriteDropForeignKey(string fromTableName, string foreignKeyName, StringBuilder writer)
         {
-            writer.AppendLine("ALTER TABLE " + fromTableName + " DROP FOREIGN KEY " + foreignKeyName + ";");
+            writer.Append("ALTER TABLE ");
+            WriteTableName(fromTableName, writer);
+            writer.Append(" DROP FOREIGN KEY ");
+            WriteColumnName(foreignKeyName, writer); // NOTE: not a column name
+            writer.AppendLine(";");
             /*
             writer.AppendLine("SELECT COUNT(*) INTO @FOREIGN_KEY_my_foreign_key_ON_TABLE_my_table_EXISTS");
             writer.AppendLine("FROM `information_schema`.`table_constraints`");

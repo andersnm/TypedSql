@@ -770,24 +770,18 @@ namespace TypedSql {
                 };
             }
 
-            if (value is bool b)
-            {
-                return new SqlPlaceholderExpression()
-                {
-                    Placeholder = new SqlPlaceholder<bool>() {
-                        RawSql = b ? "1" : "0",
-                        PlaceholderType = SqlPlaceholderType.RawSqlExpression,
-                        Value = b,
-                    },
-                };
-            }
-
             if (value == null)
             {
                 return new SqlConstantExpression()
                 {
                     ConstantType = type
                 };
+            }
+
+            if (type.GetTypeInfo().IsEnum)
+            {
+                // Avoid Npgsqls enum handling by casting enums to int
+                value = Convert.ChangeType(value, typeof(int));
             }
 
             var key = RegisterConstant(value);

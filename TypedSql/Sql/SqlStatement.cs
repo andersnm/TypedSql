@@ -44,12 +44,14 @@ namespace TypedSql
     public class SqlInsert : SqlStatement
     {
         public string TableName { get; set; }
+        public string AutoIncrementPrimaryKeyName { get; set; }
         public List<InsertInfo> Inserts { get; set; }
     }
 
     public class SqlInsertSelect : SqlStatement
     {
         public string TableName { get; set; }
+        public string AutoIncrementPrimaryKeyName { get; set; }
         public List<InsertInfo> Inserts { get; set; }
         public SqlQuery FromSource { get; set; }
     }

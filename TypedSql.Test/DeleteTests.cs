@@ -1,9 +1,10 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
 using TypedSql.InMemory;
 using TypedSql.MySql;
 using TypedSql.SqlServer;
-using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
+using TypedSql.PostgreSql;
 
 namespace TypedSql.Test
 {
@@ -13,6 +14,7 @@ namespace TypedSql.Test
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
         public void DeleteOne(Type runnerType)
         {
