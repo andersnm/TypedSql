@@ -33,7 +33,7 @@ namespace TypedSql.PostgreSql
             {
                 // NOTE: Returns type of larger size!
                 // throw new InvalidOperationException("Unsigned byte is not supported in PostgreSQL");
-                return "INT";
+                return "SMALLINT";
             }
             else if (type == typeof(short))
             {

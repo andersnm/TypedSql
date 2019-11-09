@@ -27,7 +27,7 @@ TypedSql is inspired by and somewhat similar to Entity Framework and Linq2Sql, b
 - Scalar SQL functions YEAR(), MONTH(), DAY(), HOUR(), MINUTE(), SECOND(), LAST_INSERT_ID()
 - Batch multiple SQL statements
 - Composable SQL subqueries
-- Implementations for SQL Server, MySQL and in-memory
+- Implementations for SQL Server, MySQL, PostgreSQL and in-memory
 - Migrations
 
 ## Getting the binaries
@@ -76,7 +76,6 @@ public class TestDataContext : DatabaseContext
 Query in C#:
 
 ```c#
-
 var runner = new InMemoryQueryRunner();
 var db = new TestDataContext();
 var stmtList = new StatementList();
@@ -85,7 +84,6 @@ var query = stmtList.Select(db.Products.Where(p => p.ProductId == 1));
 foreach (var row in runner.ExecuteQuery(query)) {
     Console.WriteLine("{0}: {1}", row.ProductId, row.Name);
 }
-
 ```
 
 Translated to SQL:
@@ -94,6 +92,12 @@ Translated to SQL:
 SELECT a.ProductId, a.ProductName
 FROM Product a
 WHERE a.ProductId = 1
+```
+
+There are also extension methods `Select()`, `Update()`, `Insert()` and `Delete()` on the `IQueryRunner` interface for one-shot queries:
+
+```c#
+var rows = runner.Select(db.Products.Where(p => p.ProductId == 1)).ToList();
 ```
 
 ### SELECT ... INNER JOIN [table]
@@ -161,7 +165,7 @@ The joined side in a LEFT JOIN can be null, so field accesses in the query code 
 The SQL generator recognizes null-checking shorthand patterns for nullables, and generates SQL without any actual null checks, since this is handled transparently in the SQL language:
 
 ```c#
-var query = DataStatementList.Select(
+var query = stmtList.Select(
     db.Products
         .Where(p => p.ProductId == 1)
         .LeftJoin(
@@ -188,7 +192,7 @@ WHERE a.ProductId = 1
 ### SELECT ... GROUP BY
 
 ```c#
-var query = DataStatementList.Select(
+var query = stmtList.Select(
     db.Units
         .Where(p => p.ProductId == 1)
         .GroupBy(
@@ -367,7 +371,21 @@ using TypedSql;
 using TypedSql.MySql;
 // ...
 var connection = new MySqlConnection(connectionString);
-var runner = new MySqlServerQueryRunner(connection);
+var runner = new MySqlQueryRunner(connection);
+// ...
+runner.ExecuteNonQuery(stmtList);
+```
+
+## Basic usage with PostgreSQL
+
+Add a dependency on the `TypedSql.PostgreSql` package.
+
+```c#
+using TypedSql;
+using TypedSql.PostgreSql;
+// ...
+var connection = new NpgsqlConnection(connectionString);
+var runner = new PostgreSqlQueryRunner(connection);
 // ...
 runner.ExecuteNonQuery(stmtList);
 ```
@@ -408,21 +426,22 @@ services.AddSingleton<TestDataContext>();
 
 ## Default SQL types
 
-|.NET Type|SQL Type|
-|-|-|
-|`bool`|`BIT`|
-|`byte`|`TINYINT` in SQL Server<br>`TINYINT UNSIGNED` in MySQL|
-|`sbyte`|Throws in SQL Server<br>`TINYINT` in MySQL|
-|`short`|`SMALLINT`|
-|`ushort`|Throws in SQL Server<br>`SMALLINT UNSIGNED` in MySQL|
-|`int`|`INT`|
-|`uint`|Throws in SQL Server<br>`INT UNSIGNED` in MySQL|
-|`long`|`BIGINT`|
-|`decimal`|`DECIMAL(13, 5)`|
-|`float`|`REAL`|
-|`double`|`REAL`|
-|`string`|`NVARCHAR(MAX)` in SQL Server<br>`VARCHAR(1024)` in MySQL|
-|`DateTime`|`DATETIME2` in SQL Server<br>`DATETIME` in MySQL|
+|.NET Type|SQL Server|MySQL|PostgreSQL|
+|-|-|-|-|
+|`bool`|`BIT`|`BIT`|`BOOLEAN`|
+|`byte`|`TINYINT`|`TINYINT UNSIGNED`|`SMALLINT` (!)|
+|`sbyte`|Throws|`TINYINT`|Throws|
+|`short`|`SMALLINT`|`SMALLINT`|`SMALLINT`|
+|`ushort`|Throws|`SMALLINT UNSIGNED`|Throws|
+|`int`|`INT`|`INT`|`INT`|
+|`uint`|Throws|`INT UNSIGNED`|Throws|
+|`long`|`BIGINT`|`BIGINT`|`BIGINT`|
+|`decimal`|`DECIMAL(13, 5)`|`DECIMAL(13, 5)`|`DECIMAL(13, 5)`|
+|`float`|`REAL`|`REAL`|`REAL`|
+|`double`|`REAL`|`REAL`|`DOUBLE PRECISION`|
+|`string`|`NVARCHAR(MAX)`|`VARCHAR(1024)`|`VARCHAR`|
+|`DateTime`|`DATETIME2`|`DATETIME`|`TIMESTAMP`|
+|`byte[]`|`VARBINARY(MAX)`|`MEDIUMBLOB`|`BYTEA`|
 
 ## SQL type modifier attributes
 
@@ -438,6 +457,10 @@ public class Example {
     // DECIMAL(10,7)
     [SqlDecimal(Precision = 10, Scale = 7)]
     public decimal DecimalPrecision { get; set; }
+
+    // Nullable VARCHAR
+    [SqlNullable]
+    public string NullableString { get; set; }
 };
 ```
 
