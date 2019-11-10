@@ -989,5 +989,75 @@ namespace TypedSql.Test
                 Assert.AreEqual(i, results[0].BlobValue[i]);
             }
         }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectWhereByteOperators(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var gt = runner.Select(DB.TypeValues.Where(t => t.ByteValue > 5).Project((ctx, c) => c.ByteValue)).ToList();
+            Assert.AreEqual(1, gt.Count);
+            Assert.AreEqual(10, gt[0]);
+
+            var gte = runner.Select(DB.TypeValues.Where(t => t.ByteValue >= 5).Project((ctx, c) => c.ByteValue)).ToList();
+            Assert.AreEqual(1, gte.Count);
+            Assert.AreEqual(10, gte[0]);
+
+            var lt = runner.Select(DB.TypeValues.Where(t => t.ByteValue < 5).Project((ctx, c) => c.ByteValue)).ToList();
+            Assert.AreEqual(1, lt.Count);
+            Assert.AreEqual(1, lt[0]);
+
+            var lte = runner.Select(DB.TypeValues.Where(t => t.ByteValue <= 5).Project((ctx, c) => c.ByteValue)).ToList();
+            Assert.AreEqual(1, lte.Count);
+            Assert.AreEqual(1, lte[0]);
+
+            var neq = runner.Select(DB.TypeValues.Where(t => t.ByteValue != 10).Project((ctx, c) => c.ByteValue)).ToList();
+            Assert.AreEqual(1, neq.Count);
+            Assert.AreEqual(1, neq[0]);
+
+            var not_eq = runner.Select(DB.TypeValues.Where(t => !(t.ByteValue == 10)).Project((ctx, c) => c.ByteValue)).ToList();
+            Assert.AreEqual(1, neq.Count);
+            Assert.AreEqual(1, neq[0]);
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectWhereNullableIntOperators(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var gt = runner.Select(DB.TypeValues.Where(t => t.NullableIntValue > 5).Project((ctx, c) => c.NullableIntValue)).ToList();
+            Assert.AreEqual(1, gt.Count);
+            Assert.AreEqual(10, gt[0]);
+
+            var gte = runner.Select(DB.TypeValues.Where(t => t.NullableIntValue >= 5).Project((ctx, c) => c.NullableIntValue)).ToList();
+            Assert.AreEqual(1, gte.Count);
+            Assert.AreEqual(10, gte[0]);
+
+            var lt = runner.Select(DB.TypeValues.Where(t => t.NullableIntValue < 5).Project((ctx, c) => c.NullableIntValue)).ToList();
+            Assert.AreEqual(1, lt.Count);
+            Assert.AreEqual(1, lt[0]);
+
+            var lte = runner.Select(DB.TypeValues.Where(t => t.NullableIntValue <= 5).Project((ctx, c) => c.NullableIntValue)).ToList();
+            Assert.AreEqual(1, lte.Count);
+            Assert.AreEqual(1, lte[0]);
+
+            var neq = runner.Select(DB.TypeValues.Where(t => t.NullableIntValue != 10).Project((ctx, c) => c.NullableIntValue)).ToList();
+            Assert.AreEqual(1, neq.Count);
+            Assert.AreEqual(1, neq[0]);
+
+            var not_eq = runner.Select(DB.TypeValues.Where(t => !(t.NullableIntValue == 10)).Project((ctx, c) => c.NullableIntValue)).ToList();
+            Assert.AreEqual(1, neq.Count);
+            Assert.AreEqual(1, neq[0]);
+        }
     }
 }

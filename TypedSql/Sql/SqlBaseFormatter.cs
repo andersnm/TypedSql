@@ -248,6 +248,10 @@ namespace TypedSql
                     {
                         writer.Append("=");
                     }
+                    else if (binary.Op == ExpressionType.NotEqual)
+                    {
+                        writer.Append("<>");
+                    }
                     else if (binary.Op == ExpressionType.GreaterThan)
                     {
                         writer.Append(">");
