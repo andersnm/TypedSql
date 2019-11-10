@@ -356,64 +356,7 @@ namespace TypedSql
             }
             else if (node is SqlCallExpression callExpr)
             {
-                if (callExpr.Method.Name == nameof(Function.Contains))
-                {
-                    WriteExpression(callExpr.Arguments[0], writer);
-                    writer.Append(" IN (");
-                    if (callExpr.Arguments[1] is SqlConstantArrayExpression array)
-                    {
-                        writer.Append(string.Join(", ", array.Value));
-                    }
-                    writer.Append(")");
-                }
-                else if (callExpr.Method.Name == nameof(Function.Count))
-                {
-                    writer.Append("COUNT(*)"); // TODO: count selector expr, override for *
-                }
-                else if (callExpr.Method.Name == nameof(Function.Sum))
-                {
-                    writer.Append("SUM(");
-
-                    var selector = (SqlSelectorExpression)callExpr.Arguments[1];
-                    WriteExpression(selector.SelectorExpression, writer);
-
-                    writer.Append(")");
-                }
-                else if (callExpr.Method.Name == nameof(Function.Average))
-                {
-                    writer.Append("AVG(");
-
-                    var selector = (SqlSelectorExpression)callExpr.Arguments[1];
-                    WriteExpression(selector.SelectorExpression, writer);
-
-                    writer.Append(")");
-                }
-                else if (callExpr.Method.Name == nameof(Function.Min))
-                {
-                    writer.Append("MIN(");
-
-                    var selector = (SqlSelectorExpression)callExpr.Arguments[1];
-                    WriteExpression(selector.SelectorExpression, writer);
-
-                    writer.Append(")");
-                }
-                else if (callExpr.Method.Name == nameof(Function.Max))
-                {
-                    writer.Append("MAX(");
-
-                    var selector = (SqlSelectorExpression)callExpr.Arguments[1];
-                    WriteExpression(selector.SelectorExpression, writer);
-
-                    writer.Append(")");
-                }
-                else if (callExpr.Method.Name == nameof(Function.LastInsertIdentity))
-                {
-                    WriteLastIdentityExpression(writer);
-                }
-                else
-                {
-                    throw new NotImplementedException("Function." + callExpr.Method.Name);
-                }
+                WriteFunctionCall(callExpr, writer);
             }
             else if (node is SqlConditionalExpression condExpr)
             {
@@ -443,6 +386,122 @@ namespace TypedSql
             else
             {
                 throw new Exception("Unhandled SQL expression " + node.GetType().Name);
+            }
+        }
+
+        protected virtual void WriteFunctionCall(SqlCallExpression callExpr, StringBuilder writer)
+        {
+            if (callExpr.Method.Name == nameof(Function.Contains))
+            {
+                WriteExpression(callExpr.Arguments[0], writer);
+                writer.Append(" IN (");
+                if (callExpr.Arguments[1] is SqlConstantArrayExpression array)
+                {
+                    writer.Append(string.Join(", ", array.Value));
+                }
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Count))
+            {
+                writer.Append("COUNT(*)"); // TODO: count selector expr, override for *
+            }
+            else if (callExpr.Method.Name == nameof(Function.Sum))
+            {
+                writer.Append("SUM(");
+
+                var selector = (SqlSelectorExpression)callExpr.Arguments[1];
+                WriteExpression(selector.SelectorExpression, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Average))
+            {
+                writer.Append("AVG(");
+
+                var selector = (SqlSelectorExpression)callExpr.Arguments[1];
+                WriteExpression(selector.SelectorExpression, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Min))
+            {
+                writer.Append("MIN(");
+
+                var selector = (SqlSelectorExpression)callExpr.Arguments[1];
+                WriteExpression(selector.SelectorExpression, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Max))
+            {
+                writer.Append("MAX(");
+
+                var selector = (SqlSelectorExpression)callExpr.Arguments[1];
+                WriteExpression(selector.SelectorExpression, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.LastInsertIdentity))
+            {
+                WriteLastIdentityExpression(writer);
+            }
+            else if (callExpr.Method.Name == nameof(Function.Year))
+            {
+                writer.Append("YEAR(");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Month))
+            {
+                writer.Append("MONTH(");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Day))
+            {
+                writer.Append("DAY(");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Hour))
+            {
+                writer.Append("HOUR(");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Minute))
+            {
+                writer.Append("MINUTE(");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Second))
+            {
+                writer.Append("SECOND(");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else
+            {
+                throw new NotImplementedException("Function." + callExpr.Method.Name);
             }
         }
 

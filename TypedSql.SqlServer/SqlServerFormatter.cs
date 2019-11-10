@@ -260,5 +260,39 @@ namespace TypedSql.SqlServer
             writer.AppendLine("END");*/
         }
 
+        protected override void WriteFunctionCall(SqlCallExpression callExpr, StringBuilder writer)
+        {
+            if (callExpr.Method.Name == nameof(Function.Hour))
+            {
+                writer.Append("DATEPART(HOUR, ");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Minute))
+            {
+                writer.Append("DATEPART(MINUTE, ");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else if (callExpr.Method.Name == nameof(Function.Second))
+            {
+                writer.Append("DATEPART(SECOND, ");
+
+                var dateExpr = callExpr.Arguments[0];
+                WriteExpression(dateExpr, writer);
+
+                writer.Append(")");
+            }
+            else
+            {
+                base.WriteFunctionCall(callExpr, writer);
+            }
+        }
     }
 }

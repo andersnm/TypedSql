@@ -554,6 +554,23 @@ namespace TypedSql {
                         Right = arg1,
                     };
                 }
+                else if (
+                    call.Method.Name == nameof(Function.Year) ||
+                    call.Method.Name == nameof(Function.Month) ||
+                    call.Method.Name == nameof(Function.Day) ||
+                    call.Method.Name == nameof(Function.Hour) ||
+                    call.Method.Name == nameof(Function.Minute) ||
+                    call.Method.Name == nameof(Function.Second))
+                {
+                    var arg0 = ParseExpression(call.Arguments[0], parameters);
+
+                    return new SqlCallExpression()
+                    {
+                        Method = call.Method,
+                        Arguments = new List<SqlExpression> { arg0 }
+                    };
+
+                }
                 else
                 {
                     throw new InvalidOperationException("Unsupported Function." + call.Method.Name);

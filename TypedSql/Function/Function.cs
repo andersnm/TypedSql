@@ -34,18 +34,28 @@ namespace TypedSql
             return (T)((InMemoryQueryRunner)context.Runner).LastIdentity;
         }
 
-        // public static float Sum(float i) { return 0; }
-        // public static decimal Sum(decimal i) { return 0; }
-        // public static int Average(int i) { return 0; }
-        // public static float Average(float i) { return 0; }
-        // public static decimal Average(decimal i) { throw new InvalidOperationException("Cannot call aggregate directly"); }
-        public static int Hour(DateTime t) { return t.Hour; }
-        public static int Minute(DateTime t) { return t.Minute; }
-        public static int Second(DateTime t) { return t.Second; }
-        public static int? Second(DateTime? t) { return t?.Second; }
-        public static int Year(DateTime t) { return t.Year; }
-        public static int? Year(DateTime? t) { return t?.Year; }
-        public static int Month(DateTime t) { return t.Month; }
-        public static int Day(DateTime t) { return t.Day; }
+        public static int Hour(DateTime t) => t.Hour;
+
+        public static int? Hour(DateTime? t) => t?.Hour;
+
+        public static int Minute(DateTime t) => t.Minute;
+
+        public static int? Minute(DateTime? t) => t?.Minute;
+
+        public static int Second(DateTime t) => t.Second;
+
+        public static int? Second(DateTime? t) => t?.Second;
+
+        public static int Year(DateTime t) => t.Year;
+
+        public static int? Year(DateTime? t) => t?.Year;
+
+        public static int Month(DateTime t) => t.Month;
+
+        public static int? Month(DateTime? t) => t?.Month;
+
+        public static int Day(DateTime t) => t.Day;
+
+        public static int? Day(DateTime? t) => t?.Day;
     }
 }

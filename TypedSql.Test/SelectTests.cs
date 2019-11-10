@@ -1059,5 +1059,46 @@ namespace TypedSql.Test
             Assert.AreEqual(1, neq.Count);
             Assert.AreEqual(1, neq[0]);
         }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectDateTimeFunctions(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var dates = runner.Select(DB.TypeValues.Where(t => t.ByteValue == 10).Project((ctx, c) => new {
+                Year = Function.Year(c.DateTimeValue),
+                Month = Function.Month(c.DateTimeValue),
+                Day = Function.Day(c.DateTimeValue),
+                Hour = Function.Hour(c.DateTimeValue),
+                Minute = Function.Minute(c.DateTimeValue),
+                Second = Function.Second(c.DateTimeValue),
+                NullableYear = Function.Year(c.NullableDateTimeValue),
+                NullableMonth = Function.Month(c.NullableDateTimeValue),
+                NullableDay = Function.Day(c.NullableDateTimeValue),
+                NullableHour = Function.Hour(c.NullableDateTimeValue),
+                NullableMinute = Function.Minute(c.NullableDateTimeValue),
+                NullableSecond = Function.Second(c.NullableDateTimeValue),
+            })).ToList();
+
+            // date seed = new DateTime(2000, 1, 1, 14, 00, 10);
+            Assert.AreEqual(1, dates.Count, "Expected 1 result");
+            Assert.AreEqual(2000, dates[0].Year);
+            Assert.AreEqual(1, dates[0].Month);
+            Assert.AreEqual(1, dates[0].Day);
+            Assert.AreEqual(14, dates[0].Hour);
+            Assert.AreEqual(0, dates[0].Minute);
+            Assert.AreEqual(10, dates[0].Second);
+            Assert.AreEqual(2000, dates[0].NullableYear);
+            Assert.AreEqual(1, dates[0].NullableMonth);
+            Assert.AreEqual(1, dates[0].NullableDay);
+            Assert.AreEqual(14, dates[0].NullableHour);
+            Assert.AreEqual(0, dates[0].NullableMinute);
+            Assert.AreEqual(10, dates[0].NullableSecond);
+        }
     }
 }
