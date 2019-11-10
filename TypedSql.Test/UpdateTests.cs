@@ -56,6 +56,30 @@ namespace TypedSql.Test
             var results = runner.ExecuteNonQuery(stmtList);
             Assert.AreEqual(3, results, "Should be 3 result");
         }
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void UpdateWithJoin2(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.Update(
+                DB.Inventories
+                    .Join(
+                        DB.Units,
+                        (actx, a, bctx, b) => a.UnitId == b.UnitId,
+                        (actx, a, bctx, b) => new { Inventory = a, Unit = b })
+                    .Join(DB.Products,
+                        (actx, a, bctx, b) => a.Unit.ProductId == b.ProductId,
+                        (actx, a, bctx, b) => new { a.Inventory, a.Unit, Product = b })
+                    .Where(p => p.Product.ProductId == 1 && p.Inventory.Stock == 0),
+                (up, builder) => builder.Value(b => b.Stock, 77));
+
+            Assert.AreEqual(1, results, "Should be 1 affected row");
+        }
 
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]

@@ -161,7 +161,7 @@ namespace TypedSql.Test
             ResetDb(runner);
 
             var results = runner.ExecuteQuery(select).ToList();
-            Assert.AreEqual(2, results.Count, "Should be 2 result");
+            Assert.AreEqual(3, results.Count, "Should be 3 result");
             Assert.AreEqual(1, results[0].InventoryId, "InventoryId should be 1");
             Assert.AreEqual(1, results[0].UnitId, "UnitId should be 1");
             Assert.AreEqual(10, results[0].Stock, "Stock should be 10");

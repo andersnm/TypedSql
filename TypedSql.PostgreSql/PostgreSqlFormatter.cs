@@ -310,6 +310,8 @@ namespace TypedSql.PostgreSql
                     }
 
                     WriteFromSource(joinTable.FromSource, writer);
+                    writer.Append(" ");
+                    writer.Append(joinTable.TableAlias);
 
                     wheres.Add(joinTable.JoinExpression);
                 }

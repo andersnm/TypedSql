@@ -206,6 +206,9 @@ namespace TypedSql.Test
                 .Value(p => p.ProductId, product1Id.Value)
                 .Value(p => p.Price, 50));
 
+            var unit3Id = stmtList.DeclareSqlVariable<int>("unit3Id");
+            stmtList.SetSqlVariable(unit3Id, ctx => Function.LastInsertIdentity<int>(ctx));
+
             stmtList.Insert(DB.Inventories, insert => insert
                 .Value(p => p.UnitId, unit1Id.Value)
                 .Value(p => p.Stock, 10));
@@ -213,6 +216,10 @@ namespace TypedSql.Test
             stmtList.Insert(DB.Inventories, insert => insert
                 .Value(p => p.UnitId, unit2Id.Value)
                 .Value(p => p.Stock, 50));
+
+            stmtList.Insert(DB.Inventories, insert => insert
+                .Value(p => p.UnitId, unit3Id.Value)
+                .Value(p => p.Stock, 0));
 
             var date1 = new DateTime(2000, 1, 1, 14, 00, 00);
             var date2 = new DateTime(2000, 1, 1, 14, 00, 10);
