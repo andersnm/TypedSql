@@ -166,25 +166,34 @@ namespace TypedSql.SqlServer
             writer.Append(")");
         }
 
+        public override void WriteModuloExpression(SqlExpression leftExpr, SqlExpression rightExpr, StringBuilder writer)
+        {
+            writer.Append("(");
+            WriteExpression(leftExpr, writer);
+            writer.Append(" % ");
+            WriteExpression(rightExpr, writer);
+            writer.Append(")");
+        }
+
         public override void WriteSelectQuery(SqlQuery queryObject, StringBuilder writer)
         {
             base.WriteSelectQuery(queryObject, writer);
 
             // SQL 2012+ https://stackoverflow.com/a/9261762
-            if (queryObject.Offset.HasValue)
+            if (queryObject.Offset.HasValue || queryObject.Limit.HasValue)
             {
                 writer.AppendLine();
                 writer.Append(" OFFSET ");
-                writer.Append(queryObject.Offset.Value);
+                writer.Append(queryObject.Offset ?? 0);
                 writer.Append(" ROWS");
-            }
 
-            if (queryObject.Limit.HasValue)
-            {
-                writer.AppendLine();
-                writer.Append(" FETCH NEXT ");
-                writer.Append(queryObject.Limit.Value);
-                writer.Append(" ROWS ONLY");
+                if (queryObject.Limit.HasValue)
+                {
+                    writer.AppendLine();
+                    writer.Append(" FETCH NEXT ");
+                    writer.Append(queryObject.Limit.Value);
+                    writer.Append(" ROWS ONLY");
+                }
             }
         }
 

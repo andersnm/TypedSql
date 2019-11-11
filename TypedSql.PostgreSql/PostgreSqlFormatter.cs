@@ -187,6 +187,15 @@ namespace TypedSql.PostgreSql
             writer.Append(")");
         }
 
+        public override void WriteModuloExpression(SqlExpression leftExpr, SqlExpression rightExpr, StringBuilder writer)
+        {
+            writer.Append("MOD(");
+            WriteExpression(leftExpr, writer);
+            writer.Append(", ");
+            WriteExpression(rightExpr, writer);
+            writer.Append(")");
+        }
+
         public override void WriteSelectQuery(SqlQuery queryObject, StringBuilder writer)
         {
             base.WriteSelectQuery(queryObject, writer);
@@ -195,12 +204,12 @@ namespace TypedSql.PostgreSql
             {
                 writer.Append(" LIMIT ");
                 writer.Append(queryObject.Limit.Value);
+            }
 
-                if (queryObject.Offset.HasValue)
-                {
-                    writer.Append(" OFFSET ");
-                    writer.Append(queryObject.Offset.Value);
-                }
+            if (queryObject.Offset.HasValue)
+            {
+                writer.Append(" OFFSET ");
+                writer.Append(queryObject.Offset.Value);
             }
         }
 

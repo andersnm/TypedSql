@@ -22,6 +22,7 @@ namespace TypedSql
         public abstract void WriteUpdateQuery(List<InsertInfo> inserts, SqlQuery queryObject, StringBuilder writer);
         public abstract void WriteLastIdentityExpression(StringBuilder writer);
         public abstract void WriteIfNullExpression(SqlExpression testExpr, SqlExpression ifNullExpr, StringBuilder writer);
+        public abstract void WriteModuloExpression(SqlExpression leftExpr, SqlExpression rightExpr, StringBuilder writer);
 
         public void WriteStatement(SqlStatement stmt, bool isLastStatement, StringBuilder sb)
         {
@@ -239,6 +240,10 @@ namespace TypedSql
                 else if (binary.Op == ExpressionType.Coalesce)
                 {
                     WriteIfNullExpression(binary.Left, binary.Right, writer);
+                }
+                else if (binary.Op == ExpressionType.Modulo)
+                {
+                    WriteModuloExpression(binary.Left, binary.Right, writer);
                 }
                 else
                 {

@@ -104,9 +104,9 @@ namespace TypedSql {
         /// <summary>
         /// ... ORDER BY {selector}
         /// </summary>
-        public FlatQuery<TFrom, T> OrderBy<FT>(bool ascending, Expression<Func<T, FT>> selector)
+        public FlatQuery<TFrom, T> OrderBy(Expression<Action<OrderByBuilder<T>>> builderExpr)
         {
-            return new OrderByQuery<TFrom, T, FT>(this, ascending, selector);
+            return new OrderByQuery<TFrom, T>(this, builderExpr);
         }
 
         /// <summary>

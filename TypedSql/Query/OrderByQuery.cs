@@ -4,40 +4,128 @@ using System.Linq;
 using System.Linq.Expressions;
 
 namespace TypedSql {
-    public interface IOrderByQuery {
-        Query Parent { get; }
-        LambdaExpression SelectorExpression { get; }
+    public interface OrderByItem
+    {
+        LambdaExpression Selector { get; }
         bool Ascending { get; }
     }
 
-    public class OrderByQuery<TFrom, T, FT> : FlatQuery<TFrom, T>, IOrderByQuery {
+    public abstract class OrderByItem<T> : OrderByItem
+    {
+        public LambdaExpression Selector { get; set; }
+        public bool Ascending { get; set; }
+
+        internal abstract IOrderedEnumerable<T> OrderBy(IEnumerable<T> parent);
+        internal abstract IOrderedEnumerable<T> ThenBy(IOrderedEnumerable<T> parent);
+    }
+
+    public class OrderByItem<T, FT> : OrderByItem<T>
+    {
+        public Expression<Func<T, FT>> SelectorT { get; set; }
+        public Func<T, FT> SelectorFunction { get;  }
+
+        public OrderByItem(Expression<Func<T, FT>> selector, bool ascending)
+        {
+            Selector = selector;
+            SelectorT = selector;
+            Ascending = ascending;
+            SelectorFunction = selector.Compile();
+        }
+
+        internal override IOrderedEnumerable<T> OrderBy(IEnumerable<T> parent)
+        {
+            if (Ascending)
+            {
+                return parent.OrderBy(f => SelectorFunction(f));
+            }
+            else
+            {
+                return parent.OrderByDescending(f => SelectorFunction(f));
+            }
+        }
+
+        internal override IOrderedEnumerable<T> ThenBy(IOrderedEnumerable<T> parent)
+        {
+            if (Ascending)
+            {
+                return parent.ThenBy(f => SelectorT.Compile()(f));
+            }
+            else
+            {
+                return parent.ThenByDescending(f => SelectorT.Compile()(f));
+            }
+        }
+    }
+
+    public interface IOrderByBuilder
+    {
+        List<OrderByItem> Selectors { get; }
+    }
+
+    public class OrderByBuilder<T> : IOrderByBuilder
+    {
+        public List<OrderByItem> Selectors { get; } = new List<OrderByItem>();
+
+        public OrderByBuilder<T> Value<FT>(Expression<Func<T, FT>> selector, bool ascending)
+        {
+            Selectors.Add(new OrderByItem<T, FT>(selector, ascending));
+            return this;
+        }
+
+        public OrderByBuilder<T> Values(OrderByBuilder<T> other)
+        {
+            Selectors.AddRange(other.Selectors);
+            return this;
+        }
+    }
+
+    public interface IOrderByQuery {
+        Query Parent { get; }
+        LambdaExpression OrderByBuilderExpression { get; }
+    }
+
+    public class OrderByQuery<TFrom, T> : FlatQuery<TFrom, T>, IOrderByQuery {
 
         public Query<TFrom, T> ParentT { get; }
-        public LambdaExpression SelectorExpression { get; }
-        public bool Ascending { get; }
-        public Func<T, FT> SelectorFunction { get; }
+        public LambdaExpression OrderByBuilderExpression { get; }
+        internal Action<OrderByBuilder<T>> OrderByBuilderFunction { get; }
 
-        public OrderByQuery(Query<TFrom, T> parent, bool ascending, Expression<Func<T, FT>> selector)
+        public OrderByQuery(Query<TFrom, T> parent, Expression<Action<OrderByBuilder<T>>> builderExpr)
             : base(parent)
         {
             ParentT = parent;
-            Ascending = ascending;
-            SelectorExpression = selector;
-            SelectorFunction = selector.Compile();
+            OrderByBuilderExpression = builderExpr;
+            OrderByBuilderFunction = builderExpr.Compile();
+
         }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {
             var items = ParentT.InMemorySelect(runner);
             FromRowMapping = ParentT.FromRowMapping;
-            if (Ascending)
+
+            var builder = new OrderByBuilder<T>();
+            OrderByBuilderFunction(builder);
+
+            IOrderedEnumerable<T> ordered = null;
+            foreach (OrderByItem<T> selector in builder.Selectors)
             {
-                return items.OrderBy(x => SelectorFunction(x));
+                if (ordered == null)
+                {
+                    ordered = selector.OrderBy(items);
+                }
+                else
+                {
+                    ordered = selector.ThenBy(ordered);
+                }
             }
-            else
+
+            if (ordered == null)
             {
-                return items.OrderByDescending(x => SelectorFunction(x));
+                return items;
             }
+
+            return ordered;
         }
 
     }
@@ -50,12 +138,22 @@ namespace TypedSql {
 
     public class OffsetQuery<TFrom, T> : FlatQuery<TFrom, T>, IOffsetQuery
     {
+        public Query<TFrom, T> ParentT { get; }
         public int OffsetIndex { get; }
 
         public OffsetQuery(Query<TFrom, T> parent, int offset)
             : base(parent)
         {
+            ParentT = parent;
             OffsetIndex = offset;
+        }
+
+        internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
+        {
+            var items = ParentT.InMemorySelect(runner);
+            FromRowMapping = ParentT.FromRowMapping;
+            // Not offsetting here, this is done in the select statement
+            return items;
         }
     }
 
@@ -67,12 +165,23 @@ namespace TypedSql {
 
     public class LimitQuery<TFrom, T> : FlatQuery<TFrom, T>, ILimitQuery
     {
+        public Query<TFrom, T> ParentT { get; }
         public int LimitIndex { get; }
 
         public LimitQuery(Query<TFrom, T> parent, int offset)
             : base(parent)
         {
+            ParentT = parent;
             LimitIndex = offset;
         }
+
+        internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
+        {
+            var items = ParentT.InMemorySelect(runner);
+            FromRowMapping = ParentT.FromRowMapping;
+            // Not limiting here, this is done in the select statement
+            return items;
+        }
+
     }
 }

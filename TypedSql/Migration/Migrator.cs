@@ -47,7 +47,7 @@ namespace TypedSql.Migration
         public void ReadAppliedMigrations(SqlQueryRunner runner)
         {
             var stmtList = new StatementList();
-            var select = stmtList.Select(Context.Migrations.OrderBy(true, m => m.Name));
+            var select = stmtList.Select(Context.Migrations.OrderBy(builder => builder.Value(m => m.Name, true)));
 
             try
             {

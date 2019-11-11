@@ -368,19 +368,7 @@ namespace TypedSql {
         private SqlQuery ParseOrderByQuery(IOrderByQuery orderByQuery, out SqlSubQueryResult parentResult)
         {
             var result = ParseQuery(orderByQuery.Parent, out parentResult);
-
-            var fieldSelector = orderByQuery.SelectorExpression;
-            var fieldSelectorBody = (MemberExpression)fieldSelector.Body;
-
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-            parameters[fieldSelector.Parameters[0].Name] = parentResult;
-
-            result.OrderBys.Add(new SqlOrderBy()
-            {
-                Ascending = orderByQuery.Ascending,
-                SelectorExpression = ParseExpression(fieldSelectorBody, parameters),
-            });
-            
+            result.OrderBys = ParseOrderByBuilder(parentResult, orderByQuery.OrderByBuilderExpression, new Dictionary<string, SqlSubQueryResult>());
             return result;
         }
 
@@ -993,7 +981,68 @@ namespace TypedSql {
                 Expression = valueExpression,
                 SqlName = column.SqlName,
             };
+        }
 
+        public List<SqlOrderBy> ParseOrderByBuilder(SqlSubQueryResult parentResult, LambdaExpression orderByExpr, Dictionary<string, SqlSubQueryResult> parameters)
+        {
+            if (orderByExpr.Body.NodeType != ExpressionType.Call)
+            {
+                throw new InvalidOperationException("Expression can only call OrderByBuilder<T>.Value()");
+            }
+
+            // Visit chained OrderByBuilder method calls backwards, adding in front
+            var callExpression = (MethodCallExpression)orderByExpr.Body;
+            var values = new List<SqlOrderBy>();
+            while (true)
+            {
+                if (callExpression.Method.DeclaringType.GetGenericTypeDefinition() != typeof(OrderByBuilder<>))
+                {
+                    throw new InvalidOperationException("Expected OrderByBuilder<T> in expression");
+                }
+
+                if (callExpression.Method.Name == nameof(OrderByBuilder<bool>.Values))
+                {
+                    var builder = (IOrderByBuilder)ResolveConstant(callExpression.Arguments[0], out var argumentType);
+                    foreach (var selector in builder.Selectors)
+                    {
+                        var orderBySelector = ParseExpression(selector.Selector.Body, parameters);
+                        values.Insert(0, new SqlOrderBy()
+                        {
+                            Ascending = selector.Ascending,
+                            SelectorExpression = orderBySelector,
+                        });
+                    }
+                }
+                else if (callExpression.Method.Name == nameof(OrderByBuilder<bool>.Value))
+                {
+                    var fieldSelectorUnary = (UnaryExpression)callExpression.Arguments[0];
+                    var fieldSelector = (LambdaExpression)fieldSelectorUnary.Operand;
+                    var selectorParameters = new Dictionary<string, SqlSubQueryResult>();
+                    selectorParameters[fieldSelector.Parameters[0].Name] = parentResult;
+
+                    var expr = ParseExpression(fieldSelector.Body, selectorParameters);
+                    var ascendingExpression = callExpression.Arguments[1];
+                    var ascending = (bool)ResolveConstant(ascendingExpression, out var ascendingType);
+                    values.Insert(0, new SqlOrderBy()
+                    {
+                        Ascending = ascending,
+                        SelectorExpression = expr,
+                    });
+                }
+                else
+                {
+                    throw new InvalidOperationException("Insert expression can only call InsertBuilder<T>.Value() or .Values()");
+                }
+
+                if (callExpression.Object.NodeType == ExpressionType.Parameter)
+                {
+                    break;
+                }
+
+                callExpression = (MethodCallExpression)callExpression.Object;
+            }
+
+            return values;
         }
 
         string RegisterConstant(object value)

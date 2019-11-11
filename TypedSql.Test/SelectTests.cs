@@ -581,7 +581,7 @@ namespace TypedSql.Test
         {
             var stmtList = new StatementList();
 
-            var select = stmtList.Select(DB.Products.OrderBy(false, p => p.Name));
+            var select = stmtList.Select(DB.Products.OrderBy(builder => builder.Value(p => p.Name, false)));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -600,7 +600,7 @@ namespace TypedSql.Test
         {
             var stmtList = new StatementList();
 
-            var select = stmtList.Select(DB.Products.OrderBy(true, p => p.Name));
+            var select = stmtList.Select(DB.Products.OrderBy(builder => builder.Value(p => p.Name, true)));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -625,7 +625,7 @@ namespace TypedSql.Test
                         DB.Units,
                         (qctx, q, wctx, w) => q.ProductId == w.ProductId,
                         (qctx, q, wctx, w) => new { Product = q, Unit = w })
-                    .OrderBy(true, p => p.Product.ProductId)
+                    .OrderBy(builder => builder.Value(p => p.Product.ProductId, true))
                     .GroupBy(
                         u => new { u.Product.ProductId }, 
                         (ctx, ur) => new {
@@ -660,7 +660,7 @@ namespace TypedSql.Test
                         DB.Units,
                         (qctx, q, wctx, w) => q.ProductId == w.ProductId,
                         (qctx, q, wctx, w) => new { Product = q, Unit = w })
-                    .OrderBy(true, p => p.Product.ProductId)
+                    .OrderBy(builder => builder.Value(p => p.Product.ProductId, true))
                     .GroupBy(
                         u => new { u.Product.ProductId },
                         (ctx, ur) => new {
@@ -1099,6 +1099,85 @@ namespace TypedSql.Test
             Assert.AreEqual(14, dates[0].NullableHour);
             Assert.AreEqual(0, dates[0].NullableMinute);
             Assert.AreEqual(10, dates[0].NullableSecond);
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectLimitOffset(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            
+            // Test-specific seed instead of ResetDb()
+            var stmtList = new StatementList();
+            for (var i = 0; i < 100; i++)
+            {
+                var name = "Product " + i;
+                stmtList.Insert(DB.Products, b => b.Value(p => p.Name, name));
+            }
+
+            runner.ExecuteNonQuery(stmtList);
+
+            var ten = 10;
+            var first10 = runner.Select(DB.Products.OrderBy(builder => builder.Value(p => p.ProductId, true)).Limit(ten)).ToList();
+            Assert.AreEqual(10, first10.Count);
+
+            var second10 = runner.Select(DB.Products.OrderBy(builder => builder.Value(p => p.ProductId, true)).Offset(ten).Limit(10)).ToList();
+            Assert.AreEqual(10, second10.Count);
+
+            // Try reverse order of Limit/Offset, should not matter
+            var second10Swap = runner.Select(DB.Products.OrderBy(builder => builder.Value(p => p.ProductId, true)).Limit(10).Offset(ten)).ToList();
+            Assert.AreEqual(10, second10Swap.Count);
+
+            // Multiple Offset/Limit, last should apply
+            var second10Multi = runner.Select(DB.Products.OrderBy(builder => builder.Value(p => p.ProductId, true)).Offset(100000000).Limit(1).Limit(10).Offset(ten)).ToList();
+            Assert.AreEqual(10, second10Multi.Count);
+
+            Assert.AreNotEqual(first10[0].ProductId, second10[0].ProductId);
+
+            var remainderAfter95 = runner.Select(DB.Products.OrderBy(builder => builder.Value(p => p.ProductId, true)).Offset(95)).ToList();
+            Assert.AreEqual(5, remainderAfter95.Count);
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectMultipleOrderBy(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+
+            // Test-specific seed instead of ResetDb()
+            var stmtList = new StatementList();
+            stmtList.Insert(DB.Products, b => b.Value(p => p.Name, "Product"));
+            var productId = stmtList.DeclareSqlVariable<int>("productId");
+            stmtList.SetSqlVariable(productId, ctx => Function.LastInsertIdentity<int>(ctx));
+
+            for (var i = 0; i < 100; i++)
+            {
+                var name = "Product " + i.ToString("D3");
+                var price = i % 5; // cannot use in expression: evaled too late!
+                stmtList.Insert(DB.Units, b => b
+                    .Value(u => u.ProductId, productId.Value)
+                    .Value(p => p.Name, name)
+                    .Value(p => p.Price, price));
+            }
+
+            runner.ExecuteNonQuery(stmtList);
+
+            var ordered = runner.Select(DB.Units.OrderBy(orderBy => orderBy.Value(u => u.Price, false).Value(u => u.Name, true))).ToList();
+
+            Assert.AreEqual(4, ordered[0].Price);
+            Assert.AreEqual("Product 004", ordered[0].Name);
+
+            Assert.AreEqual(4, ordered[1].Price);
+            Assert.AreEqual("Product 009", ordered[1].Name);
+
+            Assert.AreEqual(4, ordered[2].Price);
+            Assert.AreEqual("Product 014", ordered[2].Name);
         }
     }
 }

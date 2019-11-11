@@ -158,14 +158,23 @@ namespace TypedSql.MySql
             writer.Append(")");
         }
 
+        public override void WriteModuloExpression(SqlExpression leftExpr, SqlExpression rightExpr, StringBuilder writer)
+        {
+            writer.Append("MOD(");
+            WriteExpression(leftExpr, writer);
+            writer.Append(", ");
+            WriteExpression(rightExpr, writer);
+            writer.Append(")");
+        }
+
         public override void WriteSelectQuery(SqlQuery queryObject, StringBuilder writer)
         {
             base.WriteSelectQuery(queryObject, writer);
 
-            if (queryObject.Limit.HasValue)
+            if (queryObject.Limit.HasValue || queryObject.Offset.HasValue)
             {
                 writer.Append(" LIMIT ");
-                writer.Append(queryObject.Limit.Value);
+                writer.Append((ulong?)queryObject.Limit?? 18446744073709551615);
 
                 if (queryObject.Offset.HasValue)
                 {
