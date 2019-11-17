@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>sql;database;pgsql;postgresql;orm;micro-orm</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
