@@ -968,7 +968,26 @@ namespace TypedSql {
 
         InsertInfo ParseInsertBuilderValue(IFromQuery fromQuery, LambdaExpression fieldSelector, SqlExpression valueExpression)
         {
-            var fieldSelectorBody = (MemberExpression)fieldSelector.Body;
+            MemberExpression fieldSelectorBody;
+            if (fieldSelector.Body is MemberExpression memberSelector)
+            {
+                fieldSelectorBody = memberSelector;
+            }
+            else if (fieldSelector.Body is UnaryExpression unarySelector)
+            {
+                if (unarySelector.NodeType == ExpressionType.Convert && unarySelector.Operand is MemberExpression convertMemberSelector)
+                {
+                    fieldSelectorBody = convertMemberSelector;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected Convert(MemberExpression) in InsertBuilder.Value");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Expected MemberExpression in InsertBuilder.Value");
+            }
 
             var column = fromQuery.Columns.Where(c => c.MemberName == fieldSelectorBody.Member.Name).FirstOrDefault();
             if (column == null)

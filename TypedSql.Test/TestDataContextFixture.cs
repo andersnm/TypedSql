@@ -232,7 +232,7 @@ namespace TypedSql.Test
 
             // Insert some records to aggregate
             stmtList.Insert(DB.TypeValues, insert => insert
-                .Value(t => t.ByteValue, (byte)1) // TODO: 
+                .Value(t => t.ByteValue, 1)
                 .Value(t => t.BoolValue, false)
                 .Value(t => t.DateTimeValue, date1)
                 .Value(t => t.NullableDateTimeValue, null)
@@ -241,15 +241,15 @@ namespace TypedSql.Test
                 .Value(t => t.FloatValue, 1.0f)
                 .Value(t => t.IntValue, 1)
                 .Value(t => t.NullableIntValue, 1)
-                .Value(t => t.LongValue, (long)1)
-                .Value(t => t.ShortValue, (short)1)
+                .Value(t => t.LongValue, 1)
+                .Value(t => t.ShortValue, 1)
                 .Value(t => t.StringValue, "1")
                 .Value(t => t.IntEnumValue, IntEnumType.TestValue1)
                 .Value(t => t.BlobValue, bytes)
             );
 
             stmtList.Insert(DB.TypeValues, insert => insert
-                .Value(t => t.ByteValue, (byte)10) // TODO: 
+                .Value(t => t.ByteValue, 10)
                 .Value(t => t.BoolValue, false)
                 .Value(t => t.DateTimeValue, date2)
                 .Value(t => t.NullableDateTimeValue, date2)
@@ -258,8 +258,8 @@ namespace TypedSql.Test
                 .Value(t => t.FloatValue, 10.0f)
                 .Value(t => t.IntValue, 10)
                 .Value(t => t.NullableIntValue, 10)
-                .Value(t => t.LongValue, (long)10)
-                .Value(t => t.ShortValue, (short)10)
+                .Value(t => t.LongValue, 10)
+                .Value(t => t.ShortValue, 10)
                 .Value(t => t.StringValue, "10")
                 .Value(t => t.IntEnumValue, IntEnumType.TestValue2)
                 .Value(t => t.BlobValue, bytes)

@@ -88,6 +88,35 @@ namespace TypedSql {
             identity = Identity - 1;
         }
 
+        MemberExpression GetSelectorMemberExpression(LambdaExpression fieldSelector, out Type selectorType)
+        {
+            // NOTE: duplicated from ParseInsertBuilderValue
+            MemberExpression fieldSelectorBody;
+            if (fieldSelector.Body is MemberExpression memberSelector)
+            {
+                fieldSelectorBody = memberSelector;
+                selectorType = memberSelector.Type;
+            }
+            else if (fieldSelector.Body is UnaryExpression unarySelector)
+            {
+                if (unarySelector.NodeType == ExpressionType.Convert && unarySelector.Operand is MemberExpression convertMemberSelector)
+                {
+                    fieldSelectorBody = convertMemberSelector;
+                    selectorType = unarySelector.Type;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected Convert(MemberExpression) in selector");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Expected MemberExpression in selector");
+            }
+
+            return fieldSelectorBody;
+        }
+
         internal void UpdateObject(T itemObject, Type fromType, InsertBuilder<T> fromObject)
         {
             // Use the InsertBuilder to update an instance of the type of the backing table
@@ -95,7 +124,7 @@ namespace TypedSql {
 
             foreach (var fromSelector in fromObject.Selectors)
             {
-                var sl = (MemberExpression)fromSelector.Selector.Body;
+                var sl = GetSelectorMemberExpression(fromSelector.Selector, out var selectorType);
                 var itemPropertyInfo = typeInfo.GetProperty(sl.Member.Name);
                 if (itemPropertyInfo == null)
                 {
@@ -114,6 +143,14 @@ namespace TypedSql {
                 }
 
                 var value = fromSelector.Value;
+
+                // Workaround for lambda expression like "...Value(x => x.ByteValue, 1)" which is
+                // internally represented as "...Value(x => Convert(x.ByteValue, Int32), (int)1)"
+                if (value != null && sl.Type != selectorType)
+                {
+                    value = Convert.ChangeType(value, sl.Type);
+                }
+
                 itemPropertyInfo.SetValue(itemObject, value);
             }
         }
