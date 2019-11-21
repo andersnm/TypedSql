@@ -30,6 +30,42 @@ namespace TypedSql.Test
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
+        public void InsertValuesTwo(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var stmtList = new StatementList();
+            stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product 1"));
+            stmtList.Insert(DB.Products, insert => insert.Value(p => p.Name, "test insert product 2"));
+
+            var affectedRows = runner.ExecuteNonQuery(stmtList);
+            Assert.AreEqual(2, affectedRows);
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void InsertSelectTwo(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var stmtList = new StatementList();
+            stmtList.Insert(DB.Products, DB.Units.Where(u => u.UnitId == 1), (u, insert) => insert.Value(p => p.Name, "test insert product 1"));
+            stmtList.Insert(DB.Products, DB.Units.Where(u => u.UnitId == 1), (u, insert) => insert.Value(p => p.Name, "test insert product 2"));
+
+            var affectedRows = runner.ExecuteNonQuery(stmtList);
+            Assert.AreEqual(2, affectedRows);
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
         public void InsertValuesSelectIdentity(Type runnerType)
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);

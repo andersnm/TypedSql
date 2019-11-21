@@ -109,5 +109,27 @@ namespace TypedSql.Test
             Assert.AreEqual(IntEnumType.TestValue1, updated.IntEnumValue, "Should be IntEnumValue.TestValue1");
         }
 
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void UpdateTwo(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var stmtList = new StatementList();
+            stmtList.Update(
+                DB.Products.Where(p => p.ProductId == 1),
+                (_, builder) => builder.Value(b => b.Name, "Not tonight"));
+
+            stmtList.Update(
+                DB.Products.Where(p => p.ProductId == 2),
+                (_, builder) => builder.Value(b => b.Name, "Nontoonyt Island"));
+
+            var affectedRows = runner.ExecuteNonQuery(stmtList);
+            Assert.AreEqual(2, affectedRows);
+        }
     }
 }

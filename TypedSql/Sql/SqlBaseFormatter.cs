@@ -40,9 +40,11 @@ namespace TypedSql
                     return;
                 case SqlUpdate update:
                     WriteUpdateQuery(update.Inserts, update.FromSource, sb);
+                    sb.AppendLine(";");
                     return;
                 case SqlDelete delete:
                     WriteDeleteQuery(delete.FromSource, sb);
+                    sb.AppendLine(";");
                     return;
                 case SqlDeclareVariable declareVariable:
                     WriteDeclareSqlVariable(declareVariable.VariableName, declareVariable.VariableType, declareVariable.SqlTypeInfo, sb);
@@ -698,8 +700,6 @@ namespace TypedSql
             {
                 WriteFromQuery(queryObject, writer);
             }
-
-            // writer.AppendLine(";");
         }
 
         public virtual void WriteInsertQuery(List<InsertInfo> inserts, string fromTableName, string autoIncrementPrimaryKeyName, bool isLastStatement, StringBuilder writer)

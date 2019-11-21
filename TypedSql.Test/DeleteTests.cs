@@ -31,6 +31,26 @@ namespace TypedSql.Test
         [TestCase(typeof(SqlServerQueryRunner))]
         [TestCase(typeof(PostgreSqlQueryRunner))]
         [TestCase(typeof(InMemoryQueryRunner))]
+        public void DeleteTwo(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var stmtList = new StatementList();
+            stmtList.Delete(
+                DB.Inventories.Where(p => p.InventoryId == 1));
+            stmtList.Delete(
+                DB.Inventories.Where(p => p.InventoryId == 2));
+
+            var affectedRows = runner.ExecuteNonQuery(stmtList);
+            Assert.AreEqual(2, affectedRows);
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
         public void DeleteWithJoin(Type runnerType)
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);

@@ -37,16 +37,17 @@ namespace TypedSql.InMemory
 
         public int ExecuteNonQuery(StatementList statementList)
         {
+            affectedRows = 0;
             foreach (var query in statementList.Queries)
             {
                 WriteStatement(query);
             }
 
-            return lastStatementResult;
+            return affectedRows;
         }
 
         List<object> lastResult;
-        int lastStatementResult;
+        int affectedRows;
         public object LastIdentity { get; private set; }
 
         void WriteStatement(IStatement stmt)
@@ -82,35 +83,37 @@ namespace TypedSql.InMemory
         void WriteSelectStatement(ISelectStatement stmt)
         {
             lastResult = stmt.EvaluateInMemory(this);
-            lastStatementResult = lastResult.Count;
+            affectedRows = lastResult.Count;
         }
 
         void WriteInsertStatement(IInsertStatement stmt)
         {
-            lastStatementResult = stmt.EvaluateInMemory(this, out var identity);
-            if (lastStatementResult > 0)
+            var insertedRows = stmt.EvaluateInMemory(this, out var identity);
+            if (insertedRows > 0)
             {
+                affectedRows += insertedRows;
                 LastIdentity = identity;
             }
         }
 
         void WriteInsertSelectStatement(IInsertSelectStatement stmt)
         {
-            lastStatementResult = stmt.EvaluateInMemory(this, out var identity);
-            if (lastStatementResult > 0)
+            var insertedRows = stmt.EvaluateInMemory(this, out var identity);
+            if (insertedRows > 0)
             {
+                affectedRows += insertedRows;
                 LastIdentity = identity;
             }
         }
 
         void WriteUpdateStatement(IUpdateStatement stmt)
         {
-            lastStatementResult = stmt.EvaluateInMemory(this);
+            affectedRows += stmt.EvaluateInMemory(this);
         }
 
         void WriteDeleteStatement(IDeleteStatement stmt)
         {
-            lastStatementResult = stmt.EvaluateInMemory(this);
+            affectedRows += stmt.EvaluateInMemory(this);
         }
 
         void WriteDeclareSqlVariable(IDeclareVariableStatement stmt)
