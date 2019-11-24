@@ -380,6 +380,7 @@ namespace TypedSql.Test
             var results = runner.ExecuteQuery(select).ToList();
             Assert.True(results.Count > 0, "Should be results");
         }
+
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
@@ -631,7 +632,8 @@ namespace TypedSql.Test
                         (ctx, ur) => new {
                             ur.Product.ProductId,
                             UnitCount = Function.Count(ctx, t => t.Unit.UnitId)
-                        }));
+                        })
+                    .Having(p => p.UnitCount >= 1));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
