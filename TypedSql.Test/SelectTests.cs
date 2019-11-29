@@ -1203,5 +1203,47 @@ namespace TypedSql.Test
             Assert.AreEqual(4, ordered[2].Price);
             Assert.AreEqual("Product 014", ordered[2].Name);
         }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectDynamicOrderBy(Type runnerType)
+        {
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+
+            // Test-specific seed instead of ResetDb()
+            var stmtList = new StatementList();
+            stmtList.Insert(DB.Products, b => b.Value(p => p.Name, "Product"));
+            var productId = stmtList.DeclareSqlVariable<int>("productId");
+            stmtList.SetSqlVariable(productId, ctx => Function.LastInsertIdentity<int>(ctx));
+
+            for (var i = 0; i < 100; i++)
+            {
+                var name = "Product " + i.ToString("D3");
+                var price = i % 5; // cannot use in expression: evaled too late!
+                stmtList.Insert(DB.Units, b => b
+                    .Value(u => u.ProductId, productId.Value)
+                    .Value(p => p.Name, name)
+                    .Value(p => p.Price, price));
+            }
+
+            runner.ExecuteNonQuery(stmtList);
+
+            var ordering = new OrderByBuilder<Unit>();
+            ordering.Value(u => u.Price, true).Value(u => u.Name, false);
+
+            var ordered = runner.Select(DB.Units.OrderBy(orderBy => orderBy.Values(ordering))).ToList();
+
+            Assert.AreEqual(0, ordered[0].Price);
+            Assert.AreEqual("Product 095", ordered[0].Name);
+
+            Assert.AreEqual(0, ordered[1].Price);
+            Assert.AreEqual("Product 090", ordered[1].Name);
+
+            Assert.AreEqual(0, ordered[2].Price);
+            Assert.AreEqual("Product 085", ordered[2].Name);
+        }
     }
 }

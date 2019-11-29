@@ -979,15 +979,21 @@ namespace TypedSql {
                 if (callExpression.Method.Name == nameof(OrderByBuilder<bool>.Values))
                 {
                     var builder = (IOrderByBuilder)ResolveConstant(callExpression.Arguments[0], out var argumentType);
+                    var orderBys = new List<SqlOrderBy>();
                     foreach (var selector in builder.Selectors)
                     {
-                        var orderBySelector = ParseExpression(selector.Selector.Body, parameters);
-                        values.Insert(0, new SqlOrderBy()
+                        var selectorParameters = new Dictionary<string, SqlSubQueryResult>();
+                        selectorParameters[selector.Selector.Parameters[0].Name] = parentResult;
+
+                        var orderBySelector = ParseExpression(selector.Selector.Body, selectorParameters);
+                        orderBys.Add(new SqlOrderBy()
                         {
                             Ascending = selector.Ascending,
                             SelectorExpression = orderBySelector,
                         });
                     }
+
+                    values.InsertRange(0, orderBys);
                 }
                 else if (callExpression.Method.Name == nameof(OrderByBuilder<bool>.Value))
                 {
