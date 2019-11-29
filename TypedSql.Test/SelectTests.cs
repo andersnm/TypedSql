@@ -23,6 +23,10 @@ namespace TypedSql.Test
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
 
+            var n7 = 7;
+            var n2 = 2;
+            var n22 = 22;
+            var n11 = 11;
             var results = runner.Select(ctx => new {
                 X = 1,
                 Y = true,
@@ -31,11 +35,11 @@ namespace TypedSql.Test
                 DecimalValue = 4.5M,
                 DoubleValue = 1.23D,
                 FloatValue = 6.4f,
-                MultiplyValue = 3 * 7,
-                DivideValue = 42 / 2,
-                ModulusValue = 483 % 22,
-                AddValue = 10 + 11,
-                SubtractValue = 31 - 10,
+                MultiplyValue = 3 * n7,
+                DivideValue = 42 / n2,
+                ModulusValue = 483 % n22,
+                AddValue = 10 + n11,
+                SubtractValue = 32 - n11,
             }).ToList();
 
             Assert.AreEqual(1, results.Count, "Should be 1 result");

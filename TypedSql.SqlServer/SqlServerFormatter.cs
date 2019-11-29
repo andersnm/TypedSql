@@ -26,7 +26,7 @@ namespace TypedSql.SqlServer
             WriteColumnName(column.Name, writer);
             writer.Append(" ");
 
-            writer.Append(WriteColumnType(column.Type, column.SqlType));
+            WriteColumnType(column.Type, column.SqlType, writer);
 
             if (column.Nullable)
             {
@@ -48,7 +48,7 @@ namespace TypedSql.SqlServer
             }
         }
 
-        public override string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo)
+        public override void WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer)
         {
             if (type == typeof(sbyte))
             {
@@ -56,11 +56,11 @@ namespace TypedSql.SqlServer
             }
             else if (type == typeof(byte))
             {
-                return "TINYINT";
+                writer.Append("TINYINT");
             }
             else if (type == typeof(short))
             {
-                return "SMALLINT";
+                writer.Append("SMALLINT");
             }
             else if (type == typeof(ushort))
             {
@@ -68,7 +68,7 @@ namespace TypedSql.SqlServer
             }
             else if (type == typeof(int))
             {
-                return "INT";
+                writer.Append("INT");
             }
             else if (type == typeof(uint))
             {
@@ -76,7 +76,7 @@ namespace TypedSql.SqlServer
             }
             else if (type == typeof(long))
             {
-                return "BIGINT";
+                writer.Append("BIGINT");
             }
             else if (type == typeof(ulong))
             {
@@ -84,33 +84,33 @@ namespace TypedSql.SqlServer
             }
             else if (type == typeof(decimal))
             {
-                return $"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})";
+                writer.Append($"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})");
             }
             else if (type == typeof(float))
             {
-                return "REAL";
+                writer.Append("REAL");
             }
             else if (type == typeof(double))
             {
-                return "REAL";
+                writer.Append("REAL");
             }
             else if (type == typeof(string))
             {
                 var length = sqlTypeInfo.StringLength > 0 ? sqlTypeInfo.StringLength.ToString() : "MAX";
                 var stringType = sqlTypeInfo.StringNVarChar ? "NVARCHAR" : "VARCHAR";
-                return $"{stringType}({length})";
+                writer.Append($"{stringType}({length})");
             }
             else if (type == typeof(DateTime))
             {
-                return "DATETIME2";
+                writer.Append("DATETIME2");
             }
             else if (type == typeof(bool))
             {
-                return "BIT";
+                writer.Append("BIT");
             }
             else if (type == typeof(byte[]))
             {
-                return "VARBINARY(MAX)";
+                writer.Append("VARBINARY(MAX)");
             }
             else
             {
@@ -136,7 +136,7 @@ namespace TypedSql.SqlServer
             writer.Append("DECLARE @");
             writer.Append(name);
             writer.Append(" ");
-            writer.Append(WriteColumnType(baseType, sqlTypeInfo));
+            WriteColumnType(baseType, sqlTypeInfo, writer);
             writer.AppendLine(";");
         }
 

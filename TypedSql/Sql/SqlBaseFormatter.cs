@@ -11,7 +11,7 @@ namespace TypedSql
 {
     public abstract class SqlBaseFormatter
     {
-        public abstract string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo);
+        public abstract void WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer);
         public abstract void WriteCreateTableColumn(SqlColumn column, StringBuilder writer);
         public abstract void WriteDeclareSqlVariable(string name, Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer);
         public abstract void WriteDeleteQuery(SqlQuery queryObject, StringBuilder writer);

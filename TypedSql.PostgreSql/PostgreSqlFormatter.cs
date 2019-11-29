@@ -21,7 +21,7 @@ namespace TypedSql.PostgreSql
             writer.Append("\"");
         }
 
-        public override string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo)
+        public override void WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer)
         {
             // https://www.postgresql.org/docs/9.1/datatype.html
             // https://www.npgsql.org/doc/types/basic.html
@@ -33,11 +33,11 @@ namespace TypedSql.PostgreSql
             {
                 // NOTE: Returns type of larger size!
                 // throw new InvalidOperationException("Unsigned byte is not supported in PostgreSQL");
-                return "SMALLINT";
+                writer.Append("SMALLINT");
             }
             else if (type == typeof(short))
             {
-                return "SMALLINT";
+                writer.Append("SMALLINT");
             }
             else if (type == typeof(ushort))
             {
@@ -45,7 +45,7 @@ namespace TypedSql.PostgreSql
             }
             else if (type == typeof(int))
             {
-                return "INT";
+                writer.Append("INT");
             }
             else if (type == typeof(uint))
             {
@@ -53,7 +53,7 @@ namespace TypedSql.PostgreSql
             }
             else if (type == typeof(long))
             {
-                return "BIGINT";
+                writer.Append("BIGINT");
             }
             else if (type == typeof(ulong))
             {
@@ -61,38 +61,38 @@ namespace TypedSql.PostgreSql
             }
             else if (type == typeof(decimal))
             {
-                return $"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})";
+                writer.Append($"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})");
             }
             else if (type == typeof(float))
             {
-                return "REAL";
+                writer.Append("REAL");
             }
             else if (type == typeof(double))
             {
-                return "DOUBLE PRECISION";
+                writer.Append("DOUBLE PRECISION");
             }
             else if (type == typeof(string))
             {
                 if (sqlTypeInfo.StringLength > 0)
                 {
-                    return $"VARCHAR({sqlTypeInfo.StringLength})";
+                    writer.Append($"VARCHAR({sqlTypeInfo.StringLength})");
                 }
                 else
                 {
-                    return "VARCHAR";
+                    writer.Append("VARCHAR");
                 }
             }
             else if (type == typeof(DateTime))
             {
-                return "TIMESTAMP";
+                writer.Append("TIMESTAMP");
             }
             else if (type == typeof(bool))
             {
-                return "BOOLEAN";
+                writer.Append("BOOLEAN");
             }
             else if (type == typeof(byte[]))
             {
-                return "BYTEA";
+                writer.Append("BYTEA");
             }
             else
             {
@@ -123,7 +123,7 @@ namespace TypedSql.PostgreSql
             }
             else
             {
-                writer.Append(WriteColumnType(column.Type, column.SqlType));
+                WriteColumnType(column.Type, column.SqlType, writer);
 
                 if (column.Nullable)
                 {

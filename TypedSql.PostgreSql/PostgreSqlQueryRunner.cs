@@ -94,7 +94,7 @@ namespace TypedSql.PostgreSql
                     var baseType = nullable ? Nullable.GetUnderlyingType(declareVariable.VariableType) : declareVariable.VariableType;
 
                     sb.Append(", CAST(NULL AS ");
-                    sb.Append(Formatter.WriteColumnType(baseType, declareVariable.SqlTypeInfo));
+                    Formatter.WriteColumnType(baseType, declareVariable.SqlTypeInfo, sb);
                     sb.Append(") AS ");
                     Formatter.WriteColumnName(declareVariable.VariableName, sb);
                 }

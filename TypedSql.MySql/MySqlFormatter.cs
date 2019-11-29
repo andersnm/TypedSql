@@ -21,68 +21,68 @@ namespace TypedSql.MySql
             writer.Append("`");
         }
 
-        public override string WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo)
+        public override void WriteColumnType(Type type, SqlTypeInfo sqlTypeInfo, StringBuilder writer)
         {
             if (type == typeof(sbyte))
             {
-                return "TINYINT";
+                writer.Append("TINYINT");
             }
             else if (type == typeof(byte))
             {
-                return "TINYINT UNSIGNED";
+                writer.Append("TINYINT UNSIGNED");
             }
             else if (type == typeof(short))
             {
-                return "SMALLINT";
+                writer.Append("SMALLINT");
             }
             else if (type == typeof(ushort))
             {
-                return "SMALLINT UNSIGNED";
+                writer.Append("SMALLINT UNSIGNED");
             }
             else if (type == typeof(int))
             {
-                return "INT";
+                writer.Append("INT");
             }
             else if (type == typeof(uint))
             {
-                return "INT UNSIGNED";
+                writer.Append("INT UNSIGNED");
             }
             else if (type == typeof(long))
             {
-                return "BIGINT";
+                writer.Append("BIGINT");
             }
             else if (type == typeof(ulong))
             {
-                return "BIGINT UNSIGNED";
+                writer.Append("BIGINT UNSIGNED");
             }
             else if (type == typeof(decimal))
             {
-                return $"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})";
+                writer.Append($"DECIMAL({sqlTypeInfo.DecimalPrecision}, {sqlTypeInfo.DecimalScale})");
             }
             else if (type == typeof(float))
             {
-                return "REAL";
+                writer.Append("REAL");
             }
             else if (type == typeof(double))
             {
-                return "REAL";
+                writer.Append("REAL");
             }
             else if (type == typeof(string))
             {
                 var length = sqlTypeInfo.StringLength > 0 ? sqlTypeInfo.StringLength.ToString() : "1024";
-                return $"VARCHAR({length})";
+                writer.Append($"VARCHAR({length})");
             }
             else if (type == typeof(DateTime))
             {
-                return "DATETIME";
+                writer.Append("DATETIME");
             }
             else if (type == typeof(bool))
             {
-                return "BIT";
+                writer.Append("BIT");
             }
             else if (type == typeof(byte[]))
             {
-                return "MEDIUMBLOB";
+                writer.Append("MEDIUMBLOB");
             }
             else
             {
@@ -95,7 +95,7 @@ namespace TypedSql.MySql
             WriteColumnName(column.Name, writer);
             writer.Append(" ");
 
-            writer.Append(WriteColumnType(column.Type, column.SqlType));
+            WriteColumnType(column.Type, column.SqlType, writer);
 
             if (column.Nullable)
             {
