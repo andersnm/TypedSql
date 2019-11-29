@@ -31,6 +31,11 @@ namespace TypedSql.Test
                 DecimalValue = 4.5M,
                 DoubleValue = 1.23D,
                 FloatValue = 6.4f,
+                MultiplyValue = 3 * 7,
+                DivideValue = 42 / 2,
+                ModulusValue = 483 % 22,
+                AddValue = 10 + 11,
+                SubtractValue = 31 - 10,
             }).ToList();
 
             Assert.AreEqual(1, results.Count, "Should be 1 result");
@@ -40,6 +45,11 @@ namespace TypedSql.Test
             Assert.AreEqual(4.5M, results[0].DecimalValue, "DecimalValue should be 4.5");
             Assert.AreEqual(1.23D, results[0].DoubleValue, "DoubleValue should be 1.23");
             Assert.AreEqual(6.4f, results[0].FloatValue, "FloatValue should be 6.4");
+            Assert.AreEqual(21, results[0].MultiplyValue, "Multiply 21");
+            Assert.AreEqual(21, results[0].DivideValue, "Divide 21");
+            Assert.AreEqual(21, results[0].ModulusValue, "Modulus 21");
+            Assert.AreEqual(21, results[0].AddValue, "Add 21");
+            Assert.AreEqual(21, results[0].SubtractValue, "Subtract 21");
         }
 
         class TestClass
@@ -1025,6 +1035,10 @@ namespace TypedSql.Test
             var not_eq = runner.Select(DB.TypeValues.Where(t => !(t.ByteValue == 10)).Project((ctx, c) => c.ByteValue)).ToList();
             Assert.AreEqual(1, neq.Count);
             Assert.AreEqual(1, neq[0]);
+
+            var negate_eq = runner.Select(DB.TypeValues.Where(t => -t.ByteValue == -10).Project((ctx, c) => c.ByteValue)).ToList();
+            Assert.AreEqual(1, negate_eq.Count);
+            Assert.AreEqual(10, negate_eq[0]);
         }
 
         [Test]
@@ -1060,6 +1074,10 @@ namespace TypedSql.Test
             var not_eq = runner.Select(DB.TypeValues.Where(t => !(t.NullableIntValue == 10)).Project((ctx, c) => c.NullableIntValue)).ToList();
             Assert.AreEqual(1, neq.Count);
             Assert.AreEqual(1, neq[0]);
+
+            var negate_eq = runner.Select(DB.TypeValues.Where(t => -t.NullableIntValue == -10).Project((ctx, c) => c.NullableIntValue)).ToList();
+            Assert.AreEqual(1, negate_eq.Count);
+            Assert.AreEqual(10, negate_eq[0]);
         }
 
         [Test]

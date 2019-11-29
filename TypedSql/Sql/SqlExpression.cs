@@ -147,7 +147,6 @@ namespace TypedSql
     {
         public object Value { get; set; }
         public Type ConstantType { get; set; }
-        public string ConstantName { get; set; }
 
         public override Type GetExpressionType()
         {
