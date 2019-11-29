@@ -386,12 +386,6 @@ namespace TypedSql {
             return result;
         }
 
-        private SqlExpression ParseExpression<T>(Expression<Func<T>> node) where T : struct
-        {
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-            return ParseExpression(node.Body, parameters);
-        }
-
         public SqlExpression ParseExpression(LambdaExpression node)
         {
             var parameters = new Dictionary<string, SqlSubQueryResult>();
@@ -588,38 +582,10 @@ namespace TypedSql {
             {
                 var member = (MemberExpression)node;
 
-                if (member.Expression is ParameterExpression parameter)
+                var thisAsMember = TryParseSqlMember(member.Expression, member.Member.Name, parameters);
+                if (thisAsMember != null)
                 {
-                    return GetParameterExpression(parameter.Name, member.Member.Name, parameters);
-                }
-                if (member.Expression is MemberExpression)
-                {
-                    var memberRef = ParseParameterMemberExpression(member, parameters);
-                    if (memberRef != null)
-                    {
-                        if (memberRef is SqlTableFieldMember tableFieldRef)
-                        {
-                            return new SqlTableFieldExpression()
-                            {
-                                TableFieldRef = tableFieldRef,
-                            };
-                        }
-                        else if (memberRef is SqlJoinFieldMember joinFieldRef)
-                        {
-                            return new SqlJoinFieldExpression()
-                            {
-                                JoinFieldRef = joinFieldRef,
-                            };
-                        }
-                        else if (memberRef is SqlExpressionMember expressionRef)
-                        {
-                            return expressionRef.Expression;
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Unhandled member ref in member expression");
-                        }
-                    }
+                    return GetExpressionForSqlMember(thisAsMember);
                 }
 
                 var memberThisType = member.Member.DeclaringType;
@@ -737,31 +703,24 @@ namespace TypedSql {
             }
         }
 
-        SqlMember ParseParameterMemberExpression(MemberExpression expression, Dictionary<string, SqlSubQueryResult> parameters)
+        SqlMember TryParseSqlMember(Expression expression, string memberName, Dictionary<string, SqlSubQueryResult> parameters)
         {
-            if (expression.Expression is ParameterExpression parameter)
+            if (expression is ParameterExpression parameterExpression)
             {
-                // Lookups on selector parameter
-                var subQuery = parameters[parameter.Name];
-                var subQueryMember = subQuery.Members.Where(m => m.MemberName == expression.Member.Name).First();
-                return subQueryMember;
+                var subQuery = parameters[parameterExpression.Name];
+                return subQuery.Members.Where(m => m.MemberName == memberName).First();
             }
             else
-            if (expression.Expression is MemberExpression memberExpression)
+            if (expression is MemberExpression memberExpression)
             {
-                var x = ParseParameterMemberExpression(memberExpression, parameters);
-
-                if (x is SqlExpressionMember exprRef && exprRef.Expression is SqlTableExpression tableExpression)
+                var thisAsMember = TryParseSqlMember(memberExpression.Expression, memberExpression.Member.Name, parameters);
+                if (thisAsMember is SqlExpressionMember exprRef && exprRef.Expression is SqlTableExpression tableExpression)
                 {
-                    return tableExpression.TableResult.Members.Where(m => m.MemberName == expression.Member.Name).First();
+                    return tableExpression.TableResult.Members.Where(m => m.MemberName == memberName).First();
                 }
+            }
 
-                return null;
-            }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         SqlExpression GetConstantExpression(object value, Type type)
@@ -844,10 +803,8 @@ namespace TypedSql {
             }
         }
 
-        SqlExpression GetParameterExpression(string parameterName, string memberName, Dictionary<string, SqlSubQueryResult> parameters)
+        SqlExpression GetExpressionForSqlMember(SqlMember subQueryMember)
         {
-            var subQuery = parameters[parameterName];
-            var subQueryMember = subQuery.Members.Where(m => m.MemberName == memberName).First();
             if ((subQueryMember is SqlTableFieldMember tableFieldRef))
             {
                 return new SqlTableFieldExpression
