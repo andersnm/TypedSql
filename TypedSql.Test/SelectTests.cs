@@ -1183,11 +1183,13 @@ namespace TypedSql.Test
             for (var i = 0; i < 100; i++)
             {
                 var name = "Product " + i.ToString("D3");
+                var sku = "SKU" + i.ToString("D3");
                 var price = i % 5; // cannot use in expression: evaled too late!
                 stmtList.Insert(DB.Units, b => b
                     .Value(u => u.ProductId, productId.Value)
                     .Value(p => p.Name, name)
-                    .Value(p => p.Price, price));
+                    .Value(p => p.Price, price)
+                    .Value(p => p.UnitCode, sku));
             }
 
             runner.ExecuteNonQuery(stmtList);
@@ -1222,11 +1224,13 @@ namespace TypedSql.Test
             for (var i = 0; i < 100; i++)
             {
                 var name = "Product " + i.ToString("D3");
+                var sku = "SKU" + i.ToString("D3");
                 var price = i % 5; // cannot use in expression: evaled too late!
                 stmtList.Insert(DB.Units, b => b
                     .Value(u => u.ProductId, productId.Value)
                     .Value(p => p.Name, name)
-                    .Value(p => p.Price, price));
+                    .Value(p => p.Price, price)
+                    .Value(p => p.UnitCode, sku));
             }
 
             runner.ExecuteNonQuery(stmtList);
