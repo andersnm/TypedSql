@@ -14,11 +14,17 @@ namespace TypedSql.Test
         ReferenceColumns = new[] { nameof(Product.ProductId) },
         ReferenceTableType = typeof(Product))
     ]
+    [Index(Name = "ix_sku",
+        Columns = new[] { nameof(UnitCode) },
+        Unique = true
+    )]
     public class Unit
     {
         [PrimaryKey(AutoIncrement = true)]
         public int UnitId { get; set; }
         public int ProductId { get; set; }
+        [SqlString(Length = 16)]
+        public string UnitCode { get; set; }
         public string Name { get; set; }
         public int Price { get; set; }
     }

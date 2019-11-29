@@ -188,7 +188,8 @@ namespace TypedSql.Test
             stmtList.Insert(DB.Units, insert => insert
                 .Value(p => p.Name, "Happy XL")
                 .Value(p => p.ProductId, product1Id.Value)
-                .Value(p => p.Price, 150));
+                .Value(p => p.Price, 150)
+                .Value(p => p.UnitCode, "P10001"));
 
             var unit1Id = stmtList.DeclareSqlVariable<int>("unit1Id");
             stmtList.SetSqlVariable(unit1Id, ctx => Function.LastInsertIdentity<int>(ctx));
@@ -196,7 +197,8 @@ namespace TypedSql.Test
             stmtList.Insert(DB.Units, insert => insert
                 .Value(p => p.Name, "Happy Large")
                 .Value(p => p.ProductId, product1Id.Value)
-                .Value(p => p.Price, 100));
+                .Value(p => p.Price, 100)
+                .Value(p => p.UnitCode, "P10002"));
 
             var unit2Id = stmtList.DeclareSqlVariable<int>("unit2Id");
             stmtList.SetSqlVariable(unit2Id, ctx => Function.LastInsertIdentity<int>(ctx));
@@ -204,7 +206,8 @@ namespace TypedSql.Test
             stmtList.Insert(DB.Units, insert => insert
                 .Value(p => p.Name, "Happy Small")
                 .Value(p => p.ProductId, product1Id.Value)
-                .Value(p => p.Price, 50));
+                .Value(p => p.Price, 50)
+                .Value(p => p.UnitCode, "P10003"));
 
             var unit3Id = stmtList.DeclareSqlVariable<int>("unit3Id");
             stmtList.SetSqlVariable(unit3Id, ctx => Function.LastInsertIdentity<int>(ctx));

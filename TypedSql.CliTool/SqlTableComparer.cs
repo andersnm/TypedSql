@@ -47,13 +47,15 @@ namespace TypedSql.CliTool
                         TableName = nextTable.TableName,
                         Columns = nextTable.Columns,
                     });
+
+                    CompareIndices(new List<SqlIndex>(), nextTable, statements);
                 }
                 else
                 {
                     // Generate changes for columns and indices, but not foreign keys
                     CompareColumns(previousTable, nextTable, statements);
                     // CompareForeignKeys(previousTable, nextTable, statements);
-                    CompareIndices(previousTable, nextTable, statements);
+                    CompareIndices(previousTable.Indices, nextTable, statements);
                 }
             }
 
@@ -167,18 +169,18 @@ namespace TypedSql.CliTool
             */
         }
 
-        static void CompareIndices(SqlTable previousTable, SqlTable nextTable, List<SqlStatement> statements)
+        static void CompareIndices(List<SqlIndex> previousIndices, SqlTable nextTable, List<SqlStatement> statements)
         {
             // Find and remove dropped
-            foreach (var previousIndex in previousTable.Indices)
+            foreach (var previousIndex in previousIndices)
             {
                 var nextIndex = nextTable.Indices.Where(c => c.Name == previousIndex.Name).FirstOrDefault();
                 if (nextIndex == null)
                 {
-                    statements.Add(new SqlDropForeignKey()
+                    statements.Add(new SqlDropIndex()
                     {
                         TableName = nextTable.TableName,
-                        ForeignKeyName = previousIndex.Name,
+                        IndexName = previousIndex.Name,
                     });
                 }
             }
@@ -186,7 +188,7 @@ namespace TypedSql.CliTool
             // Add new in next, or update modified
             foreach (var nextIndex in nextTable.Indices)
             {
-                var previousIndex = previousTable.Indices.Where(c => c.Name == nextIndex.Name).FirstOrDefault();
+                var previousIndex = previousIndices.Where(c => c.Name == nextIndex.Name).FirstOrDefault();
                 if (previousIndex == null)
                 {
                     statements.Add(new SqlAddIndex()
