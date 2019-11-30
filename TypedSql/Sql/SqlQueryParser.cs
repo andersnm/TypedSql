@@ -531,7 +531,7 @@ namespace TypedSql {
 
                     return new SqlBinaryExpression()
                     {
-                        Op = ExpressionType.Quote, // ??? TODO
+                        Op = SqlBinaryOperator.Like,
                         Left = arg0,
                         Right = arg1,
                     };
@@ -615,7 +615,7 @@ namespace TypedSql {
                 {
                     Left = ParseExpression(binary.Left, parameters),
                     Right = ParseExpression(binary.Right, parameters),
-                    Op = node.NodeType,
+                    Op = GetSqlBinaryOperator(node.NodeType),
                 };
             }
             else if (node is UnaryExpression convert && node.NodeType == ExpressionType.Convert)
@@ -701,6 +701,43 @@ namespace TypedSql {
             {
                 throw new Exception("Unsupported expression " + node.NodeType);
             }
+        }
+
+        SqlBinaryOperator GetSqlBinaryOperator(ExpressionType type)
+        {
+            switch (type)
+            {
+                case ExpressionType.Equal:
+                    return SqlBinaryOperator.Equal;
+                case ExpressionType.NotEqual:
+                    return SqlBinaryOperator.NotEqual;
+                case ExpressionType.GreaterThan:
+                    return SqlBinaryOperator.GreaterThan;
+                case ExpressionType.GreaterThanOrEqual:
+                    return SqlBinaryOperator.GreaterThanOrEqual;
+                case ExpressionType.LessThan:
+                    return SqlBinaryOperator.LessThan;
+                case ExpressionType.LessThanOrEqual:
+                    return SqlBinaryOperator.LessThanOrEqual;
+                case ExpressionType.Add:
+                    return SqlBinaryOperator.Add;
+                case ExpressionType.Subtract:
+                    return SqlBinaryOperator.Subtract;
+                case ExpressionType.Multiply:
+                    return SqlBinaryOperator.Multiply;
+                case ExpressionType.Divide:
+                    return SqlBinaryOperator.Divide;
+                case ExpressionType.Modulo:
+                    return SqlBinaryOperator.Modulo;
+                case ExpressionType.AndAlso:
+                    return SqlBinaryOperator.AndAlso;
+                case ExpressionType.OrElse:
+                    return SqlBinaryOperator.OrElse;
+                case ExpressionType.Coalesce:
+                    return SqlBinaryOperator.Coalesce;
+            }
+
+            throw new InvalidOperationException("Operator not supported " + type.ToString());
         }
 
         SqlMember TryParseSqlMember(Expression expression, string memberName, Dictionary<string, SqlSubQueryResult> parameters)

@@ -211,11 +211,11 @@ namespace TypedSql
                 if (binary.Right is SqlConstantExpression constExpr && constExpr.Value == null)
                 {
                     WriteExpression(binary.Left, writer);
-                    if (binary.Op == ExpressionType.Equal)
+                    if (binary.Op == SqlBinaryOperator.Equal)
                     {
                         writer.Append(" IS NULL");
                     }
-                    else if (binary.Op == ExpressionType.NotEqual)
+                    else if (binary.Op == SqlBinaryOperator.NotEqual)
                     {
                         writer.Append(" IS NOT NULL");
                     }
@@ -224,7 +224,7 @@ namespace TypedSql
                         throw new Exception(binary.Op.ToString());
                     }
                 }
-                else if (leftType == typeof(string) && rightType == typeof(string) && binary.Op == ExpressionType.Add)
+                else if (leftType == typeof(string) && rightType == typeof(string) && binary.Op == SqlBinaryOperator.Add)
                 {
                     writer.Append("CONCAT(");
                     WriteExpression(binary.Left, writer);
@@ -232,18 +232,18 @@ namespace TypedSql
                     WriteExpression(binary.Right, writer);
                     writer.Append(")");
                 }
-                else if (leftType == typeof(string) && rightType == typeof(string) && binary.Op == ExpressionType.Quote)
+                else if (leftType == typeof(string) && rightType == typeof(string) && binary.Op == SqlBinaryOperator.Like)
                 {
                     // like haxx using Quote op
                     WriteExpression(binary.Left, writer);
                     writer.Append(" LIKE ");
                     WriteExpression(binary.Right, writer);
                 }
-                else if (binary.Op == ExpressionType.Coalesce)
+                else if (binary.Op == SqlBinaryOperator.Coalesce)
                 {
                     WriteIfNullExpression(binary.Left, binary.Right, writer);
                 }
-                else if (binary.Op == ExpressionType.Modulo)
+                else if (binary.Op == SqlBinaryOperator.Modulo)
                 {
                     WriteModuloExpression(binary.Left, binary.Right, writer);
                 }
@@ -251,51 +251,51 @@ namespace TypedSql
                 {
                     writer.Append("(");
                     WriteExpression(binary.Left, writer);
-                    if (binary.Op == ExpressionType.Equal)
+                    if (binary.Op == SqlBinaryOperator.Equal)
                     {
                         writer.Append("=");
                     }
-                    else if (binary.Op == ExpressionType.NotEqual)
+                    else if (binary.Op == SqlBinaryOperator.NotEqual)
                     {
                         writer.Append("<>");
                     }
-                    else if (binary.Op == ExpressionType.GreaterThan)
+                    else if (binary.Op == SqlBinaryOperator.GreaterThan)
                     {
                         writer.Append(">");
                     }
-                    else if (binary.Op == ExpressionType.GreaterThanOrEqual)
+                    else if (binary.Op == SqlBinaryOperator.GreaterThanOrEqual)
                     {
                         writer.Append(">=");
                     }
-                    else if (binary.Op == ExpressionType.LessThan)
+                    else if (binary.Op == SqlBinaryOperator.LessThan)
                     {
                         writer.Append("<");
                     }
-                    else if (binary.Op == ExpressionType.LessThanOrEqual)
+                    else if (binary.Op == SqlBinaryOperator.LessThanOrEqual)
                     {
                         writer.Append("<=");
                     }
-                    else if (binary.Op == ExpressionType.Add)
+                    else if (binary.Op == SqlBinaryOperator.Add)
                     {
                         writer.Append("+");
                     }
-                    else if (binary.Op == ExpressionType.Subtract)
+                    else if (binary.Op == SqlBinaryOperator.Subtract)
                     {
                         writer.Append("-");
                     }
-                    else if (binary.Op == ExpressionType.Multiply)
+                    else if (binary.Op == SqlBinaryOperator.Multiply)
                     {
                         writer.Append("*");
                     }
-                    else if (binary.Op == ExpressionType.Divide)
+                    else if (binary.Op == SqlBinaryOperator.Divide)
                     {
                         writer.Append("/");
                     }
-                    else if (binary.Op == ExpressionType.AndAlso)
+                    else if (binary.Op == SqlBinaryOperator.AndAlso)
                     {
                         writer.Append(" AND ");
                     }
-                    else if (binary.Op == ExpressionType.OrElse)
+                    else if (binary.Op == SqlBinaryOperator.OrElse)
                     {
                         writer.Append(" OR ");
                     }
@@ -529,7 +529,7 @@ namespace TypedSql
                 return false;
             }
 
-            if (condTestExpr.Op != ExpressionType.NotEqual)
+            if (condTestExpr.Op != SqlBinaryOperator.NotEqual)
             {
                 return false;
             }
@@ -614,14 +614,14 @@ namespace TypedSql
                 return false;
             }
 
-            if (testExpr.Left is SqlTableExpression && testExpr.Right is SqlConstantExpression rightExpr && rightExpr.Value == null && testExpr.Op == ExpressionType.NotEqual)
+            if (testExpr.Left is SqlTableExpression && testExpr.Right is SqlConstantExpression rightExpr && rightExpr.Value == null && testExpr.Op == SqlBinaryOperator.NotEqual)
             {
                 outputExpression = condExpr.IfTrue;
                 return true;
             }
 
             // "x == null ? null : x.Value" where x is a table/result type
-            if (testExpr.Right is SqlTableExpression && testExpr.Left is SqlConstantExpression leftExpr && leftExpr.Value == null && testExpr.Op == ExpressionType.Equal)
+            if (testExpr.Right is SqlTableExpression && testExpr.Left is SqlConstantExpression leftExpr && leftExpr.Value == null && testExpr.Op == SqlBinaryOperator.Equal)
             {
                 outputExpression = condExpr.IfFalse;
                 return true;

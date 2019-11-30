@@ -50,25 +50,36 @@ namespace TypedSql
         }
     }
 
+    public enum SqlBinaryOperator
+    {
+        Equal, NotEqual,
+        GreaterThan, GreaterThanOrEqual,
+        LessThan, LessThanOrEqual,
+        AndAlso, OrElse,
+        Add, Subtract,
+        Multiply, Divide, Modulo,
+        Like, Coalesce,
+    }
+
     public class SqlBinaryExpression : SqlExpression
     {
         public SqlExpression Left { get; set; }
         public SqlExpression Right { get; set; }
-        public ExpressionType Op { get; set; }
+        public SqlBinaryOperator Op { get; set; }
 
         public override Type GetExpressionType()
         {
             // Handle boolean expressions
             switch (Op)
             {
-                case ExpressionType.Equal:
-                case ExpressionType.NotEqual:
-                case ExpressionType.GreaterThan:
-                case ExpressionType.GreaterThanOrEqual:
-                case ExpressionType.LessThan:
-                case ExpressionType.LessThanOrEqual:
-                case ExpressionType.AndAlso:
-                case ExpressionType.OrElse:
+                case SqlBinaryOperator.Equal:
+                case SqlBinaryOperator.NotEqual:
+                case SqlBinaryOperator.GreaterThan:
+                case SqlBinaryOperator.GreaterThanOrEqual:
+                case SqlBinaryOperator.LessThan:
+                case SqlBinaryOperator.LessThanOrEqual:
+                case SqlBinaryOperator.AndAlso:
+                case SqlBinaryOperator.OrElse:
                     return typeof(bool);
             }
 
