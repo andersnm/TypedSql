@@ -137,29 +137,24 @@ namespace TypedSql
 
         static object ReadSimpleValue(IDataRecord reader, Type propertyType, int ordinal, out int usedOrdinals)
         {
-            var typeInfo = propertyType.GetTypeInfo();
             var isNull = reader.IsDBNull(ordinal);
             var value = isNull ? null : reader.GetValue(ordinal);
 
-            if (IsScalarType(propertyType))
+            usedOrdinals = 1;
+            if (IsNullable(propertyType))
             {
-                usedOrdinals = 1;
-                return ChangeTypeOrEnum(value, propertyType);
-            }
-            else if (IsNullable(propertyType) && IsScalarType(typeInfo.GenericTypeArguments[0]))
-            {
-                usedOrdinals = 1;
-
                 if (value == null || value == DBNull.Value)
                 {
                     return Activator.CreateInstance(propertyType, null);
                 }
 
-                var underlyingValue = ChangeTypeOrEnum(value, Nullable.GetUnderlyingType(propertyType));
-                return Activator.CreateInstance(propertyType, underlyingValue);
+                value = ChangeTypeOrEnum(value, Nullable.GetUnderlyingType(propertyType));
+                return Activator.CreateInstance(propertyType, value);
             }
-
-            throw new InvalidOperationException("Expected scalar in ReadSimpleValue");
+            else
+            {
+                return ChangeTypeOrEnum(value, propertyType);
+            }
         }
 
         static object ReadMemberValue(IDataRecord reader, SqlMember member, int ordinal, out int usedOrdinals)
