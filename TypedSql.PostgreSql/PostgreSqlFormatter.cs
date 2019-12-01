@@ -420,58 +420,58 @@ namespace TypedSql.PostgreSql
         {
             if (callExpr.Method.Name == nameof(Function.Year))
             {
-                writer.Append("EXTRACT(YEAR FROM ");
+                writer.Append("CAST(EXTRACT(YEAR FROM ");
 
                 var dateExpr = callExpr.Arguments[0];
                 WriteExpression(dateExpr, writer);
 
-                writer.Append(")");
+                writer.Append(") AS INT)");
             }
             else if (callExpr.Method.Name == nameof(Function.Month))
             {
-                writer.Append("EXTRACT(MONTH FROM ");
+                writer.Append("CAST(EXTRACT(MONTH FROM ");
 
                 var dateExpr = callExpr.Arguments[0];
                 WriteExpression(dateExpr, writer);
 
-                writer.Append(")");
+                writer.Append(") AS INT)");
             }
             else if (callExpr.Method.Name == nameof(Function.Day))
             {
-                writer.Append("EXTRACT(DAY FROM ");
+                writer.Append("CAST(EXTRACT(DAY FROM ");
 
                 var dateExpr = callExpr.Arguments[0];
                 WriteExpression(dateExpr, writer);
 
-                writer.Append(")");
+                writer.Append(") AS INT)");
             }
             else
             if (callExpr.Method.Name == nameof(Function.Hour))
             {
-                writer.Append("EXTRACT(HOUR FROM ");
+                writer.Append("CAST(EXTRACT(HOUR FROM ");
 
                 var dateExpr = callExpr.Arguments[0];
                 WriteExpression(dateExpr, writer);
 
-                writer.Append(")");
+                writer.Append(") AS INT)");
             }
             else if (callExpr.Method.Name == nameof(Function.Minute))
             {
-                writer.Append("EXTRACT(MINUTE FROM ");
+                writer.Append("CAST(EXTRACT(MINUTE FROM ");
 
                 var dateExpr = callExpr.Arguments[0];
                 WriteExpression(dateExpr, writer);
 
-                writer.Append(")");
+                writer.Append(") AS INT)");
             }
             else if (callExpr.Method.Name == nameof(Function.Second))
             {
-                writer.Append("EXTRACT(SECOND FROM ");
+                writer.Append("CAST(EXTRACT(SECOND FROM ");
 
                 var dateExpr = callExpr.Arguments[0];
                 WriteExpression(dateExpr, writer);
 
-                writer.Append(")");
+                writer.Append(") AS INT)");
             }
             else
             {

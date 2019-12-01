@@ -8,11 +8,14 @@ namespace TypedSql
     public abstract class SqlQueryRunner : IQueryRunner
     {
         protected SqlBaseFormatter Formatter { get; }
+        protected SqlBaseMaterializer Materializer { get; }
         protected List<SqlMember> LastSelectMembers { get; set; }
 
         public SqlQueryRunner(SqlBaseFormatter formatter)
         {
             Formatter = formatter;
+            Materializer = new CompiledMaterializer();
+            // Materializer = new DefaultMaterializer();
         }
 
         public abstract int ExecuteNonQuery(List<SqlStatement> statements, List<KeyValuePair<string, object>> constants);

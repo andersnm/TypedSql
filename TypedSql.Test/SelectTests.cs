@@ -747,16 +747,16 @@ namespace TypedSql.Test
             Assert.AreEqual(IntEnumType.TestValue1, results[0].IntEnumValue, "Should be TestValue1");
         }
 
-        class Aggregated<T> where T : struct
+        class Aggregated<T, SumT> where T : struct where SumT : struct
         {
-            public T? Sum { get; set; }
-            public T? Average { get; set; }
+            public SumT? Sum { get; set; }
+            public SumT? Average { get; set; }
             public int Count { get; set; }
             public T? Min { get; set; }
             public T? Max { get; set; }
         }
 
-        void SelectAggregated<T>(Type runnerType, Expression<Func<SelectorContext<TypeValue>, TypeValue, Aggregated<T>>> func) where T : struct
+        void SelectAggregated<T, SumT>(Type runnerType, Expression<Func<SelectorContext<TypeValue>, TypeValue, Aggregated<T, SumT>>> func) where T : struct where SumT : struct
         {
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
             ResetDb(runner);
@@ -787,7 +787,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateByte(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<byte>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<byte, int>()
             {
                 Sum = Function.Sum(ctx, x => x.ByteValue),
                 Count = Function.Count(ctx, x => x.ByteValue),
@@ -797,7 +797,6 @@ namespace TypedSql.Test
             });
         }
 
-
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
@@ -805,7 +804,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateShort(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<short>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<short, int>()
             {
                 Sum = Function.Sum(ctx, x => x.ShortValue),
                 Count = Function.Count(ctx, x => x.ShortValue),
@@ -822,7 +821,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateInt(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<int>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<int, int>()
             {
                 Sum = Function.Sum(ctx, x => x.IntValue),
                 Count = Function.Count(ctx, x => x.IntValue),
@@ -839,7 +838,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateNullableInt(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<int>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<int, int>()
             {
                 Sum = Function.Sum(ctx, x => x.NullableIntValue),
                 Count = Function.Count(ctx, x => x.NullableIntValue),
@@ -856,7 +855,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateLong(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<long>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<long, long>()
             {
                 Sum = Function.Sum(ctx, x => x.LongValue),
                 Count = Function.Count(ctx, x => x.LongValue),
@@ -873,7 +872,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateDecimal(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<decimal>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<decimal, decimal>()
             {
                 Sum = Function.Sum(ctx, x => x.DecimalValue),
                 Count = Function.Count(ctx, x => x.DecimalValue),
@@ -890,7 +889,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateFloat(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<float>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<float, double>()
             {
                 Sum = Function.Sum(ctx, x => x.FloatValue),
                 Count = Function.Count(ctx, x => x.FloatValue),
@@ -907,7 +906,7 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateDouble(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<double>() {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<double, double>() {
                 Sum = Function.Sum(ctx, x => x.DoubleValue),
                 Count = Function.Count(ctx, x => x.DoubleValue),
                 Average = Function.Average(ctx, x => x.DoubleValue),
@@ -924,7 +923,7 @@ namespace TypedSql.Test
         public void SelectAggregateDateTime(Type runnerType)
         {
             var d = new DateTime(1970, 1, 1);
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<DateTime>()
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<DateTime, DateTime>()
             {
                 Sum = d,
                 Count = Function.Count(ctx, x => x.DateTimeValue),

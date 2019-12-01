@@ -4,9 +4,9 @@ namespace TypedSql
 {
     public static partial class Function
     {
-        public static byte? Sum<T>(SelectorContext<T> t, Func<T, byte?> selector)
+        public static int? Sum<T>(SelectorContext<T> t, Func<T, byte?> selector)
         {
-            var result = (byte?)0;
+            var result = (int?)0;
             foreach (var item in t.Items)
             {
                 result += selector(item);
@@ -15,9 +15,9 @@ namespace TypedSql
             return result;
         }
 
-        public static short? Sum<T>(SelectorContext<T> t, Func<T, short?> selector)
+        public static int? Sum<T>(SelectorContext<T> t, Func<T, short?> selector)
         {
-            var result = (short?)0;
+            var result = (int?)0;
             foreach (var item in t.Items)
             {
                 result += selector(item);
@@ -59,9 +59,9 @@ namespace TypedSql
             return result;
         }
 
-        public static float? Sum<T>(SelectorContext<T> t, Func<T, float?> selector)
+        public static double? Sum<T>(SelectorContext<T> t, Func<T, float?> selector)
         {
-            var result = (float?)0;
+            var result = (double?)0;
             foreach (var item in t.Items)
             {
                 result += selector(item);

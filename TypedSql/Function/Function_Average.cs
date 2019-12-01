@@ -4,9 +4,9 @@ namespace TypedSql
 {
     public static partial class Function
     {
-        public static byte? Average<T>(SelectorContext<T> t, Func<T, byte?> selector)
+        public static int? Average<T>(SelectorContext<T> t, Func<T, byte?> selector)
         {
-            var result = (byte?)0;
+            var result = (int?)0;
             var count = 0;
             foreach (var item in t.Items)
             {
@@ -14,12 +14,12 @@ namespace TypedSql
                 count++;
             }
 
-            return Convert.ToByte(result.Value / count);
+            return result / count;
         }
 
-        public static short? Average<T>(SelectorContext<T> t, Func<T, short?> selector)
+        public static int? Average<T>(SelectorContext<T> t, Func<T, short?> selector)
         {
-            var result = (short?)0;
+            var result = (int?)0;
             var count = 0;
             foreach (var item in t.Items)
             {
@@ -27,7 +27,7 @@ namespace TypedSql
                 count++;
             }
 
-            return Convert.ToByte(result.Value / count);
+            return result / count;
         }
 
         public static int? Average<T>(SelectorContext<T> t, Func<T, int?> selector)
@@ -69,9 +69,9 @@ namespace TypedSql
             return result / count;
         }
 
-        public static float? Average<T>(SelectorContext<T> t, Func<T, float?> selector)
+        public static double? Average<T>(SelectorContext<T> t, Func<T, float?> selector)
         {
-            var result = (float?)0;
+            var result = (double?)0;
             var count = 0;
             foreach (var item in t.Items)
             {

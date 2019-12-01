@@ -92,7 +92,7 @@ namespace TypedSql.SqlServer
             }
             else if (type == typeof(double))
             {
-                writer.Append("REAL");
+                writer.Append("DOUBLE PRECISION");
             }
             else if (type == typeof(string))
             {

@@ -66,7 +66,7 @@ namespace TypedSql.PostgreSql
 
                 try
                 {
-                    foreach (var record in reader.ReadTypedReader<T>(LastSelectMembers))
+                    foreach (var record in Materializer.ReadTypedReader<T>(reader, LastSelectMembers))
                     {
                         yield return record;
                     }
