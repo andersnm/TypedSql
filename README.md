@@ -2,6 +2,7 @@
 
 **EXPERIMENTAL** Write database queries in C# and syntax as close to real SQL as possible.
 
+[![NuGet](https://img.shields.io/nuget/v/TypedSql.svg)](https://www.nuget.org/packages/TypedSql)
 [![Build status](https://ci.appveyor.com/api/projects/status/luv9d8m96u2nweqk?svg=true)](https://ci.appveyor.com/project/andersnm/typedsql)
 [![Code coverage](https://codecov.io/gh/andersnm/TypedSql/branch/master/graph/badge.svg)](https://codecov.io/gh/andersnm/TypedSql)
 
@@ -21,28 +22,14 @@ TypedSql is inspired by and somewhat similar to Entity Framework and Linq2Sql, b
 - INNER JOIN, LEFT JOIN
 - GROUP BY, HAVING
 - ORDER BY, LIMIT, OFFSET
-- CREATE TABLE, DROP TABLE
 - DECLARE, SET SQL variables
 - Aggregate SQL functions AVERAGE(), COUNT(), SUM(), MIN(), MAX()
 - Scalar SQL functions YEAR(), MONTH(), DAY(), HOUR(), MINUTE(), SECOND(), LAST_INSERT_ID()
 - Batch multiple SQL statements
 - Composable SQL subqueries
+- Compiled object materialization
 - Implementations for SQL Server, MySQL, PostgreSQL and in-memory
 - Migrations
-
-## Getting the binaries
-
-For now you need to create a `nuget.config` file in the root of your solution pointing at the build servers Nuget feed:
-
-```xml
-<configuration>
-    <packageSources>
-        <add key="TypedSql AppVeyor Feed" value="https://ci.appveyor.com/nuget/typedsql-wo2kmq2wc3dg" />
-    </packageSources>
-</configuration>
-```
-
-Reload the solution and the packages `TypedSql`, `TypedSql.SqlServer` and `TypedSql.MySql` should be available in your Nuget package manager.
 
 ## Examples
 
@@ -158,11 +145,10 @@ INNER JOIN (SELECT b.ProductId, b.Name FROM Unit b) c ON a.ProductId = c.Product
 WHERE a.ProductId = 1
 ```
 
-
 ### SELECT ... LEFT JOIN
 
 The joined side in a LEFT JOIN can be null, so field accesses in the query code must be null-checked.
-The SQL generator recognizes null-checking shorthand patterns for nullables, and generates SQL without any actual null checks, since this is handled transparently in the SQL language:
+The SQL generator recognizes null-checking conditionals, and generates SQL without any actual null checks, since this is handled transparently in the SQL language:
 
 ```c#
 var query = stmtList.Select(
@@ -175,7 +161,7 @@ var query = stmtList.Select(
                 a.ProductId,
                 a.ProductName,
                 UnitId = b != null ? (int?)b.UnitId : null,
-                UnitName = b.UnitName
+                UnitName = b != null ? b.UnitName : null,
             }
         ));
 ```
