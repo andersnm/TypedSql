@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
-// using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 namespace TypedSql
 {
-    // [ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     internal class DefaultMaterializer : SqlBaseMaterializer
     {
         public override IEnumerable<T> ReadTypedReader<T>(IDataReader reader, List<SqlMember> selectMembers)

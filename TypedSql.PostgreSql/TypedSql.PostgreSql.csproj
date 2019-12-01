@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.2.2</Version>
+    <Version>0.3.0</Version>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>sql;database;pgsql;postgresql;orm;micro-orm</PackageTags>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/andersnm/TypedSql</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>PostgreSQL support for TypedSql</Description>
   </PropertyGroup>
 

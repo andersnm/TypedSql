@@ -4,14 +4,15 @@
     <Title>dotnet-typedsql</Title>
     <AssemblyName>dotnet-typedsql</AssemblyName>
     <PackageId>TypedSql.CliTool</PackageId>
-    <Version>0.2.2</Version>
+    <Version>0.3.0</Version>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>typedsql</ToolCommandName>
     <PackageType>DotnetCliTool</PackageType>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/andersnm/TypedSql</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>Migrations tool for TypedSql</Description>
   </PropertyGroup>
 
