@@ -69,7 +69,7 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) SELECT ...
         /// </summary>
-        public static int Insert<T, STFrom, ST>(this IQueryRunner runner, FromQuery<T> query, Query<STFrom, ST> subQuery, Expression<Action<ST, InsertBuilder<T>>> insertExpr) where T : new()
+        public static int Insert<T, TSubFrom, TSub>(this IQueryRunner runner, FromQuery<T> query, Query<TSubFrom, TSub> subQuery, Expression<Action<TSub, InsertBuilder<T>>> insertExpr) where T : new()
         {
             var stmtList = new StatementList();
             stmtList.Insert(query, subQuery, insertExpr);

@@ -90,9 +90,9 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) SELECT ...
         /// </summary>
-        public void Insert<T, STFrom, ST>(FromQuery<T> query, Query<STFrom, ST> subQuery, Expression<Action<ST, InsertBuilder<T>>> insertExpr) where T : new()
+        public void Insert<T, TSubFrom, TSub>(FromQuery<T> query, Query<TSubFrom, TSub> subQuery, Expression<Action<TSub, InsertBuilder<T>>> insertExpr) where T : new()
         {
-            Queries.Add(new InsertSelectStatement<T, STFrom, ST>(query, subQuery, insertExpr));
+            Queries.Add(new InsertSelectStatement<T, TSubFrom, TSub>(query, subQuery, insertExpr));
         }
 
         public SqlPlaceholder<T> DeclareSqlVariable<T>(string name)

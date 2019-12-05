@@ -24,7 +24,7 @@ namespace TypedSql {
         public List<SelectorValue> Selectors { get; } = new List<SelectorValue>();
         public Type BuilderType { get; } = typeof(T);
 
-        public InsertBuilder<T> Value<FT>(Expression<Func<T, FT>> selector, FT value)
+        public InsertBuilder<T> Value<TValueType>(Expression<Func<T, TValueType>> selector, TValueType value)
         {
             Selectors.Add(new SelectorValue() { Selector = selector, Value = value });
             return this;

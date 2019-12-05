@@ -19,12 +19,12 @@ namespace TypedSql {
         internal abstract IOrderedEnumerable<T> ThenBy(IOrderedEnumerable<T> parent);
     }
 
-    public class OrderByItem<T, FT> : OrderByItem<T>
+    public class OrderByItem<T, TValueType> : OrderByItem<T>
     {
-        public Expression<Func<T, FT>> SelectorT { get; set; }
-        public Func<T, FT> SelectorFunction { get;  }
+        public Expression<Func<T, TValueType>> SelectorT { get; set; }
+        public Func<T, TValueType> SelectorFunction { get;  }
 
-        public OrderByItem(Expression<Func<T, FT>> selector, bool ascending)
+        public OrderByItem(Expression<Func<T, TValueType>> selector, bool ascending)
         {
             Selector = selector;
             SelectorT = selector;
@@ -66,9 +66,9 @@ namespace TypedSql {
     {
         public List<OrderByItem> Selectors { get; } = new List<OrderByItem>();
 
-        public OrderByBuilder<T> Value<FT>(Expression<Func<T, FT>> selector, bool ascending)
+        public OrderByBuilder<T> Value<TValueType>(Expression<Func<T, TValueType>> selector, bool ascending)
         {
-            Selectors.Add(new OrderByItem<T, FT>(selector, ascending));
+            Selectors.Add(new OrderByItem<T, TValueType>(selector, ascending));
             return this;
         }
 
