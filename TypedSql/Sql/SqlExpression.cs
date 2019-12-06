@@ -52,13 +52,21 @@ namespace TypedSql
 
     public enum SqlBinaryOperator
     {
-        Equal, NotEqual,
-        GreaterThan, GreaterThanOrEqual,
-        LessThan, LessThanOrEqual,
-        AndAlso, OrElse,
-        Add, Subtract,
-        Multiply, Divide, Modulo,
-        Like, Coalesce,
+        Equal,
+        NotEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+        LessThan,
+        LessThanOrEqual,
+        AndAlso,
+        OrElse,
+        Add,
+        Subtract,
+        Multiply,
+        Divide,
+        Modulo,
+        Like,
+        Coalesce,
     }
 
     public class SqlBinaryExpression : SqlExpression

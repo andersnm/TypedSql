@@ -63,9 +63,7 @@ namespace TypedSql
                     nullableDefault,
                     Expression.New(
                         nullableValueConstructor,
-                        CompileBaseScalar(Nullable.GetUnderlyingType(propertyType), recordParameter, ordinal)
-                    )
-                );
+                        CompileBaseScalar(Nullable.GetUnderlyingType(propertyType), recordParameter, ordinal)));
             }
             else
             {
