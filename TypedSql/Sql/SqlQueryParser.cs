@@ -5,30 +5,34 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace TypedSql {
-
+namespace TypedSql
+{
     public class InsertInfo
     {
         public SqlExpression Expression { get; set; }
         public string SqlName { get; set; }
     }
 
-    public class SqlAliasProvider {
+    public class SqlAliasProvider
+    {
         int counter = 0;
 
-        public string CreateAlias() {
+        public string CreateAlias()
+        {
             var alias = "t" + counter.ToString();
             counter++;
             return alias;
         }
     }
 
-    public class SqlQueryParser {
+    public class SqlQueryParser
+    {
         readonly SqlAliasProvider AliasProvider;
         readonly Dictionary<string, SqlSubQueryResult> SubqueryParameters;
         public Dictionary<string, object> Constants = new Dictionary<string, object>();
 
-        public SqlQueryParser(SqlAliasProvider aliasProvider, Dictionary<string, SqlSubQueryResult> subqueryParameters) {
+        public SqlQueryParser(SqlAliasProvider aliasProvider, Dictionary<string, SqlSubQueryResult> subqueryParameters)
+        {
             AliasProvider = aliasProvider;
             SubqueryParameters = subqueryParameters;
         }
@@ -51,7 +55,8 @@ namespace TypedSql {
             return result;
         }
 
-        public SqlQuery ParseQuery(Query query, out SqlSubQueryResult selectResult) {
+        public SqlQuery ParseQuery(Query query, out SqlSubQueryResult selectResult)
+        {
             if (query == null)
             {
                 // SELECTs without FROM have empty result
@@ -63,27 +68,32 @@ namespace TypedSql {
             }
 
             var fromQuery = query as IFromQuery;
-            if (fromQuery != null) {
+            if (fromQuery != null)
+            {
                 return ParseFromQuery(fromQuery, out selectResult);
             }
 
             var whereQuery = query as IWhereQuery;
-            if (whereQuery != null) {
+            if (whereQuery != null)
+            {
                 return ParseWhereQuery(whereQuery, out selectResult);
             }
 
             var joinQuery = query as IJoinQuery;
-            if (joinQuery != null) {
+            if (joinQuery != null)
+            {
                 return ParseJoinQuery(joinQuery, out selectResult);
             }
 
             var groupByQuery = query as IGroupByQuery;
-            if (groupByQuery != null) {
+            if (groupByQuery != null)
+            {
                 return ParseGroupByQuery(query, groupByQuery, out selectResult);
             }
 
             var havingQuery = query as IHavingQuery;
-            if (havingQuery != null) {
+            if (havingQuery != null)
+            {
                 return ParseHavingQuery(query, havingQuery, out selectResult);
             }
  
@@ -133,7 +143,8 @@ namespace TypedSql {
             throw new NotImplementedException("Unhandled query component");
         }
 
-        SqlQuery ParseGroupByQuery(Query query, IGroupByQuery groupByQuery, out SqlSubQueryResult parentResult) {
+        SqlQuery ParseGroupByQuery(Query query, IGroupByQuery groupByQuery, out SqlSubQueryResult parentResult)
+        {
             var result = ParseQuery(query.Parent, out var tempParentResult);
 
             var newExpression = groupByQuery.GroupExpression.Body as NewExpression;
@@ -158,7 +169,8 @@ namespace TypedSql {
             return result;
         }
 
-        SqlQuery ParseHavingQuery(Query query, IHavingQuery havingQuery, out SqlSubQueryResult parentResult) {
+        SqlQuery ParseHavingQuery(Query query, IHavingQuery havingQuery, out SqlSubQueryResult parentResult)
+        {
             var result = ParseQuery(query.Parent, out parentResult);
 
             var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
@@ -168,7 +180,8 @@ namespace TypedSql {
             return result;
         }
 
-        SqlQuery ParseJoinQuery(IJoinQuery joinQuery, out SqlSubQueryResult parentResult) {
+        SqlQuery ParseJoinQuery(IJoinQuery joinQuery, out SqlSubQueryResult parentResult)
+        {
             var result = ParseQuery(joinQuery.Parent, out var tempParentResult);
             var joinFromSubQuery = ParseQuery(joinQuery.JoinTable);
 
@@ -255,7 +268,8 @@ namespace TypedSql {
             joinResult = joinInfo.JoinResult;
         }
 
-        SqlQuery ParseWhereQuery(IWhereQuery whereQuery, out SqlSubQueryResult parentResult) {
+        SqlQuery ParseWhereQuery(IWhereQuery whereQuery, out SqlSubQueryResult parentResult)
+        {
             var result = ParseQuery(whereQuery.Parent, out parentResult);
 
             var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
@@ -265,10 +279,12 @@ namespace TypedSql {
             return result;
         }
 
-        private SqlQuery ParseFromQuery(IFromQuery fromQuery, out SqlSubQueryResult selectResult) {
+        private SqlQuery ParseFromQuery(IFromQuery fromQuery, out SqlSubQueryResult selectResult)
+        {
             var tableAlias = AliasProvider.CreateAlias();
 
-            selectResult = new SqlSubQueryResult() {
+            selectResult = new SqlSubQueryResult()
+            {
                 Members = new List<SqlMember>()
             };
             
@@ -551,7 +567,6 @@ namespace TypedSql {
                         Method = call.Method,
                         Arguments = new List<SqlExpression> { arg0 }
                     };
-
                 }
                 else
                 {
@@ -564,7 +579,8 @@ namespace TypedSql {
             }
         }
 
-        public SqlExpression ParseExpression(Expression node, Dictionary<string, SqlSubQueryResult> parameters) {
+        public SqlExpression ParseExpression(Expression node, Dictionary<string, SqlSubQueryResult> parameters)
+        {
             if (node.NodeType == ExpressionType.Call)
             {
                 var call = (MethodCallExpression)node;
@@ -842,7 +858,7 @@ namespace TypedSql {
 
         SqlExpression GetExpressionForSqlMember(SqlMember subQueryMember)
         {
-            if ((subQueryMember is SqlTableFieldMember tableFieldRef))
+            if (subQueryMember is SqlTableFieldMember tableFieldRef)
             {
                 return new SqlTableFieldExpression
                 {
@@ -887,7 +903,8 @@ namespace TypedSql {
                 // Select scalar expression result
                 return new List<SqlMember>()
                 {
-                    new SqlExpressionMember() {
+                    new SqlExpressionMember()
+                    {
                         Expression = expr,
                         FieldType = expr.GetExpressionType(),
                         MemberName = "Value",

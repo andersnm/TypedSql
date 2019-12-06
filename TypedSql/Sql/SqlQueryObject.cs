@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace TypedSql {
+namespace TypedSql
+{
     public abstract class SqlMember
     {
         /// <summary>
@@ -75,7 +76,7 @@ namespace TypedSql {
 
     public class SqlOrderBy
     {
-        public bool Ascending { get;set; }
+        public bool Ascending { get; set; }
         public SqlExpression SelectorExpression { get; set; }
     }
 

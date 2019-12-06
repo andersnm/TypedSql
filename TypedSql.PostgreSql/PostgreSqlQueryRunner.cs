@@ -13,7 +13,8 @@ namespace TypedSql.PostgreSql
         NpgsqlConnection Connection { get; set; }
 
         public PostgreSqlQueryRunner(NpgsqlConnection connection)
-            : base(new PostgreSqlFormatter()) {
+            : base(new PostgreSqlFormatter())
+        {
             Connection = connection;
         }
 

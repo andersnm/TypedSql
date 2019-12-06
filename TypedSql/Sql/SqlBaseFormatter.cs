@@ -133,7 +133,6 @@ namespace TypedSql
             writer.AppendLine(";");
         }
 
-
         protected virtual void WriteAddForeignKey(string fromTableName, SqlForeignKey foreignKey, StringBuilder writer)
         {
             WriteAddForeignKeyReference(fromTableName, foreignKey, writer);
@@ -182,6 +181,7 @@ namespace TypedSql
             {
                 writer.Append("UNIQUE ");
             }
+
             writer.Append("INDEX ");
             WriteTableName(index.Name, writer); // NOTE: not a column name
             writer.Append(" ON ");
@@ -303,6 +303,7 @@ namespace TypedSql
                     {
                         throw new Exception("Unhandled binary operation " + binary.Op.ToString());
                     }
+
                     WriteExpression(binary.Right, writer);
                     writer.Append(")");
                 }
@@ -406,6 +407,7 @@ namespace TypedSql
                 {
                     writer.Append(string.Join(", ", array.Value));
                 }
+
                 writer.Append(")");
             }
             else if (callExpr.Method.Name == nameof(Function.Count))
@@ -559,7 +561,8 @@ namespace TypedSql
             return true;
         }
 
-        protected bool IsNumericType(Type type) {
+        protected bool IsNumericType(Type type)
+        {
             return type == typeof(byte)
                 || type == typeof(sbyte)
                 || type == typeof(ushort)
@@ -605,7 +608,8 @@ namespace TypedSql
             return true;
         }
 
-        private bool IsConditionalNullTableCastToNullable(SqlConditionalExpression condExpr, out SqlExpression outputExpression) {
+        private bool IsConditionalNullTableCastToNullable(SqlConditionalExpression condExpr, out SqlExpression outputExpression)
+        {
             // Detect conditional casts to nullables in C# which translates directly to f.ex just the field name in SQL
             // "x != null ? x.Value : null" where x is a table/result type
             if (!(condExpr.Test is SqlBinaryExpression testExpr))

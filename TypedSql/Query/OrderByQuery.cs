@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace TypedSql {
+namespace TypedSql
+{
     public interface OrderByItem
     {
         LambdaExpression Selector { get; }
@@ -79,13 +80,14 @@ namespace TypedSql {
         }
     }
 
-    public interface IOrderByQuery {
+    public interface IOrderByQuery
+    {
         Query Parent { get; }
         LambdaExpression OrderByBuilderExpression { get; }
     }
 
-    public class OrderByQuery<TFrom, T> : FlatQuery<TFrom, T>, IOrderByQuery {
-
+    public class OrderByQuery<TFrom, T> : FlatQuery<TFrom, T>, IOrderByQuery
+    {
         public Query<TFrom, T> ParentT { get; }
         public LambdaExpression OrderByBuilderExpression { get; }
         internal Action<OrderByBuilder<T>> OrderByBuilderFunction { get; }
@@ -96,7 +98,6 @@ namespace TypedSql {
             ParentT = parent;
             OrderByBuilderExpression = builderExpr;
             OrderByBuilderFunction = builderExpr.Compile();
-
         }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
@@ -127,7 +128,6 @@ namespace TypedSql {
 
             return ordered;
         }
-
     }
 
     public interface IOffsetQuery
@@ -182,6 +182,5 @@ namespace TypedSql {
             // Not limiting here, this is done in the select statement
             return items;
         }
-
     }
 }

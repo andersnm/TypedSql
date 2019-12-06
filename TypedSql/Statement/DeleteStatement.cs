@@ -7,7 +7,8 @@ namespace TypedSql
         int EvaluateInMemory(IQueryRunner runner);
     }
 
-    public class DeleteStatement<T, TJoin> : IDeleteStatement where T: new()
+    public class DeleteStatement<T, TJoin> : IDeleteStatement
+        where T : new()
     {
         private Query<T, TJoin> Parent { get; }
         private FromQuery<T> FromQuery { get; }

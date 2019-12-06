@@ -88,14 +88,14 @@ namespace TypedSql
             var rightType = Right.GetExpressionType();
 
             var leftTypeInfo = leftType.GetTypeInfo();
-            var leftNullable = (leftTypeInfo.IsGenericType && leftTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
+            var leftNullable = leftTypeInfo.IsGenericType && leftTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
             if (leftNullable)
             {
                 leftType = Nullable.GetUnderlyingType(leftType);
             }
 
             var rightTypeInfo = rightType.GetTypeInfo();
-            var rightNullable = (rightTypeInfo.IsGenericType && rightTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
+            var rightNullable = rightTypeInfo.IsGenericType && rightTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
             if (rightNullable)
             {
                 rightType = Nullable.GetUnderlyingType(rightType);

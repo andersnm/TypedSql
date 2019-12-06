@@ -40,7 +40,8 @@ namespace TypedSql
             return parentResult.Select(x => InvokeSelectFunction(context, x));
         }
 
-        TResult InvokeSelectFunction(SelectorContext<T> context, T item) {
+        TResult InvokeSelectFunction(SelectorContext<T> context, T item)
+        {
             var result = SelectFunction(context, item);
 
             if (Parent is FlatQuery<TFrom, T>)
@@ -48,6 +49,7 @@ namespace TypedSql
                 var fromRow = ParentT.FromRowMapping[item];
                 FromRowMapping[result] = fromRow;
             }
+
             return result;
         }
     }
@@ -63,7 +65,8 @@ namespace TypedSql
         public LambdaExpression SelectExpression { get; }
         private Func<SelectorContext, T> SelectFunction { get; set; }
 
-        public ProjectConstantQuery(Expression<Func<SelectorContext, T>> selectExpression) : base(null)
+        public ProjectConstantQuery(Expression<Func<SelectorContext, T>> selectExpression)
+            : base(null)
         {
             SelectExpression = selectExpression;
             SelectFunction = selectExpression.Compile();
@@ -73,7 +76,8 @@ namespace TypedSql
         {
             var context = new SelectorContext(runner);
 
-            return new List<T>() {
+            return new List<T>()
+            {
                 SelectFunction(context)
             };
         }

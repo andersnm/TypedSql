@@ -10,7 +10,8 @@ namespace TypedSql.MySql
         MySqlConnection Connection { get; set; }
 
         public MySqlQueryRunner(MySqlConnection connection)
-            : base(new MySqlFormatter()) {
+            : base(new MySqlFormatter())
+        {
             Connection = connection;
         }
 

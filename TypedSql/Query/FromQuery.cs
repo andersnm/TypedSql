@@ -5,8 +5,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using TypedSql.Schema;
 
-namespace TypedSql {
-
+namespace TypedSql
+{
     public class SelectorValue
     {
         public LambdaExpression Selector { get; set; }
@@ -37,7 +37,8 @@ namespace TypedSql {
         }
     }
 
-    public interface IFromQuery {
+    public interface IFromQuery
+    {
         Type TableType { get; }
         string TableName { get; }
         List<Column> Columns { get; }
@@ -46,7 +47,8 @@ namespace TypedSql {
         DatabaseContext Context { get; }
     }
 
-    public class FromQuery<T> : FlatQuery<T, T>, IFromQuery where T: new()
+    public class FromQuery<T> : FlatQuery<T, T>, IFromQuery
+        where T : new()
     {
         public Type TableType { get => typeof(T); }
         public string TableName { get; private set; }
@@ -57,7 +59,9 @@ namespace TypedSql {
         internal List<T> Data { get; } = new List<T>();
         internal int Identity { get; set; } = 1;
 
-        public FromQuery(DatabaseContext context) : base(null) {
+        public FromQuery(DatabaseContext context)
+            : base(null)
+        {
             Context = context;
             ParseAttributes();
         }
@@ -134,7 +138,7 @@ namespace TypedSql {
                 var schemaColumn = Columns.Where(c => c.MemberName == itemPropertyInfo.Name).FirstOrDefault();
                 if (schemaColumn == null)
                 {
-                    throw new InvalidOperationException("Can not set inmemory table column " + itemPropertyInfo.Name); ;
+                    throw new InvalidOperationException("Can not set inmemory table column " + itemPropertyInfo.Name);
                 }
 
                 if (schemaColumn.PrimaryKey && schemaColumn.PrimaryKeyAutoIncrement)
@@ -183,7 +187,7 @@ namespace TypedSql {
                 var nullableAttribute = property.GetCustomAttribute<SqlNullableAttribute>();
 
                 var propertyTypeInfo = property.PropertyType.GetTypeInfo();
-                var nullable = (propertyTypeInfo.IsGenericType && propertyTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>));
+                var nullable = propertyTypeInfo.IsGenericType && propertyTypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
                 var baseType = nullable ? Nullable.GetUnderlyingType(property.PropertyType) : property.PropertyType;
                 var baseTypeInfo = baseType.GetTypeInfo();
                 if (baseTypeInfo.IsEnum)
@@ -236,7 +240,7 @@ namespace TypedSql {
                     MemberName = property.Name,
                     SqlName = propertyName,
                     PrimaryKey = primaryKeyAttribute != null,
-                    PrimaryKeyAutoIncrement = primaryKeyAttribute?.AutoIncrement??false,
+                    PrimaryKeyAutoIncrement = primaryKeyAttribute?.AutoIncrement ?? false,
                     OriginalType = property.PropertyType,
                     BaseType = baseType,
                     Nullable = nullable,
@@ -278,7 +282,7 @@ namespace TypedSql {
 
                 Indices.Add(new Index()
                 {
-                    Name =  indexAttribute.Name,
+                    Name = indexAttribute.Name,
                     Columns = indexAttribute.Columns.ToList() ?? new List<string>(),
                     Unique = indexAttribute.Unique,
                 });

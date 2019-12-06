@@ -906,7 +906,8 @@ namespace TypedSql.Test
         [TestCase(typeof(InMemoryQueryRunner))]
         public void SelectAggregateDouble(Type runnerType)
         {
-            SelectAggregated(runnerType, (ctx, t) => new Aggregated<double, double>() {
+            SelectAggregated(runnerType, (ctx, t) => new Aggregated<double, double>()
+            {
                 Sum = Function.Sum(ctx, x => x.DoubleValue),
                 Count = Function.Count(ctx, x => x.DoubleValue),
                 Average = Function.Average(ctx, x => x.DoubleValue),
@@ -1000,7 +1001,8 @@ namespace TypedSql.Test
 
             Assert.IsNotNull(results[0].BlobValue);
             Assert.AreEqual(200, results[0].BlobValue.Length, "Blob length should be 200");
-            for (var i = 0; i < results[0].BlobValue.Length; i++) {
+            for (var i = 0; i < results[0].BlobValue.Length; i++)
+            {
                 Assert.AreEqual(i, results[0].BlobValue[i]);
             }
         }

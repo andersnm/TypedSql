@@ -12,7 +12,8 @@ namespace TypedSql
         int EvaluateInMemory(InMemoryQueryRunner runner, out int identity);
     }
 
-    public class InsertStatement<T> : IInsertStatement where T: new()
+    public class InsertStatement<T> : IInsertStatement
+        where T : new()
     {
         internal FromQuery<T> FromQuery { get; }
         public Expression<Action<InsertBuilder<T>>> InsertExpression { get; }

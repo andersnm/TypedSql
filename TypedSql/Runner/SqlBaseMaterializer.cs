@@ -70,6 +70,5 @@ namespace TypedSql
 
             return usedOrdinals;
         }
-
     }
 }

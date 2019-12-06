@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace TypedSql {
-
+namespace TypedSql
+{
     public enum JoinType
     {
         InnerJoin,
@@ -12,7 +12,8 @@ namespace TypedSql {
         CrossJoin
     }
 
-    public interface IJoinQuery {
+    public interface IJoinQuery
+    {
         Query Parent { get; }
         Query JoinTable { get; }
         LambdaExpression JoinExpression { get; }
@@ -20,7 +21,8 @@ namespace TypedSql {
         JoinType JoinType { get; }
     }
 
-    public class JoinQuery<TFrom, T, TJoinFrom, TJoin, TKey> : FlatQuery<TFrom, TKey>, IJoinQuery {
+    public class JoinQuery<TFrom, T, TJoinFrom, TJoin, TKey> : FlatQuery<TFrom, TKey>, IJoinQuery
+    {
         public Query<TFrom, T> ParentT { get; }
         public Query JoinTable { get; }
         public Query<TJoinFrom, TJoin> JoinTableTJoin { get; }
@@ -31,7 +33,8 @@ namespace TypedSql {
         private Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, TKey> ResultFunction { get; }
 
         public JoinQuery(Query<TFrom, T> parent, Query<TJoinFrom, TJoin> joinTable, Expression<Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, bool>> joinExpr, Expression<Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, TKey>> resultExpr, JoinType type) 
-            : base(parent) {
+            : base(parent)
+        {
             ParentT = parent;
             JoinTable = joinTable;
             JoinTableTJoin = joinTable;

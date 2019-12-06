@@ -31,14 +31,16 @@ namespace TypedSql
         /// <summary>
         /// UPDATE tbl JOIN tbl2 SET tbl.X = tbl2.Y ...
         /// </summary>
-        public static int Update<T, TJoin>(this IQueryRunner runner, FlatQuery<T, TJoin> query, Expression<Action<TJoin, InsertBuilder<T>>> insertExpr) where T : new()
+        public static int Update<T, TJoin>(this IQueryRunner runner, FlatQuery<T, TJoin> query, Expression<Action<TJoin, InsertBuilder<T>>> insertExpr)
+            where T : new()
         {
             var stmtList = new StatementList();
             stmtList.Update(query, insertExpr);
             return runner.ExecuteNonQuery(stmtList);
         }
 
-        public static int Delete<T, TJoin>(this IQueryRunner runner, FlatQuery<T, TJoin> query) where T : new()
+        public static int Delete<T, TJoin>(this IQueryRunner runner, FlatQuery<T, TJoin> query)
+            where T : new()
         {
             var stmtList = new StatementList();
             stmtList.Delete(query);
@@ -48,7 +50,8 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) VALUES ( ...)
         /// </summary>
-        public static int Insert<T>(this IQueryRunner runner, FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr) where T : new()
+        public static int Insert<T>(this IQueryRunner runner, FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr)
+            where T : new()
         {
             var stmtList = new StatementList();
             stmtList.Insert(query, insertExpr);
@@ -58,7 +61,8 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) VALUES ( ...); SELECT LAST_IDENTITY()
         /// </summary>
-        public static TIdentity Insert<T, TIdentity>(this IQueryRunner runner, FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr) where T : new()
+        public static TIdentity Insert<T, TIdentity>(this IQueryRunner runner, FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr)
+            where T : new()
         {
             var stmtList = new StatementList();
             stmtList.Insert(query, insertExpr);
@@ -69,7 +73,8 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) SELECT ...
         /// </summary>
-        public static int Insert<T, TSubFrom, TSub>(this IQueryRunner runner, FromQuery<T> query, Query<TSubFrom, TSub> subQuery, Expression<Action<TSub, InsertBuilder<T>>> insertExpr) where T : new()
+        public static int Insert<T, TSubFrom, TSub>(this IQueryRunner runner, FromQuery<T> query, Query<TSubFrom, TSub> subQuery, Expression<Action<TSub, InsertBuilder<T>>> insertExpr)
+            where T : new()
         {
             var stmtList = new StatementList();
             stmtList.Insert(query, subQuery, insertExpr);

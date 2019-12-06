@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace TypedSql {
-
+namespace TypedSql
+{
     public class SelectorContext
     {
         internal readonly IQueryRunner Runner;
@@ -20,20 +20,23 @@ namespace TypedSql {
         internal readonly List<T> Items;
 
         public SelectorContext(IQueryRunner runner, List<T> items)
-            :base(runner)
+            : base(runner)
         {
             Items = items;
         }
     }
 
-    public abstract class Query {
-        public Query(Query parent) {
+    public abstract class Query
+    {
+        public Query(Query parent)
+        {
             Parent = parent;
         }
 
         public Query Parent { get; }
 
-        internal FromQuery<TFrom> GetFromQuery<TFrom>() where TFrom: new()
+        internal FromQuery<TFrom> GetFromQuery<TFrom>()
+            where TFrom : new()
         {
             if (this is FromQuery<TFrom> result)
             {
@@ -49,8 +52,12 @@ namespace TypedSql {
         }
     }
 
-    public abstract class Query<TFrom, T> : Query {
-        public Query(Query parent) : base(parent) {}
+    public abstract class Query<TFrom, T> : Query
+    {
+        public Query(Query parent)
+            : base(parent)
+        {
+        }
 
         internal Dictionary<T, TFrom> FromRowMapping = new Dictionary<T, TFrom>();
 
@@ -67,7 +74,10 @@ namespace TypedSql {
 
     public class FlatQuery<TFrom, T> : Query<TFrom, T>
     {
-        public FlatQuery(Query parent) : base(parent) { }
+        public FlatQuery(Query parent)
+            : base(parent)
+        {
+        }
 
         /// <summary>
         /// ... WHERE {where expression}
@@ -147,12 +157,14 @@ namespace TypedSql {
             visitor.Visit(selectExpression);
             return visitor.CalledAggregateFunction;
         }
-
     }
 
     public class AggregateQuery<TFrom, T> : Query<TFrom, T>
     {
-        public AggregateQuery(Query parent) : base(parent) { }
+        public AggregateQuery(Query parent)
+            : base(parent)
+        {
+        }
 
         public AggregateQuery<TFrom, T> Having(Expression<Func<T, bool>> whereExpr)
         {

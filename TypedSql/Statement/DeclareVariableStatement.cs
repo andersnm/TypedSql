@@ -31,7 +31,6 @@ namespace TypedSql
                 VariableName = VariableName,
                 VariableType = typeof(T),
                 SqlTypeInfo = SqlTypeInfo,
-                
             };
         }
     }

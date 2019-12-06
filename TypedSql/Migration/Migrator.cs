@@ -16,7 +16,8 @@ namespace TypedSql.Migration
         public string Version { get; set; }
     }
 
-    internal class MigrationContext : DatabaseContext {
+    internal class MigrationContext : DatabaseContext
+    {
         public FromQuery<Migration> Migrations { get; set; }
     }
 
@@ -31,7 +32,6 @@ namespace TypedSql.Migration
         /// </summary>
         public void ReadAssemblyMigrations(Assembly migrationAssembly)
         {
-            // 
             foreach (var exportedType in migrationAssembly.ExportedTypes)
             {
                 if (exportedType.GetTypeInfo().GetInterfaces().Contains(typeof(IMigration)))
@@ -95,7 +95,7 @@ namespace TypedSql.Migration
                 {
                     var appliedMigration = AppliedMigrations[i];
                     if (appliedMigration.Name != assemblyMigration.Name)
-                    {
+                    {    
                         throw new InvalidOperationException("Have applied migration " + appliedMigration.Name + ", expected " + assemblyMigration.Name);
                     }
 
@@ -105,7 +105,8 @@ namespace TypedSql.Migration
                 assemblyMigration.Up(runner);
 
                 var stmtList = new StatementList();
-                stmtList.Insert(Context.Migrations, 
+                stmtList.Insert(
+                    Context.Migrations, 
                     insert => insert
                         .Value(m => m.Name, assemblyMigration.Name)
                         .Value(m => m.Version, "Version X"));
@@ -120,7 +121,7 @@ namespace TypedSql.Migration
                 return;
             }
 
-            var lastMigration = Migrations[AppliedMigrations.Count -1];
+            var lastMigration = Migrations[AppliedMigrations.Count - 1];
             var appliedMigration = AppliedMigrations.Last();
             if (appliedMigration.Name != lastMigration.Name)
             {

@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace TypedSql {
-    public interface IWhereQuery {
+namespace TypedSql
+{
+    public interface IWhereQuery
+    {
         Query Parent { get; }
         LambdaExpression WhereExpression { get; }
     }
 
-    public class WhereQuery<TFrom, T> : FlatQuery<TFrom, T>, IWhereQuery {
-
+    public class WhereQuery<TFrom, T> : FlatQuery<TFrom, T>, IWhereQuery
+    {
         public Query<TFrom, T> ParentT { get; }
         public LambdaExpression WhereExpression { get; }
         private Func<T, bool> WhereFunction { get; }

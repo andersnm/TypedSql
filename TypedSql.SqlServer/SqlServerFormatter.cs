@@ -8,7 +8,8 @@ namespace TypedSql.SqlServer
 {
     public class SqlServerFormatter : SqlBaseFormatter
     {
-        public override void WriteColumnName(string columnName, StringBuilder writer) {
+        public override void WriteColumnName(string columnName, StringBuilder writer)
+        {
             writer.Append("[");
             writer.Append(columnName);
             writer.Append("]");

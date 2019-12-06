@@ -9,7 +9,8 @@ namespace TypedSql
         int EvaluateInMemory(IQueryRunner runner);
     }
 
-    public class UpdateStatement<T, TJoin> : IUpdateStatement where T: new()
+    public class UpdateStatement<T, TJoin> : IUpdateStatement
+        where T : new()
     {
         public Expression<Action<TJoin, InsertBuilder<T>>> InsertExpression { get; }
 

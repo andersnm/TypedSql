@@ -36,5 +36,4 @@ namespace TypedSql
         public bool Unique { get; set; }
         public List<string> Columns { get; set; }
     }
-
 }

@@ -18,7 +18,8 @@ namespace TypedSql
         public LambdaExpression SelectExpression { get; }
         private Func<SelectorContext<T>, T, TResult> SelectFunction { get; set; }
 
-        public SelectQuery(Query<TFrom, T> parent, Expression<Func<SelectorContext<T>, T, TResult>> selectExpression) : base(parent)
+        public SelectQuery(Query<TFrom, T> parent, Expression<Func<SelectorContext<T>, T, TResult>> selectExpression)
+            : base(parent)
         {
             ParentT = parent;
             SelectExpression = selectExpression;

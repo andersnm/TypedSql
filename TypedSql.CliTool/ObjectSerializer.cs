@@ -68,7 +68,8 @@ namespace TypedSql.CliTool
             foreach (var propertyInfo in typeInfo.GetProperties())
             {
                 var propertyValue = propertyInfo.GetGetMethod().Invoke(obj, new object[0]);
-                if (propertyValue == null || propertyValue.Equals(GetDefault(propertyValue.GetType()))) {
+                if (propertyValue == null || propertyValue.Equals(GetDefault(propertyValue.GetType())))
+                {
                     continue;
                 }
                 writer.Append(Indent(indent + 1) + propertyInfo.Name + " = ");

@@ -26,7 +26,8 @@ namespace TypedSql
             int? limit = null;
             int? offset = null;
 
-            for (Query parent = SelectQuery; parent != null; parent = parent.Parent) {
+            for (Query parent = SelectQuery; parent != null; parent = parent.Parent)
+            {
                 if (limit == null && parent is ILimitQuery limitQuery)
                 {
                     limit = limitQuery.LimitIndex;

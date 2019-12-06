@@ -69,12 +69,14 @@ namespace TypedSql
         /// <summary>
         /// UPDATE tbl JOIN tbl2 SET tbl.X = tbl2.Y ...
         /// </summary>
-        public void Update<T, TJoin>(FlatQuery<T, TJoin> query, Expression<Action<TJoin, InsertBuilder<T>>> insertExpr) where T : new()
+        public void Update<T, TJoin>(FlatQuery<T, TJoin> query, Expression<Action<TJoin, InsertBuilder<T>>> insertExpr)
+            where T : new()
         {
             Queries.Add(new UpdateStatement<T, TJoin>(query, insertExpr));
         }
 
-        public void Delete<T, TJoin>(FlatQuery<T, TJoin> query) where T : new()
+        public void Delete<T, TJoin>(FlatQuery<T, TJoin> query)
+            where T : new()
         {
             Queries.Add(new DeleteStatement<T, TJoin>(query));
         }
@@ -82,7 +84,8 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) VALUES ( ...)
         /// </summary>
-        public void Insert<T>(FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr) where T : new()
+        public void Insert<T>(FromQuery<T> query, Expression<Action<InsertBuilder<T>>> insertExpr)
+            where T : new()
         {
             Queries.Add(new InsertStatement<T>(query, insertExpr));
         }
@@ -90,7 +93,8 @@ namespace TypedSql
         /// <summary>
         /// INSERT INTO (...) SELECT ...
         /// </summary>
-        public void Insert<T, TSubFrom, TSub>(FromQuery<T> query, Query<TSubFrom, TSub> subQuery, Expression<Action<TSub, InsertBuilder<T>>> insertExpr) where T : new()
+        public void Insert<T, TSubFrom, TSub>(FromQuery<T> query, Query<TSubFrom, TSub> subQuery, Expression<Action<TSub, InsertBuilder<T>>> insertExpr)
+            where T : new()
         {
             Queries.Add(new InsertSelectStatement<T, TSubFrom, TSub>(query, subQuery, insertExpr));
         }

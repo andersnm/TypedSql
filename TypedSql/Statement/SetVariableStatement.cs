@@ -45,6 +45,5 @@ namespace TypedSql
                 Variable = Variable,
             };
         }
-
     }
 }

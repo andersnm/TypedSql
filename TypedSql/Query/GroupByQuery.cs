@@ -4,7 +4,6 @@ using System.Linq.Expressions;
 
 namespace TypedSql
 {
-
     public interface IGroupByQuery
     {
         LambdaExpression GroupExpression { get; }

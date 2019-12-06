@@ -8,7 +8,6 @@ namespace TypedSql
 {
     internal class CompiledMaterializer : SqlBaseMaterializer
     {
-
         private static readonly MethodInfo GetStringFunction = typeof(IDataRecord).GetTypeInfo().GetMethod(nameof(IDataRecord.GetString), new Type[] { typeof(int) });
         private static readonly MethodInfo GetIntFunction = typeof(IDataRecord).GetTypeInfo().GetMethod(nameof(IDataRecord.GetInt32), new Type[] { typeof(int) });
         private static readonly MethodInfo GetDecimalFunction = typeof(IDataRecord).GetTypeInfo().GetMethod(nameof(IDataRecord.GetDecimal), new Type[] { typeof(int) });
@@ -59,9 +58,11 @@ namespace TypedSql
                 var nullableDefault = Expression.Default(propertyType);
                 var nullableValueConstructor = typeInfo.GetConstructor(new[] { Nullable.GetUnderlyingType(propertyType) });
                 var isNullExpression = Expression.Call(recordParameter, IsDBNullFunction, Expression.Constant(ordinal, typeof(int)));
-                return Expression.Condition(isNullExpression,
+                return Expression.Condition(
+                    isNullExpression,
                     nullableDefault,
-                    Expression.New(nullableValueConstructor,
+                    Expression.New(
+                        nullableValueConstructor,
                         CompileBaseScalar(Nullable.GetUnderlyingType(propertyType), recordParameter, ordinal)
                     )
                 );
@@ -76,7 +77,9 @@ namespace TypedSql
         {
             usedOrdinals = GetOrdinalCount(members);
 
-            var isNullExpression = Expression.Call(Expression.Constant(this, typeof(CompiledMaterializer)), IsNullOrdinalsFunction,
+            var isNullExpression = Expression.Call(
+                Expression.Constant(this, typeof(CompiledMaterializer)),
+                IsNullOrdinalsFunction,
                 recordParameter,
                 Expression.Constant(ordinal, typeof(int)),
                 Expression.Constant(usedOrdinals, typeof(int)));
@@ -109,7 +112,8 @@ namespace TypedSql
                 ifNotNullExpression = Expression.MemberInit(Expression.New(propertyType), bindings);
             }
 
-            return Expression.Condition(isNullExpression,
+            return Expression.Condition(
+                isNullExpression,
                 Expression.Constant(null, propertyType),
                 ifNotNullExpression);
         }
@@ -134,7 +138,8 @@ namespace TypedSql
             else if (propertyType == typeof(string))
             {
                 var isNullExpression = Expression.Call(recordParameter, IsDBNullFunction, Expression.Constant(ordinal, typeof(int)));
-                return Expression.Condition(isNullExpression,
+                return Expression.Condition(
+                    isNullExpression,
                     Expression.Constant(null, typeof(string)),
                     Expression.Call(recordParameter, GetStringFunction, Expression.Constant(ordinal, typeof(int))));
             }
