@@ -23,7 +23,7 @@ namespace TypedSql
 
         public int ExecuteNonQuery(StatementList statementList)
         {
-            var parser = new SqlQueryParser(new SqlAliasProvider(), new Dictionary<string, SqlSubQueryResult>());
+            var parser = new SqlQueryParser();
             var stmts = parser.ParseStatementList(statementList);
             var constants = parser.Constants.ToList();
             return ExecuteNonQuery(stmts, constants);
@@ -31,7 +31,7 @@ namespace TypedSql
 
         public IEnumerable<T> ExecuteQuery<T>(StatementList statementList)
         {
-            var parser = new SqlQueryParser(new SqlAliasProvider(), new Dictionary<string, SqlSubQueryResult>());
+            var parser = new SqlQueryParser();
             var stmts = parser.ParseStatementList(statementList);
             var constants = parser.Constants.ToList();
             return ExecuteQuery<T>(stmts, constants);
@@ -44,7 +44,7 @@ namespace TypedSql
 
         public string GetSql(StatementList statementList, out List<KeyValuePair<string, object>> constants)
         {
-            var parser = new SqlQueryParser(new SqlAliasProvider(), new Dictionary<string, SqlSubQueryResult>());
+            var parser = new SqlQueryParser();
             var stmts = parser.ParseStatementList(statementList);
             constants = parser.Constants.ToList();
             return GetSql(stmts);

@@ -27,15 +27,8 @@ namespace TypedSql
 
     public class SqlQueryParser
     {
-        readonly SqlAliasProvider AliasProvider;
-        readonly Dictionary<string, SqlSubQueryResult> SubqueryParameters;
-        public Dictionary<string, object> Constants = new Dictionary<string, object>();
-
-        public SqlQueryParser(SqlAliasProvider aliasProvider, Dictionary<string, SqlSubQueryResult> subqueryParameters)
-        {
-            AliasProvider = aliasProvider;
-            SubqueryParameters = subqueryParameters;
-        }
+        public Dictionary<string, object> Constants { get; } = new Dictionary<string, object>();
+        private SqlAliasProvider AliasProvider { get; } = new SqlAliasProvider();
 
         public List<SqlStatement> ParseStatementList(StatementList stmtList)
         {
@@ -149,7 +142,7 @@ namespace TypedSql
 
             var newExpression = groupByQuery.GroupExpression.Body as NewExpression;
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
             parameters[groupByQuery.GroupExpression.Parameters[0].Name] = tempParentResult;
 
             foreach (var argument in newExpression.Arguments)
@@ -157,7 +150,7 @@ namespace TypedSql
                 result.GroupBys.Add(ParseExpression(argument, parameters));
             }
 
-            var projectParameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var projectParameters = new Dictionary<string, SqlSubQueryResult>();
             projectParameters[groupByQuery.ProjectExpression.Parameters[0].Name] = tempParentResult; // ctx
             projectParameters[groupByQuery.ProjectExpression.Parameters[1].Name] = tempParentResult;
 
@@ -173,7 +166,7 @@ namespace TypedSql
         {
             var result = ParseQuery(query.Parent, out parentResult);
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
             parameters[havingQuery.HavingExpression.Parameters[0].Name] = parentResult;
 
             result.Havings.Add(ParseExpression(havingQuery.HavingExpression.Body, parameters));
@@ -216,7 +209,7 @@ namespace TypedSql
             };
 
             // Parameters in both selector & join expressions: actx, a, bctx, b
-            var outerParameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var outerParameters = new Dictionary<string, SqlSubQueryResult>();
             outerParameters[joinQuery.JoinExpression.Parameters[0].Name] = parentResult;
             outerParameters[joinQuery.JoinExpression.Parameters[1].Name] = parentResult;
             outerParameters[joinQuery.JoinExpression.Parameters[2].Name] = tempFromSubQuery;
@@ -243,7 +236,7 @@ namespace TypedSql
         void ParseJoinTableQuery(SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, IJoinQuery joinQuery, SqlQuery result, out SqlSubQueryResult joinResult)
         {
             // Parameters in both selector & join expressions: actx, a, bctx, b
-            var outerParameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var outerParameters = new Dictionary<string, SqlSubQueryResult>();
             outerParameters[joinQuery.JoinExpression.Parameters[0].Name] = parentResult;
             outerParameters[joinQuery.JoinExpression.Parameters[1].Name] = parentResult;
             outerParameters[joinQuery.JoinExpression.Parameters[2].Name] = joinFromSubQuery.SelectResult;
@@ -272,7 +265,7 @@ namespace TypedSql
         {
             var result = ParseQuery(whereQuery.Parent, out parentResult);
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
             parameters[whereQuery.WhereExpression.Parameters[0].Name] = parentResult;
 
             result.Wheres.Add(ParseExpression(whereQuery.WhereExpression.Body, parameters));
@@ -315,7 +308,7 @@ namespace TypedSql
         {
             var result = ParseQuery(query.Parent, out var tempParentResult);
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
 
             parameters[projectQuery.SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
             parameters[projectQuery.SelectExpression.Parameters[1].Name] = tempParentResult; // item
@@ -332,7 +325,7 @@ namespace TypedSql
         {
             var result = ParseQuery(query.Parent, out var tempParentResult);
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
 
             parameters[projectQuery.SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
 
@@ -348,7 +341,7 @@ namespace TypedSql
         {
             var joinAlias = AliasProvider.CreateAlias();
             var result = ParseQuery(query.Parent, out var tempParentResult);
-            var parameters = new Dictionary<string, SqlSubQueryResult>(SubqueryParameters);
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
 
             parameters[selectQuery.SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
             parameters[selectQuery.SelectExpression.Parameters[1].Name] = tempParentResult; // item
