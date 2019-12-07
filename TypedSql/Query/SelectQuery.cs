@@ -40,7 +40,7 @@ namespace TypedSql
             return parentResult.Select(x => InvokeSelectFunction(context, x));
         }
 
-        TResult InvokeSelectFunction(SelectorContext<T> context, T item)
+        private TResult InvokeSelectFunction(SelectorContext<T> context, T item)
         {
             var result = SelectFunction(context, item);
             var fromRow = ParentT.FromRowMapping[item];

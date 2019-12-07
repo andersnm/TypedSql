@@ -7,7 +7,7 @@ namespace TypedSql
 {
     public class SelectorContext
     {
-        internal readonly IQueryRunner Runner;
+        internal IQueryRunner Runner { get; }
 
         public SelectorContext(IQueryRunner runner)
         {
@@ -17,7 +17,7 @@ namespace TypedSql
 
     public class SelectorContext<T> : SelectorContext
     {
-        internal readonly List<T> Items;
+        internal List<T> Items { get; }
 
         public SelectorContext(IQueryRunner runner, List<T> items)
             : base(runner)
@@ -59,7 +59,7 @@ namespace TypedSql
         {
         }
 
-        internal Dictionary<T, TFrom> FromRowMapping = new Dictionary<T, TFrom>();
+        internal Dictionary<T, TFrom> FromRowMapping { get; set; } = new Dictionary<T, TFrom>();
 
         public T AsExpression(SelectorContext<T> ctx)
         {
@@ -172,7 +172,7 @@ namespace TypedSql
         }
     }
 
-    class AggregateVisitor : ExpressionVisitor
+    internal class AggregateVisitor : ExpressionVisitor
     {
         public bool CalledAggregateFunction { get; set; }
 

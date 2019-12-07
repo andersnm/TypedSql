@@ -51,8 +51,8 @@ namespace TypedSql
 
         private class Renamer : ExpressionVisitor
         {
-            ParameterExpression FromExpression;
-            ParameterExpression ToExpression;
+            private ParameterExpression FromExpression { get; set; }
+            private ParameterExpression ToExpression { get; set; }
 
             public Expression Rename(Expression expression, ParameterExpression fromExpression, ParameterExpression toExpression)
             {

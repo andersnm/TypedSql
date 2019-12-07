@@ -15,7 +15,7 @@ namespace TypedSql
 
     public class SqlAliasProvider
     {
-        int counter = 0;
+        private int counter = 0;
 
         public string CreateAlias()
         {
@@ -136,7 +136,7 @@ namespace TypedSql
             throw new NotImplementedException("Unhandled query component");
         }
 
-        SqlQuery ParseGroupByQuery(Query query, IGroupByQuery groupByQuery, out SqlSubQueryResult parentResult)
+        private SqlQuery ParseGroupByQuery(Query query, IGroupByQuery groupByQuery, out SqlSubQueryResult parentResult)
         {
             var result = ParseQuery(query.Parent, out var tempParentResult);
 
@@ -162,7 +162,7 @@ namespace TypedSql
             return result;
         }
 
-        SqlQuery ParseHavingQuery(Query query, IHavingQuery havingQuery, out SqlSubQueryResult parentResult)
+        private SqlQuery ParseHavingQuery(Query query, IHavingQuery havingQuery, out SqlSubQueryResult parentResult)
         {
             var result = ParseQuery(query.Parent, out parentResult);
 
@@ -173,7 +173,7 @@ namespace TypedSql
             return result;
         }
 
-        SqlQuery ParseJoinQuery(IJoinQuery joinQuery, out SqlSubQueryResult parentResult)
+        private SqlQuery ParseJoinQuery(IJoinQuery joinQuery, out SqlSubQueryResult parentResult)
         {
             var result = ParseQuery(joinQuery.Parent, out var tempParentResult);
             var joinFromSubQuery = ParseQuery(joinQuery.JoinTable);
@@ -190,7 +190,7 @@ namespace TypedSql
             }
         }
 
-        void ParseJoinSubQuery(SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, IJoinQuery joinQuery, SqlQuery result, out SqlSubQueryResult joinResult)
+        private void ParseJoinSubQuery(SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, IJoinQuery joinQuery, SqlQuery result, out SqlSubQueryResult joinResult)
         {
             var joinAlias = AliasProvider.CreateAlias();
 
@@ -233,7 +233,7 @@ namespace TypedSql
             joinResult = joinInfo.JoinResult;
         }
 
-        void ParseJoinTableQuery(SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, IJoinQuery joinQuery, SqlQuery result, out SqlSubQueryResult joinResult)
+        private void ParseJoinTableQuery(SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, IJoinQuery joinQuery, SqlQuery result, out SqlSubQueryResult joinResult)
         {
             // Parameters in both selector & join expressions: actx, a, bctx, b
             var outerParameters = new Dictionary<string, SqlSubQueryResult>();
@@ -261,7 +261,7 @@ namespace TypedSql
             joinResult = joinInfo.JoinResult;
         }
 
-        SqlQuery ParseWhereQuery(IWhereQuery whereQuery, out SqlSubQueryResult parentResult)
+        private SqlQuery ParseWhereQuery(IWhereQuery whereQuery, out SqlSubQueryResult parentResult)
         {
             var result = ParseQuery(whereQuery.Parent, out parentResult);
 
@@ -712,7 +712,7 @@ namespace TypedSql
             }
         }
 
-        SqlBinaryOperator GetSqlBinaryOperator(ExpressionType type)
+        private SqlBinaryOperator GetSqlBinaryOperator(ExpressionType type)
         {
             switch (type)
             {
@@ -749,7 +749,7 @@ namespace TypedSql
             throw new InvalidOperationException("Operator not supported " + type.ToString());
         }
 
-        SqlMember TryParseSqlMember(Expression expression, string memberName, Dictionary<string, SqlSubQueryResult> parameters)
+        private SqlMember TryParseSqlMember(Expression expression, string memberName, Dictionary<string, SqlSubQueryResult> parameters)
         {
             if (expression is ParameterExpression parameterExpression)
             {
@@ -769,7 +769,7 @@ namespace TypedSql
             return null;
         }
 
-        SqlExpression GetConstantExpression(object value, Type type)
+        private SqlExpression GetConstantExpression(object value, Type type)
         {
             // byte array = blob
             if (!(value is byte[]) && value is IEnumerable enumerable && !(value is string))
@@ -802,7 +802,7 @@ namespace TypedSql
             };
         }
 
-        object ResolveConstant(Expression expr, out Type constantType)
+        private object ResolveConstant(Expression expr, out Type constantType)
         {
             if (expr is MemberExpression memberExpr)
             {
@@ -828,7 +828,7 @@ namespace TypedSql
             }
         }
 
-        object GetObjectMember(object self, MemberInfo member, out Type type)
+        private object GetObjectMember(object self, MemberInfo member, out Type type)
         {
             var fieldInfo = member as FieldInfo;
             if (fieldInfo != null)
@@ -849,7 +849,7 @@ namespace TypedSql
             }
         }
 
-        SqlExpression GetExpressionForSqlMember(SqlMember subQueryMember)
+        private SqlExpression GetExpressionForSqlMember(SqlMember subQueryMember)
         {
             if (subQueryMember is SqlTableFieldMember tableFieldRef)
             {
@@ -907,7 +907,7 @@ namespace TypedSql
             }
         }
 
-        void ParseSelectNewExpression(SqlExpression exprResult, MemberInfo member, List<SqlMember> members)
+        private void ParseSelectNewExpression(SqlExpression exprResult, MemberInfo member, List<SqlMember> members)
         {
             members.Add(new SqlExpressionMember()
             {
@@ -970,7 +970,7 @@ namespace TypedSql
             return values;
         }
 
-        InsertInfo ParseInsertBuilderValue(IFromQuery fromQuery, LambdaExpression fieldSelector, SqlExpression valueExpression)
+        private InsertInfo ParseInsertBuilderValue(IFromQuery fromQuery, LambdaExpression fieldSelector, SqlExpression valueExpression)
         {
             MemberExpression fieldSelectorBody;
             if (fieldSelector.Body is MemberExpression memberSelector)
@@ -1074,7 +1074,7 @@ namespace TypedSql
             return values;
         }
 
-        string RegisterConstant(object value)
+        private string RegisterConstant(object value)
         {
             var key = "p" + Constants.Count.ToString();
             Constants.Add(key, value);

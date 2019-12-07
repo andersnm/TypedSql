@@ -92,7 +92,7 @@ namespace TypedSql
             identity = Identity - 1;
         }
 
-        MemberExpression GetSelectorMemberExpression(LambdaExpression fieldSelector, out Type selectorType)
+        private MemberExpression GetSelectorMemberExpression(LambdaExpression fieldSelector, out Type selectorType)
         {
             // NOTE: duplicated from ParseInsertBuilderValue
             MemberExpression fieldSelectorBody;

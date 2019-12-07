@@ -81,7 +81,7 @@ namespace TypedSql
             throw new Exception("Unsupported statement " + stmt.GetType().Name);
         }
 
-        void WriteCreateTable(string fromTableName, List<SqlColumn> columns, StringBuilder writer)
+        private void WriteCreateTable(string fromTableName, List<SqlColumn> columns, StringBuilder writer)
         {
             writer.Append("CREATE TABLE ");
             WriteTableName(fromTableName, writer);
@@ -102,7 +102,7 @@ namespace TypedSql
             writer.AppendLine(";");
         }
 
-        void WriteDropTable(string fromTableName, bool useIfExists, StringBuilder writer)
+        private void WriteDropTable(string fromTableName, bool useIfExists, StringBuilder writer)
         {
             // TODO: override for sql server <2016
             writer.Append("DROP TABLE ");
@@ -174,7 +174,7 @@ namespace TypedSql
 
         protected abstract void WriteDropForeignKey(string fromTableName, string foreignKeyName, StringBuilder writer);
 
-        void WriteAddIndex(string fromTableName, SqlIndex index, StringBuilder writer)
+        private void WriteAddIndex(string fromTableName, SqlIndex index, StringBuilder writer)
         {
             writer.Append("CREATE ");
             if (index.Unique)
@@ -583,7 +583,7 @@ namespace TypedSql
         /// This method detects nullable expressions, and returns only 
         /// the field expression.
         /// </summary>
-        bool IsConditionalNullableField(SqlExpression operand, out SqlExpression outputExpression)
+        private bool IsConditionalNullableField(SqlExpression operand, out SqlExpression outputExpression)
         {
             if (!(operand is SqlConditionalExpression condTrueCastCondExpr))
             {
@@ -659,7 +659,7 @@ namespace TypedSql
             }
         }
 
-        void GetFlatSelectMembers(List<SqlMember> members, string prefix, List<Tuple<string, SqlMember>> result)
+        private void GetFlatSelectMembers(List<SqlMember> members, string prefix, List<Tuple<string, SqlMember>> result)
         {
             if (!string.IsNullOrEmpty(prefix))
             {
