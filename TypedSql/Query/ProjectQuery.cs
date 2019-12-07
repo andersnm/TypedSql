@@ -5,14 +5,7 @@ using System.Linq.Expressions;
 
 namespace TypedSql
 {
-    public interface IProjectQuery
-    {
-        Query Parent { get; }
-        // two args: ctx, itemT
-        LambdaExpression SelectExpression { get; }
-    }
-
-    public class ProjectQuery<TFrom, T, TResult> : FlatQuery<TFrom, TResult>, IProjectQuery
+    public class ProjectQuery<TFrom, T, TResult> : FlatQuery<TFrom, TResult>
     {
         public Query<TFrom, T> ParentT { get; }
         public LambdaExpression SelectExpression { get; }
@@ -32,7 +25,7 @@ namespace TypedSql
             var context = new SelectorContext<T>(runner, parentResult.ToList());
 
             // Implicit grouping, f.ex SELECT COUNT(*) FROM tbl
-            if (Parent is FlatQuery<TFrom, T> && HasAggregates(SelectExpression))
+            if (ParentT is FlatQuery<TFrom, T> && HasAggregates(SelectExpression))
             {
                 return parentResult.Select(x => InvokeSelectFunction(context, x)).Take(1);
             }
@@ -40,11 +33,28 @@ namespace TypedSql
             return parentResult.Select(x => InvokeSelectFunction(context, x));
         }
 
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        {
+            var result = ParentT.Parse(parser, out var tempParentResult);
+
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
+
+            parameters[SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
+            parameters[SelectExpression.Parameters[1].Name] = tempParentResult; // item
+
+            parentResult = new SqlSubQueryResult()
+            {
+                Members = parser.ParseSelectExpression(SelectExpression, parameters)
+            };
+
+            return result;
+        }
+
         private TResult InvokeSelectFunction(SelectorContext<T> context, T item)
         {
             var result = SelectFunction(context, item);
 
-            if (Parent is FlatQuery<TFrom, T>)
+            if (ParentT is FlatQuery<TFrom, T>)
             {
                 var fromRow = ParentT.FromRowMapping[item];
                 FromRowMapping[result] = fromRow;
@@ -54,13 +64,7 @@ namespace TypedSql
         }
     }
 
-    public interface IProjectConstantQuery
-    {
-        // One arg: ctx
-        LambdaExpression SelectExpression { get; }
-    }
-
-    public class ProjectConstantQuery<T> : FlatQuery<T, T>, IProjectConstantQuery
+    public class ProjectConstantQuery<T> : FlatQuery<T, T>
     {
         public LambdaExpression SelectExpression { get; }
         private Func<SelectorContext, T> SelectFunction { get; set; }
@@ -80,6 +84,27 @@ namespace TypedSql
             {
                 SelectFunction(context)
             };
+        }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        {
+            // No parent, create new SqlQuery
+            var result = new SqlQuery();
+            var tempParentResult = new SqlSubQueryResult()
+            {
+                Members = new List<SqlMember>(),
+            };
+
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
+
+            parameters[SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
+
+            parentResult = new SqlSubQueryResult()
+            {
+                Members = parser.ParseSelectExpression(SelectExpression, parameters)
+            };
+
+            return result;
         }
     }
 }

@@ -50,6 +50,15 @@ namespace TypedSql
 
             return Parent.GetFromQuery<TFrom>();
         }
+
+        internal SqlQuery Parse(SqlQueryParser parser)
+        {
+            var result = Parse(parser, out var selectResult);
+            result.SelectResult = selectResult;
+            return result;
+        }
+
+        internal abstract SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult);
     }
 
     public abstract class Query<TFrom, T> : Query
@@ -72,7 +81,7 @@ namespace TypedSql
         }
     }
 
-    public class FlatQuery<TFrom, T> : Query<TFrom, T>
+    public abstract class FlatQuery<TFrom, T> : Query<TFrom, T>
     {
         public FlatQuery(Query parent)
             : base(parent)
@@ -159,7 +168,7 @@ namespace TypedSql
         }
     }
 
-    public class AggregateQuery<TFrom, T> : Query<TFrom, T>
+    public abstract class AggregateQuery<TFrom, T> : Query<TFrom, T>
     {
         public AggregateQuery(Query parent)
             : base(parent)

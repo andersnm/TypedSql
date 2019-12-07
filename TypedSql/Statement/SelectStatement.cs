@@ -62,32 +62,30 @@ namespace TypedSql
         {
             return new SqlSelect()
             {
-                FromSource = parser.ParseQuery(SelectQuery),
+                FromSource = SelectQuery.Parse(parser),
             };
         }
     }
 
     public class SelectStatement<TResult> : ISelectStatement
     {
-        public Query SelectQuery { get; }
-        public Query<TResult, TResult> SelectQueryTResult { get; }
+        public Query<TResult, TResult> SelectQuery { get; }
 
         public SelectStatement(Expression<Func<SelectorContext, TResult>> selectExpression)
         {
-            SelectQueryTResult = new ProjectConstantQuery<TResult>(selectExpression);
-            SelectQuery = SelectQueryTResult;
+            SelectQuery = new ProjectConstantQuery<TResult>(selectExpression);
         }
 
         public List<object> EvaluateInMemory(InMemoryQueryRunner runner)
         {
-            return SelectQueryTResult.InMemorySelect(runner).Cast<object>().ToList();
+            return SelectQuery.InMemorySelect(runner).Cast<object>().ToList();
         }
 
         public SqlStatement Parse(SqlQueryParser parser)
         {
             return new SqlSelect()
             {
-                FromSource = parser.ParseQuery(SelectQuery)
+                FromSource = SelectQuery.Parse(parser)
             };
         }
     }

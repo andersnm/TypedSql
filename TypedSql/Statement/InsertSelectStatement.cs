@@ -49,12 +49,12 @@ namespace TypedSql
 
         public SqlStatement Parse(SqlQueryParser parser)
         {
-            var parentQueryResult = parser.ParseQuery(SelectQuery);
+            var parentQueryResult = SelectQuery.Parse(parser);
 
             var parameters = new Dictionary<string, SqlSubQueryResult>();
             parameters[InsertExpression.Parameters[0].Name] = parentQueryResult.SelectResult;
 
-            var inserts = parser.ParseInsertBuilder(FromQuery, InsertExpression, parameters);
+            var inserts = parser.ParseInsertBuilder<T>(FromQuery, InsertExpression, parameters);
 
             var primaryKey = FromQuery.Columns.Where(c => c.PrimaryKeyAutoIncrement).FirstOrDefault();
 

@@ -37,7 +37,7 @@ namespace TypedSql
         {
             return new SqlDelete()
             {
-                FromSource = parser.ParseQuery(Parent),
+                FromSource = Parent.Parse(parser),
             };
         }
     }

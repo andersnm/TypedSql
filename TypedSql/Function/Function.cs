@@ -21,7 +21,7 @@ namespace TypedSql
 
         public static bool Contains<T, TResult>(SelectorContext<T> context, TResult value, SelectStatement<TResult> sq)
         {
-            return sq.SelectQueryTResult.InMemorySelect((InMemoryQueryRunner)context.Runner).Contains(value);
+            return sq.SelectQuery.InMemorySelect((InMemoryQueryRunner)context.Runner).Contains(value);
         }
 
         public static bool Contains<T>(T value, IEnumerable<T> sq)

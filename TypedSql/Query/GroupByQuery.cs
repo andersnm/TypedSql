@@ -4,13 +4,7 @@ using System.Linq.Expressions;
 
 namespace TypedSql
 {
-    public interface IGroupByQuery
-    {
-        LambdaExpression GroupExpression { get; }
-        LambdaExpression ProjectExpression { get; }
-    }
-
-    public class GroupByQuery<TFrom, T, TGroup, TProject> : AggregateQuery<TFrom, TProject>, IGroupByQuery
+    public class GroupByQuery<TFrom, T, TGroup, TProject> : AggregateQuery<TFrom, TProject>
     {
         public Query<TFrom, T> ParentT { get; }
         public LambdaExpression GroupExpression { get; }
@@ -54,6 +48,32 @@ namespace TypedSql
                 // FromRowMapping[kv.Key] = ParentT.FromRowMapping[];
                 yield return project;
             }
+        }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        {
+            var result = ParentT.Parse(parser, out var tempParentResult);
+
+            var newExpression = GroupExpression.Body as NewExpression;
+
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
+            parameters[GroupExpression.Parameters[0].Name] = tempParentResult;
+
+            foreach (var argument in newExpression.Arguments)
+            {
+                result.GroupBys.Add(parser.ParseExpression(argument, parameters));
+            }
+
+            var projectParameters = new Dictionary<string, SqlSubQueryResult>();
+            projectParameters[ProjectExpression.Parameters[0].Name] = tempParentResult; // ctx
+            projectParameters[ProjectExpression.Parameters[1].Name] = tempParentResult;
+
+            parentResult = new SqlSubQueryResult()
+            {
+                Members = parser.ParseSelectExpression(ProjectExpression, projectParameters),
+            };
+
+            return result;
         }
     }
 }

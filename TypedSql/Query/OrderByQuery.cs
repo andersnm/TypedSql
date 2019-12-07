@@ -5,16 +5,24 @@ using System.Linq.Expressions;
 
 namespace TypedSql
 {
-    public interface OrderByItem
+    public abstract class OrderByItem
     {
-        LambdaExpression Selector { get; }
-        bool Ascending { get; }
+        public OrderByItem(LambdaExpression selector, bool ascending)
+        {
+            Selector = selector;
+            Ascending = ascending;
+        }
+
+        public LambdaExpression Selector { get; }
+        public bool Ascending { get; }
     }
 
     public abstract class OrderByItem<T> : OrderByItem
     {
-        public LambdaExpression Selector { get; set; }
-        public bool Ascending { get; set; }
+        public OrderByItem(LambdaExpression selector, bool ascending)
+            : base(selector, ascending)
+        {
+        }
 
         internal abstract IOrderedEnumerable<T> OrderBy(IEnumerable<T> parent);
         internal abstract IOrderedEnumerable<T> ThenBy(IOrderedEnumerable<T> parent);
@@ -22,14 +30,11 @@ namespace TypedSql
 
     public class OrderByItem<T, TValueType> : OrderByItem<T>
     {
-        public Expression<Func<T, TValueType>> SelectorT { get; set; }
         public Func<T, TValueType> SelectorFunction { get;  }
 
         public OrderByItem(Expression<Func<T, TValueType>> selector, bool ascending)
+            : base(selector, ascending)
         {
-            Selector = selector;
-            SelectorT = selector;
-            Ascending = ascending;
             SelectorFunction = selector.Compile();
         }
 
@@ -49,21 +54,16 @@ namespace TypedSql
         {
             if (Ascending)
             {
-                return parent.ThenBy(f => SelectorT.Compile()(f));
+                return parent.ThenBy(f => SelectorFunction(f));
             }
             else
             {
-                return parent.ThenByDescending(f => SelectorT.Compile()(f));
+                return parent.ThenByDescending(f => SelectorFunction(f));
             }
         }
     }
 
-    public interface IOrderByBuilder
-    {
-        List<OrderByItem> Selectors { get; }
-    }
-
-    public class OrderByBuilder<T> : IOrderByBuilder
+    public class OrderByBuilder<T>
     {
         public List<OrderByItem> Selectors { get; } = new List<OrderByItem>();
 
@@ -80,13 +80,7 @@ namespace TypedSql
         }
     }
 
-    public interface IOrderByQuery
-    {
-        Query Parent { get; }
-        LambdaExpression OrderByBuilderExpression { get; }
-    }
-
-    public class OrderByQuery<TFrom, T> : FlatQuery<TFrom, T>, IOrderByQuery
+    public class OrderByQuery<TFrom, T> : FlatQuery<TFrom, T>
     {
         public Query<TFrom, T> ParentT { get; }
         public LambdaExpression OrderByBuilderExpression { get; }
@@ -128,11 +122,17 @@ namespace TypedSql
 
             return ordered;
         }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        {
+            var result = ParentT.Parse(parser, out parentResult);
+            result.OrderBys = parser.ParseOrderByBuilder<T>(parentResult, OrderByBuilderExpression, new Dictionary<string, SqlSubQueryResult>());
+            return result;
+        }
     }
 
     public interface IOffsetQuery
     {
-        Query Parent { get; }
         int OffsetIndex { get; }
     }
 
@@ -155,11 +155,17 @@ namespace TypedSql
             // Not offsetting here, this is done in the select statement
             return items;
         }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        {
+            var result = ParentT.Parse(parser, out parentResult);
+            result.Offset = OffsetIndex;
+            return result;
+        }
     }
 
     public interface ILimitQuery
     {
-        Query Parent { get; }
         int LimitIndex { get; }
     }
 
@@ -181,6 +187,13 @@ namespace TypedSql
             FromRowMapping = ParentT.FromRowMapping;
             // Not limiting here, this is done in the select statement
             return items;
+        }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        {
+            var result = ParentT.Parse(parser, out parentResult);
+            result.Limit = LimitIndex;
+            return result;
         }
     }
 }

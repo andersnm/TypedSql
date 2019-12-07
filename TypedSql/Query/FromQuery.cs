@@ -13,13 +13,7 @@ namespace TypedSql
         public object Value { get; set; }
     }
 
-    public interface IInsertBuilder
-    {
-        List<SelectorValue> Selectors { get; }
-        Type BuilderType { get; }
-    }
-
-    public class InsertBuilder<T> : IInsertBuilder
+    public class InsertBuilder<T>
     {
         public List<SelectorValue> Selectors { get; } = new List<SelectorValue>();
         public Type BuilderType { get; } = typeof(T);
@@ -287,6 +281,38 @@ namespace TypedSql
                     Unique = indexAttribute.Unique,
                 });
             }
+        }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult selectResult)
+        {
+            var tableAlias = parser.AliasProvider.CreateAlias();
+
+            selectResult = new SqlSubQueryResult()
+            {
+                Members = new List<SqlMember>()
+            };
+
+            foreach (var column in Columns)
+            {
+                selectResult.Members.Add(new SqlTableFieldMember()
+                {
+                    MemberName = column.MemberName,
+                    MemberInfo = column.PropertyInfo,
+                    SqlName = column.SqlName,
+                    TableAlias = tableAlias,
+                    TableType = TableType,
+                    FieldType = column.OriginalType,
+                });
+            }
+
+            return new SqlQuery()
+            {
+                From = new SqlFromTable()
+                {
+                    TableName = TableName,
+                },
+                FromAlias = tableAlias,
+            };
         }
     }
 }

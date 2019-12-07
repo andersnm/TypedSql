@@ -5,13 +5,7 @@ using System.Linq.Expressions;
 
 namespace TypedSql
 {
-    public interface IWhereQuery
-    {
-        Query Parent { get; }
-        LambdaExpression WhereExpression { get; }
-    }
-
-    public class WhereQuery<TFrom, T> : FlatQuery<TFrom, T>, IWhereQuery
+    public class WhereQuery<TFrom, T> : FlatQuery<TFrom, T>
     {
         public Query<TFrom, T> ParentT { get; }
         public LambdaExpression WhereExpression { get; }
@@ -30,6 +24,17 @@ namespace TypedSql
             var items = ParentT.InMemorySelect(runner);
             FromRowMapping = ParentT.FromRowMapping;
             return items.Where(x => WhereFunction(x));
+        }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        {
+            var result = ParentT.Parse(parser, out parentResult);
+
+            var parameters = new Dictionary<string, SqlSubQueryResult>();
+            parameters[WhereExpression.Parameters[0].Name] = parentResult;
+
+            result.Wheres.Add(parser.ParseExpression(WhereExpression.Body, parameters));
+            return result;
         }
     }
 }

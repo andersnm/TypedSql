@@ -50,12 +50,12 @@ namespace TypedSql
 
         public SqlStatement Parse(SqlQueryParser parser)
         {
-            var queryResult = parser.ParseQuery(Parent);
+            var queryResult = Parent.Parse(parser);
             var parameters = new Dictionary<string, SqlSubQueryResult>();
             parameters[InsertExpression.Parameters[0].Name] = queryResult.SelectResult; // item
             // parameters[stmt.InsertExpression.Parameters[1].Name] = ; // builder
 
-            var inserts = parser.ParseInsertBuilder(FromQuery, InsertExpression, parameters);
+            var inserts = parser.ParseInsertBuilder<T>(FromQuery, InsertExpression, parameters);
 
             return new SqlUpdate()
             {

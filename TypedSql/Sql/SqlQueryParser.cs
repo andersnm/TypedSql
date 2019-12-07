@@ -28,7 +28,7 @@ namespace TypedSql
     public class SqlQueryParser
     {
         public Dictionary<string, object> Constants { get; } = new Dictionary<string, object>();
-        private SqlAliasProvider AliasProvider { get; } = new SqlAliasProvider();
+        public SqlAliasProvider AliasProvider { get; } = new SqlAliasProvider();
 
         public List<SqlStatement> ParseStatementList(StatementList stmtList)
         {
@@ -38,360 +38,6 @@ namespace TypedSql
                 result.Add(stmt.Parse(this));
             }
 
-            return result;
-        }
-
-        public SqlQuery ParseQuery(Query query)
-        {
-            var result = ParseQuery(query, out var selectResult);
-            result.SelectResult = selectResult;
-            return result;
-        }
-
-        public SqlQuery ParseQuery(Query query, out SqlSubQueryResult selectResult)
-        {
-            if (query == null)
-            {
-                // SELECTs without FROM have empty result
-                selectResult = new SqlSubQueryResult()
-                {
-                    Members = new List<SqlMember>(),
-                };
-                return new SqlQuery();
-            }
-
-            var fromQuery = query as IFromQuery;
-            if (fromQuery != null)
-            {
-                return ParseFromQuery(fromQuery, out selectResult);
-            }
-
-            var whereQuery = query as IWhereQuery;
-            if (whereQuery != null)
-            {
-                return ParseWhereQuery(whereQuery, out selectResult);
-            }
-
-            var joinQuery = query as IJoinQuery;
-            if (joinQuery != null)
-            {
-                return ParseJoinQuery(joinQuery, out selectResult);
-            }
-
-            var groupByQuery = query as IGroupByQuery;
-            if (groupByQuery != null)
-            {
-                return ParseGroupByQuery(query, groupByQuery, out selectResult);
-            }
-
-            var havingQuery = query as IHavingQuery;
-            if (havingQuery != null)
-            {
-                return ParseHavingQuery(query, havingQuery, out selectResult);
-            }
- 
-            /*var selectAggregateQuery = query as ISelectAggregateQuery;
-            if (selectAggregateQuery != null)
-            {
-                return ParseSelectAggregateQuery(query, selectAggregateQuery, out selectResult);
-            }*/
-
-            var projectQuery = query as IProjectQuery;
-            if (projectQuery != null)
-            {
-                return ParseProjectQuery(query, projectQuery, out selectResult);
-            }
-
-            var projectConstantQuery = query as IProjectConstantQuery;
-            if (projectConstantQuery != null)
-            {
-                return ParseProjectConstantQuery(query, projectConstantQuery, out selectResult);
-            }
-
-            var selectQuery = query as ISelectQuery;
-            if (selectQuery != null)
-            {
-                // Wråp in subquery
-                return ParseSelectQuery(query, selectQuery, out selectResult);
-            }
-
-            var orderByQuery = query as IOrderByQuery;
-            if (orderByQuery != null)
-            {
-                return ParseOrderByQuery(orderByQuery, out selectResult);
-            }
-
-            var offsetQuery = query as IOffsetQuery;
-            if (offsetQuery != null)
-            {
-                return ParseOffsetQuery(offsetQuery, out selectResult);
-            }
-
-            var limitQuery = query as ILimitQuery;
-            if (limitQuery != null)
-            {
-                return ParseLimitQuery(limitQuery, out selectResult);
-            }
-
-            throw new NotImplementedException("Unhandled query component");
-        }
-
-        private SqlQuery ParseGroupByQuery(Query query, IGroupByQuery groupByQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(query.Parent, out var tempParentResult);
-
-            var newExpression = groupByQuery.GroupExpression.Body as NewExpression;
-
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-            parameters[groupByQuery.GroupExpression.Parameters[0].Name] = tempParentResult;
-
-            foreach (var argument in newExpression.Arguments)
-            {
-                result.GroupBys.Add(ParseExpression(argument, parameters));
-            }
-
-            var projectParameters = new Dictionary<string, SqlSubQueryResult>();
-            projectParameters[groupByQuery.ProjectExpression.Parameters[0].Name] = tempParentResult; // ctx
-            projectParameters[groupByQuery.ProjectExpression.Parameters[1].Name] = tempParentResult;
-
-            parentResult = new SqlSubQueryResult()
-            {
-                Members = ParseSelectExpression(groupByQuery.ProjectExpression, projectParameters),
-            };
-
-            return result;
-        }
-
-        private SqlQuery ParseHavingQuery(Query query, IHavingQuery havingQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(query.Parent, out parentResult);
-
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-            parameters[havingQuery.HavingExpression.Parameters[0].Name] = parentResult;
-
-            result.Havings.Add(ParseExpression(havingQuery.HavingExpression.Body, parameters));
-            return result;
-        }
-
-        private SqlQuery ParseJoinQuery(IJoinQuery joinQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(joinQuery.Parent, out var tempParentResult);
-            var joinFromSubQuery = ParseQuery(joinQuery.JoinTable);
-
-            if (joinQuery.JoinTable is IFromQuery)
-            {
-                ParseJoinTableQuery(tempParentResult, joinFromSubQuery, joinQuery, result, out parentResult);
-                return result;
-            }
-            else
-            {
-                ParseJoinSubQuery(tempParentResult, joinFromSubQuery, joinQuery, result, out parentResult);
-                return result;
-            }
-        }
-
-        private void ParseJoinSubQuery(SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, IJoinQuery joinQuery, SqlQuery result, out SqlSubQueryResult joinResult)
-        {
-            var joinAlias = AliasProvider.CreateAlias();
-
-            // Translate fields from inside the subquery to fields rooted in the subquery usable from the outside
-            var tempFromSubQuery = new SqlSubQueryResult()
-            {
-                Members = joinFromSubQuery.SelectResult.Members.Select(m => new SqlJoinFieldMember()
-                {
-                    JoinAlias = joinAlias,
-                    SourceField = m,
-                    MemberName = m.MemberName,
-                    MemberInfo = m.MemberInfo,
-                    SqlName = m.MemberName,
-                    FieldType = m.FieldType,
-                }).ToList<SqlMember>(),
-            };
-
-            // Parameters in both selector & join expressions: actx, a, bctx, b
-            var outerParameters = new Dictionary<string, SqlSubQueryResult>();
-            outerParameters[joinQuery.JoinExpression.Parameters[0].Name] = parentResult;
-            outerParameters[joinQuery.JoinExpression.Parameters[1].Name] = parentResult;
-            outerParameters[joinQuery.JoinExpression.Parameters[2].Name] = tempFromSubQuery;
-            outerParameters[joinQuery.JoinExpression.Parameters[3].Name] = tempFromSubQuery;
-
-            var joinResultMembers = ParseSelectExpression(joinQuery.ResultExpression, outerParameters);
-
-            var joinInfo = new SqlJoinSubQuery()
-            {
-                JoinAlias = joinAlias,
-                JoinResult = new SqlSubQueryResult()
-                {
-                    Members = joinResultMembers,
-                },
-                JoinFrom = joinFromSubQuery,
-                JoinExpression = ParseExpression(joinQuery.JoinExpression.Body, outerParameters),
-                JoinType = joinQuery.JoinType,
-            };
-
-            result.Joins.Add(joinInfo);
-            joinResult = joinInfo.JoinResult;
-        }
-
-        private void ParseJoinTableQuery(SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, IJoinQuery joinQuery, SqlQuery result, out SqlSubQueryResult joinResult)
-        {
-            // Parameters in both selector & join expressions: actx, a, bctx, b
-            var outerParameters = new Dictionary<string, SqlSubQueryResult>();
-            outerParameters[joinQuery.JoinExpression.Parameters[0].Name] = parentResult;
-            outerParameters[joinQuery.JoinExpression.Parameters[1].Name] = parentResult;
-            outerParameters[joinQuery.JoinExpression.Parameters[2].Name] = joinFromSubQuery.SelectResult;
-            outerParameters[joinQuery.JoinExpression.Parameters[3].Name] = joinFromSubQuery.SelectResult;
-
-            var joinResultMembers = ParseSelectExpression(joinQuery.ResultExpression, outerParameters);
-
-            var joinInfo = new SqlJoinTable()
-            {
-                TableAlias = joinFromSubQuery.FromAlias,
-                FromSource = joinFromSubQuery.From,
-                JoinExpression = ParseExpression(joinQuery.JoinExpression.Body, outerParameters),
-                JoinResult = new SqlSubQueryResult()
-                {
-                    Members = joinResultMembers,
-                },
-                JoinType = joinQuery.JoinType,
-            };
-
-            result.Joins.Add(joinInfo);
-
-            joinResult = joinInfo.JoinResult;
-        }
-
-        private SqlQuery ParseWhereQuery(IWhereQuery whereQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(whereQuery.Parent, out parentResult);
-
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-            parameters[whereQuery.WhereExpression.Parameters[0].Name] = parentResult;
-
-            result.Wheres.Add(ParseExpression(whereQuery.WhereExpression.Body, parameters));
-            return result;
-        }
-
-        private SqlQuery ParseFromQuery(IFromQuery fromQuery, out SqlSubQueryResult selectResult)
-        {
-            var tableAlias = AliasProvider.CreateAlias();
-
-            selectResult = new SqlSubQueryResult()
-            {
-                Members = new List<SqlMember>()
-            };
-            
-            foreach (var column in fromQuery.Columns)
-            {
-                selectResult.Members.Add(new SqlTableFieldMember()
-                {
-                    MemberName = column.MemberName,
-                    MemberInfo = column.PropertyInfo,
-                    SqlName = column.SqlName,
-                    TableAlias = tableAlias,
-                    TableType = fromQuery.TableType,
-                    FieldType = column.OriginalType,
-                });
-            }
-
-            return new SqlQuery()
-            {
-                From = new SqlFromTable()
-                {
-                    TableName = fromQuery.TableName,
-                },
-                FromAlias = tableAlias,
-            };
-        }
-
-        private SqlQuery ParseProjectQuery(Query query, IProjectQuery projectQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(query.Parent, out var tempParentResult);
-
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-
-            parameters[projectQuery.SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
-            parameters[projectQuery.SelectExpression.Parameters[1].Name] = tempParentResult; // item
-
-            parentResult = new SqlSubQueryResult()
-            {
-                Members = ParseSelectExpression(projectQuery.SelectExpression, parameters)
-            };
-
-            return result;
-        }
-
-        private SqlQuery ParseProjectConstantQuery(Query query, IProjectConstantQuery projectQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(query.Parent, out var tempParentResult);
-
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-
-            parameters[projectQuery.SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
-
-            parentResult = new SqlSubQueryResult()
-            {
-                Members = ParseSelectExpression(projectQuery.SelectExpression, parameters)
-            };
-
-            return result;
-        }
-
-        private SqlQuery ParseSelectQuery(Query query, ISelectQuery selectQuery, out SqlSubQueryResult parentResult)
-        {
-            var joinAlias = AliasProvider.CreateAlias();
-            var result = ParseQuery(query.Parent, out var tempParentResult);
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-
-            parameters[selectQuery.SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
-            parameters[selectQuery.SelectExpression.Parameters[1].Name] = tempParentResult; // item
-
-            result.SelectResult = new SqlSubQueryResult()
-            {
-                Members = ParseSelectExpression(selectQuery.SelectExpression, parameters)
-            };
-
-            parentResult = new SqlSubQueryResult()
-            {
-                Members = result.SelectResult.Members.Select(m => new SqlJoinFieldMember()
-                {
-                    JoinAlias = joinAlias,
-                    SourceField = m,
-                    MemberName = m.MemberName,
-                    MemberInfo = m.MemberInfo,
-                    SqlName = m.SqlName,
-                    FieldType = m.FieldType,
-                }).ToList<SqlMember>(),
-            };
-
-            return new SqlQuery()
-            {
-                From = new SqlFromSubQuery()
-                {
-                    FromQuery = result,
-                },
-                FromAlias = joinAlias,
-            };
-        }
-
-        private SqlQuery ParseOrderByQuery(IOrderByQuery orderByQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(orderByQuery.Parent, out parentResult);
-            result.OrderBys = ParseOrderByBuilder(parentResult, orderByQuery.OrderByBuilderExpression, new Dictionary<string, SqlSubQueryResult>());
-            return result;
-        }
-
-        private SqlQuery ParseOffsetQuery(IOffsetQuery offsetQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(offsetQuery.Parent, out parentResult);
-            result.Offset = offsetQuery.OffsetIndex;
-            return result;
-        }
-
-        private SqlQuery ParseLimitQuery(ILimitQuery limitQuery, out SqlSubQueryResult parentResult)
-        {
-            var result = ParseQuery(limitQuery.Parent, out parentResult);
-            result.Limit = limitQuery.LimitIndex;
             return result;
         }
 
@@ -441,7 +87,7 @@ namespace TypedSql
                 {
                     var queryLambda = Expression.Lambda(call.Object);
                     var query = (Query)queryLambda.Compile().DynamicInvoke();
-                    var sqlQuery = ParseQuery(query);
+                    var sqlQuery = query.Parse(this);
                     return new SqlSelectExpression()
                     {
                         Query = sqlQuery
@@ -449,7 +95,7 @@ namespace TypedSql
                 }
                 else
                 {
-                    throw new Exception("Unsuported query method call " + call.Method.Name);
+                    throw new Exception("Unsupported query method call " + call.Method.Name);
                 }
             }
             else if (call.Object == null && call.Method.DeclaringType == typeof(Function))
@@ -919,7 +565,7 @@ namespace TypedSql
             });
         }
 
-        public List<InsertInfo> ParseInsertBuilder(IFromQuery fromQuery, LambdaExpression insertExpr, Dictionary<string, SqlSubQueryResult> parameters)
+        public List<InsertInfo> ParseInsertBuilder<T>(IFromQuery fromQuery, LambdaExpression insertExpr, Dictionary<string, SqlSubQueryResult> parameters)
         {
             if (insertExpr.Body.NodeType != ExpressionType.Call)
             {
@@ -937,11 +583,11 @@ namespace TypedSql
 
                 if (callExpression.Method.Name == nameof(InsertBuilder<bool>.Values))
                 {
-                    var builder = (IInsertBuilder)ResolveConstant(callExpression.Arguments[0], out var argumentType);
+                    var builder = (InsertBuilder<T>)ResolveConstant(callExpression.Arguments[0], out var argumentType);
                     foreach (var selector in builder.Selectors)
                     {
                         var constExpr = GetConstantExpression(selector.Value, selector.Value.GetType());
-                        var insertInfo = ParseInsertBuilderValue(fromQuery, selector.Selector, constExpr);
+                        var insertInfo = ParseInsertBuilderValue<T>(fromQuery, selector.Selector, constExpr);
                         values.Add(insertInfo);
                     }
                 }
@@ -951,7 +597,7 @@ namespace TypedSql
                     var fieldSelector = (LambdaExpression)fieldSelectorUnary.Operand;
                     var valueExpression = callExpression.Arguments[1];
                     var memberValueExpression = ParseExpression(valueExpression, parameters);
-                    var insertInfo = ParseInsertBuilderValue(fromQuery, fieldSelector, memberValueExpression);
+                    var insertInfo = ParseInsertBuilderValue<T>(fromQuery, fieldSelector, memberValueExpression);
                     values.Add(insertInfo);
                 }
                 else
@@ -970,7 +616,7 @@ namespace TypedSql
             return values;
         }
 
-        private InsertInfo ParseInsertBuilderValue(IFromQuery fromQuery, LambdaExpression fieldSelector, SqlExpression valueExpression)
+        private InsertInfo ParseInsertBuilderValue<T>(IFromQuery fromQuery, LambdaExpression fieldSelector, SqlExpression valueExpression)
         {
             MemberExpression fieldSelectorBody;
             if (fieldSelector.Body is MemberExpression memberSelector)
@@ -1006,7 +652,7 @@ namespace TypedSql
             };
         }
 
-        public List<SqlOrderBy> ParseOrderByBuilder(SqlSubQueryResult parentResult, LambdaExpression orderByExpr, Dictionary<string, SqlSubQueryResult> parameters)
+        public List<SqlOrderBy> ParseOrderByBuilder<T>(SqlSubQueryResult parentResult, LambdaExpression orderByExpr, Dictionary<string, SqlSubQueryResult> parameters)
         {
             if (orderByExpr.Body.NodeType != ExpressionType.Call)
             {
@@ -1025,7 +671,7 @@ namespace TypedSql
 
                 if (callExpression.Method.Name == nameof(OrderByBuilder<bool>.Values))
                 {
-                    var builder = (IOrderByBuilder)ResolveConstant(callExpression.Arguments[0], out var argumentType);
+                    var builder = (OrderByBuilder<T>)ResolveConstant(callExpression.Arguments[0], out var argumentType);
                     var orderBys = new List<SqlOrderBy>();
                     foreach (var selector in builder.Selectors)
                     {
