@@ -7,30 +7,6 @@ using TypedSql.Schema;
 
 namespace TypedSql
 {
-    public class SelectorValue
-    {
-        public LambdaExpression Selector { get; set; }
-        public object Value { get; set; }
-    }
-
-    public class InsertBuilder<T>
-    {
-        public List<SelectorValue> Selectors { get; } = new List<SelectorValue>();
-        public Type BuilderType { get; } = typeof(T);
-
-        public InsertBuilder<T> Value<TValueType>(Expression<Func<T, TValueType>> selector, TValueType value)
-        {
-            Selectors.Add(new SelectorValue() { Selector = selector, Value = value });
-            return this;
-        }
-
-        public InsertBuilder<T> Values(InsertBuilder<T> other)
-        {
-            Selectors.AddRange(other.Selectors);
-            return this;
-        }
-    }
-
     public interface IFromQuery
     {
         Type TableType { get; }
@@ -44,6 +20,13 @@ namespace TypedSql
     public class FromQuery<T> : FlatQuery<T, T>, IFromQuery
         where T : new()
     {
+        public FromQuery(DatabaseContext context)
+            : base(null)
+        {
+            Context = context;
+            ParseAttributes();
+        }
+
         public Type TableType { get => typeof(T); }
         public string TableName { get; private set; }
         public List<Column> Columns { get; } = new List<Column>();
@@ -52,13 +35,6 @@ namespace TypedSql
         public DatabaseContext Context { get; }
         internal List<T> Data { get; } = new List<T>();
         internal int Identity { get; set; } = 1;
-
-        public FromQuery(DatabaseContext context)
-            : base(null)
-        {
-            Context = context;
-            ParseAttributes();
-        }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {
