@@ -6,8 +6,6 @@ namespace TypedSql
 {
     public abstract class DatabaseContext
     {
-        public List<IFromQuery> FromQueries { get; } = new List<IFromQuery>();
-
         public DatabaseContext()
         {
             var typeInfo = GetType().GetTypeInfo();
@@ -23,5 +21,7 @@ namespace TypedSql
                 }
             }
         }
+
+        public List<IFromQuery> FromQueries { get; } = new List<IFromQuery>();
     }
 }

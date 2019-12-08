@@ -13,7 +13,7 @@ namespace TypedSql
             SelectFunction = selectExpression.Compile();
         }
 
-        public LambdaExpression SelectExpression { get; }
+        private LambdaExpression SelectExpression { get; }
         private Func<SelectorContext, T> SelectFunction { get; set; }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)

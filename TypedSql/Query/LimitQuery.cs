@@ -16,8 +16,8 @@ namespace TypedSql
             LimitIndex = offset;
         }
 
-        public Query<TFrom, T> ParentT { get; }
         public int LimitIndex { get; }
+        private Query<TFrom, T> ParentT { get; }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {

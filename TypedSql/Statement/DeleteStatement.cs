@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace TypedSql
 {
@@ -10,14 +11,14 @@ namespace TypedSql
     public class DeleteStatement<T, TJoin> : IDeleteStatement
         where T : new()
     {
-        private Query<T, TJoin> Parent { get; }
-        private FromQuery<T> FromQuery { get; }
-
         public DeleteStatement(FlatQuery<T, TJoin> parent)
         {
             Parent = parent;
             FromQuery = parent.GetFromQuery<T>();
         }
+
+        private Query<T, TJoin> Parent { get; }
+        private FromQuery<T> FromQuery { get; }
 
         public int EvaluateInMemory(IQueryRunner runner)
         {

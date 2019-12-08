@@ -2,16 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace TypedSql
 {
     public class SelectQuery<TFrom, T, TResult> : FlatQuery<TFrom, TResult>
     {
-        public Query<TFrom, T> ParentT { get; }
-        public LambdaExpression SelectExpression { get; }
-        private Func<SelectorContext<T>, T, TResult> SelectFunction { get; set; }
-
         public SelectQuery(Query<TFrom, T> parent, Expression<Func<SelectorContext<T>, T, TResult>> selectExpression)
             : base(parent)
         {
@@ -19,6 +14,10 @@ namespace TypedSql
             SelectExpression = selectExpression;
             SelectFunction = selectExpression.Compile();
         }
+
+        private Query<TFrom, T> ParentT { get; }
+        private LambdaExpression SelectExpression { get; }
+        private Func<SelectorContext<T>, T, TResult> SelectFunction { get; set; }
 
         internal override IEnumerable<TResult> InMemorySelect(IQueryRunner runner)
         {

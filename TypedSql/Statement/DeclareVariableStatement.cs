@@ -9,9 +9,6 @@ namespace TypedSql
 
     public class DeclareVariableStatement<T> : IDeclareVariableStatement
     {
-        public string VariableName { get; }
-        public SqlTypeInfo SqlTypeInfo { get; set; }
-
         public DeclareVariableStatement(string variableName)
         {
             VariableName = variableName;
@@ -23,6 +20,9 @@ namespace TypedSql
             VariableName = variableName;
             SqlTypeInfo = sqlTypeInfo;
         }
+
+        private string VariableName { get; }
+        private SqlTypeInfo SqlTypeInfo { get; set; }
 
         public SqlStatement Parse(SqlQueryParser parser)
         {

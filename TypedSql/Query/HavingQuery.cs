@@ -7,10 +7,6 @@ namespace TypedSql
 {
     public class HavingQuery<TFrom, T> : AggregateQuery<TFrom, T>
     {
-        public LambdaExpression HavingExpression { get; }
-        private Func<T, bool> HavingFunction { get; }
-        private Query<TFrom, T> ParentT { get; }
-
         public HavingQuery(Query<TFrom, T> parent, Expression<Func<T, bool>> expr)
             : base(parent)
         {
@@ -18,6 +14,10 @@ namespace TypedSql
             HavingExpression = expr;
             HavingFunction = expr.Compile();
         }
+
+        private LambdaExpression HavingExpression { get; }
+        private Func<T, bool> HavingFunction { get; }
+        private Query<TFrom, T> ParentT { get; }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {

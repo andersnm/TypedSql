@@ -16,7 +16,6 @@ namespace TypedSql
         /// <summary>
         /// Construct with initial expression
         /// </summary>
-        /// <param name="expr"></param>
         public PredicateBuilder(Expression<Func<T, bool>> expr)
         {
             expression = expr.Body;

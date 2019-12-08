@@ -15,16 +15,16 @@ namespace TypedSql
     public class InsertStatement<T> : IInsertStatement
         where T : new()
     {
-        internal FromQuery<T> FromQuery { get; }
-        public Expression<Action<InsertBuilder<T>>> InsertExpression { get; }
-        internal Action<InsertBuilder<T>> InsertFunction { get; }
-
         public InsertStatement(FromQuery<T> parent, Expression<Action<InsertBuilder<T>>> insertExpr)
         {
             FromQuery = parent;
             InsertExpression = insertExpr;
             InsertFunction = insertExpr.Compile();
         }
+
+        private FromQuery<T> FromQuery { get; }
+        private Expression<Action<InsertBuilder<T>>> InsertExpression { get; }
+        private Action<InsertBuilder<T>> InsertFunction { get; }
 
         public int EvaluateInMemory(InMemoryQueryRunner runner, out int identity)
         {

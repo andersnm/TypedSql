@@ -6,12 +6,6 @@ namespace TypedSql
 {
     public class GroupByQuery<TFrom, T, TGroup, TProject> : AggregateQuery<TFrom, TProject>
     {
-        public Query<TFrom, T> ParentT { get; }
-        public LambdaExpression GroupExpression { get; }
-        public LambdaExpression ProjectExpression { get; }
-        private Func<T, TGroup> GroupFunction { get; }
-        private Func<SelectorContext<T>, T, TProject> ProjectFunction { get; }
-
         public GroupByQuery(FlatQuery<TFrom, T> parent, Expression<Func<T, TGroup>> groupExpr, Expression<Func<SelectorContext<T>, T, TProject>> projectExpr)
             : base(parent)
         {
@@ -21,6 +15,12 @@ namespace TypedSql
             ProjectExpression = projectExpr;
             ProjectFunction = projectExpr.Compile();
         }
+
+        private Query<TFrom, T> ParentT { get; }
+        private LambdaExpression GroupExpression { get; }
+        private LambdaExpression ProjectExpression { get; }
+        private Func<T, TGroup> GroupFunction { get; }
+        private Func<SelectorContext<T>, T, TProject> ProjectFunction { get; }
 
         internal override IEnumerable<TProject> InMemorySelect(IQueryRunner runner)
         {

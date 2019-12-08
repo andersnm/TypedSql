@@ -33,8 +33,8 @@ namespace TypedSql
         public List<ForeignKey> ForeignKeys { get; } = new List<ForeignKey>();
         public List<Index> Indices { get; } = new List<Index>();
         public DatabaseContext Context { get; }
-        internal List<T> Data { get; } = new List<T>();
-        internal int Identity { get; set; } = 1;
+        private List<T> Data { get; } = new List<T>();
+        private int Identity { get; set; } = 1;
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {
@@ -60,35 +60,6 @@ namespace TypedSql
             Identity++;
 
             identity = Identity - 1;
-        }
-
-        private MemberExpression GetSelectorMemberExpression(LambdaExpression fieldSelector, out Type selectorType)
-        {
-            // NOTE: duplicated from ParseInsertBuilderValue
-            MemberExpression fieldSelectorBody;
-            if (fieldSelector.Body is MemberExpression memberSelector)
-            {
-                fieldSelectorBody = memberSelector;
-                selectorType = memberSelector.Type;
-            }
-            else if (fieldSelector.Body is UnaryExpression unarySelector)
-            {
-                if (unarySelector.NodeType == ExpressionType.Convert && unarySelector.Operand is MemberExpression convertMemberSelector)
-                {
-                    fieldSelectorBody = convertMemberSelector;
-                    selectorType = unarySelector.Type;
-                }
-                else
-                {
-                    throw new InvalidOperationException("Expected Convert(MemberExpression) in selector");
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Expected MemberExpression in selector");
-            }
-
-            return fieldSelectorBody;
         }
 
         internal void UpdateObject(T itemObject, Type fromType, InsertBuilder<T> fromObject)
@@ -132,6 +103,67 @@ namespace TypedSql
         internal int DeleteObject(T itemObject)
         {
             return Data.Remove(itemObject) ? 1 : 0;
+        }
+
+        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult selectResult)
+        {
+            var tableAlias = parser.AliasProvider.CreateAlias();
+
+            selectResult = new SqlSubQueryResult()
+            {
+                Members = new List<SqlMember>()
+            };
+
+            foreach (var column in Columns)
+            {
+                selectResult.Members.Add(new SqlTableFieldMember()
+                {
+                    MemberName = column.MemberName,
+                    MemberInfo = column.PropertyInfo,
+                    SqlName = column.SqlName,
+                    TableAlias = tableAlias,
+                    TableType = TableType,
+                    FieldType = column.OriginalType,
+                });
+            }
+
+            return new SqlQuery()
+            {
+                From = new SqlFromTable()
+                {
+                    TableName = TableName,
+                },
+                FromAlias = tableAlias,
+            };
+        }
+
+        private MemberExpression GetSelectorMemberExpression(LambdaExpression fieldSelector, out Type selectorType)
+        {
+            // NOTE: duplicated from ParseInsertBuilderValue
+            MemberExpression fieldSelectorBody;
+            if (fieldSelector.Body is MemberExpression memberSelector)
+            {
+                fieldSelectorBody = memberSelector;
+                selectorType = memberSelector.Type;
+            }
+            else if (fieldSelector.Body is UnaryExpression unarySelector)
+            {
+                if (unarySelector.NodeType == ExpressionType.Convert && unarySelector.Operand is MemberExpression convertMemberSelector)
+                {
+                    fieldSelectorBody = convertMemberSelector;
+                    selectorType = unarySelector.Type;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected Convert(MemberExpression) in selector");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Expected MemberExpression in selector");
+            }
+
+            return fieldSelectorBody;
         }
 
         private void ParseAttributes()
@@ -257,38 +289,6 @@ namespace TypedSql
                     Unique = indexAttribute.Unique,
                 });
             }
-        }
-
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult selectResult)
-        {
-            var tableAlias = parser.AliasProvider.CreateAlias();
-
-            selectResult = new SqlSubQueryResult()
-            {
-                Members = new List<SqlMember>()
-            };
-
-            foreach (var column in Columns)
-            {
-                selectResult.Members.Add(new SqlTableFieldMember()
-                {
-                    MemberName = column.MemberName,
-                    MemberInfo = column.PropertyInfo,
-                    SqlName = column.SqlName,
-                    TableAlias = tableAlias,
-                    TableType = TableType,
-                    FieldType = column.OriginalType,
-                });
-            }
-
-            return new SqlQuery()
-            {
-                From = new SqlFromTable()
-                {
-                    TableName = TableName,
-                },
-                FromAlias = tableAlias,
-            };
         }
     }
 }

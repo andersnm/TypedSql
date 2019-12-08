@@ -14,15 +14,7 @@ namespace TypedSql
 
     public class JoinQuery<TFrom, T, TJoinFrom, TJoin, TKey> : FlatQuery<TFrom, TKey>
     {
-        public Query<TFrom, T> ParentT { get; }
-        public Query<TJoinFrom, TJoin> JoinTable { get; }
-        public LambdaExpression JoinExpression { get; }
-        public LambdaExpression ResultExpression { get; }
-        public JoinType JoinType { get; }
-        private Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, bool> JoinFunction { get; }
-        private Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, TKey> ResultFunction { get; }
-
-        public JoinQuery(Query<TFrom, T> parent, Query<TJoinFrom, TJoin> joinTable, Expression<Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, bool>> joinExpr, Expression<Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, TKey>> resultExpr, JoinType type) 
+        public JoinQuery(Query<TFrom, T> parent, Query<TJoinFrom, TJoin> joinTable, Expression<Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, bool>> joinExpr, Expression<Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, TKey>> resultExpr, JoinType type)
             : base(parent)
         {
             ParentT = parent;
@@ -33,6 +25,14 @@ namespace TypedSql
             JoinFunction = joinExpr.Compile();
             ResultFunction = resultExpr.Compile();
         }
+
+        private Query<TFrom, T> ParentT { get; }
+        private Query<TJoinFrom, TJoin> JoinTable { get; }
+        private LambdaExpression JoinExpression { get; }
+        private LambdaExpression ResultExpression { get; }
+        private JoinType JoinType { get; }
+        private Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, bool> JoinFunction { get; }
+        private Func<SelectorContext<T>, T, SelectorContext<TJoin>, TJoin, TKey> ResultFunction { get; }
 
         internal override IEnumerable<TKey> InMemorySelect(IQueryRunner runner)
         {

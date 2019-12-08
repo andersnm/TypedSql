@@ -18,10 +18,6 @@ namespace TypedSql
 
     public class StatementList
     {
-        public List<IStatement> Queries { get; }
-        public StatementList Scope { get; }
-        public StatementList RootScope => Scope != null ? Scope.RootScope : this;
-
         public StatementList()
         {
             Queries = new List<IStatement>();
@@ -32,6 +28,10 @@ namespace TypedSql
             Queries = new List<IStatement>();
             Scope = scope;
         }
+
+        public List<IStatement> Queries { get; }
+        public StatementList Scope { get; }
+        public StatementList RootScope => Scope != null ? Scope.RootScope : this;
 
         public void Add(IStatement query)
         {

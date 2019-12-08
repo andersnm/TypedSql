@@ -12,12 +12,6 @@ namespace TypedSql
     public class UpdateStatement<T, TJoin> : IUpdateStatement
         where T : new()
     {
-        public Expression<Action<TJoin, InsertBuilder<T>>> InsertExpression { get; }
-
-        private Query<T, TJoin> Parent { get; }
-        private FromQuery<T> FromQuery { get; }
-        private Action<TJoin, InsertBuilder<T>> InsertFunction { get; }
-
         /// <summary>
         /// UPDATE ... SET with row parameter
         /// </summary>
@@ -28,6 +22,11 @@ namespace TypedSql
             InsertExpression = insertExpr;
             InsertFunction = insertExpr.Compile();
         }
+
+        private Expression<Action<TJoin, InsertBuilder<T>>> InsertExpression { get; }
+        private Query<T, TJoin> Parent { get; }
+        private FromQuery<T> FromQuery { get; }
+        private Action<TJoin, InsertBuilder<T>> InsertFunction { get; }
 
         public int EvaluateInMemory(IQueryRunner runner)
         {

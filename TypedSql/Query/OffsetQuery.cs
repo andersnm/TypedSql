@@ -16,8 +16,8 @@ namespace TypedSql
             OffsetIndex = offset;
         }
 
-        public Query<TFrom, T> ParentT { get; }
         public int OffsetIndex { get; }
+        private Query<TFrom, T> ParentT { get; }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {

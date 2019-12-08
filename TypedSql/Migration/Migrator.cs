@@ -23,9 +23,9 @@ namespace TypedSql.Migration
 
     public class Migrator
     {
-        internal MigrationContext Context { get; } = new MigrationContext();
         public List<IMigration> Migrations { get; private set; } = new List<IMigration>();
         public List<Migration> AppliedMigrations { get; private set; } = new List<Migration>();
+        internal MigrationContext Context { get; } = new MigrationContext();
 
         /// <summary>
         /// Scan for implementations of the IMigration interface in the provided assembly and order by name

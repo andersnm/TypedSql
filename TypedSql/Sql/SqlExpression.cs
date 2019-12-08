@@ -5,6 +5,25 @@ using System.Reflection;
 
 namespace TypedSql
 {
+    public enum SqlBinaryOperator
+    {
+        Equal,
+        NotEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+        LessThan,
+        LessThanOrEqual,
+        AndAlso,
+        OrElse,
+        Add,
+        Subtract,
+        Multiply,
+        Divide,
+        Modulo,
+        Like,
+        Coalesce,
+    }
+
     public abstract class SqlExpression
     {
         public abstract Type GetExpressionType();
@@ -48,25 +67,6 @@ namespace TypedSql
         {
             return JoinFieldRef.FieldType;
         }
-    }
-
-    public enum SqlBinaryOperator
-    {
-        Equal,
-        NotEqual,
-        GreaterThan,
-        GreaterThanOrEqual,
-        LessThan,
-        LessThanOrEqual,
-        AndAlso,
-        OrElse,
-        Add,
-        Subtract,
-        Multiply,
-        Divide,
-        Modulo,
-        Like,
-        Coalesce,
     }
 
     public class SqlBinaryExpression : SqlExpression

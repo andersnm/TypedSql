@@ -15,9 +15,9 @@ namespace TypedSql
             OrderByBuilderFunction = builderExpr.Compile();
         }
 
-        public Query<TFrom, T> ParentT { get; }
-        public LambdaExpression OrderByBuilderExpression { get; }
-        internal Action<OrderByBuilder<T>> OrderByBuilderFunction { get; }
+        private Query<TFrom, T> ParentT { get; }
+        private LambdaExpression OrderByBuilderExpression { get; }
+        private Action<OrderByBuilder<T>> OrderByBuilderFunction { get; }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {

@@ -15,8 +15,8 @@ namespace TypedSql
             SelectFunction = selectExpression.Compile();
         }
 
-        public Query<TFrom, T> ParentT { get; }
-        public LambdaExpression SelectExpression { get; }
+        private Query<TFrom, T> ParentT { get; }
+        private LambdaExpression SelectExpression { get; }
         private Func<SelectorContext<T>, T, TResult> SelectFunction { get; set; }
 
         internal override IEnumerable<TResult> InMemorySelect(IQueryRunner runner)

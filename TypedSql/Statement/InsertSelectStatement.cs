@@ -15,12 +15,6 @@ namespace TypedSql
     public class InsertSelectStatement<T, TSubFrom, TSub> : IInsertSelectStatement
         where T : new()
     {
-        private FromQuery<T> FromQuery { get; }
-        private Query<TSubFrom, TSub> SelectQuery { get; }
-        public Expression<Action<TSub, InsertBuilder<T>>> InsertExpression { get; }
-
-        private Action<TSub, InsertBuilder<T>> InsertFunction { get; }
-
         public InsertSelectStatement(FromQuery<T> parent, Query<TSubFrom, TSub> insertSelectQuery, Expression<Action<TSub, InsertBuilder<T>>> insertExpr)
         {
             FromQuery = parent;
@@ -28,6 +22,11 @@ namespace TypedSql
             InsertExpression = insertExpr;
             InsertFunction = insertExpr.Compile();
         }
+
+        private FromQuery<T> FromQuery { get; }
+        private Query<TSubFrom, TSub> SelectQuery { get; }
+        private Expression<Action<TSub, InsertBuilder<T>>> InsertExpression { get; }
+        private Action<TSub, InsertBuilder<T>> InsertFunction { get; }
 
         public int EvaluateInMemory(InMemoryQueryRunner runner, out int identity)
         {

@@ -10,6 +10,10 @@ namespace TypedSql.InMemory
         {
         }
 
+        public object LastIdentity { get; private set; }
+        private List<object> LastResult { get; set; }
+        private int AffectedRows { get; set; }
+
         public string GetSql(StatementList statementList, out List<KeyValuePair<string, object>> constants)
         {
             throw new NotImplementedException();
@@ -22,7 +26,7 @@ namespace TypedSql.InMemory
                 WriteStatement(query);
             }
 
-            return lastResult.Cast<T>();
+            return LastResult.Cast<T>();
         }
 
         public IEnumerable<T> ExecuteQuery<T>(StatementResult<T> statementList)
@@ -32,23 +36,19 @@ namespace TypedSql.InMemory
                 WriteStatement(query);
             }
 
-            return lastResult.Cast<T>();
+            return LastResult.Cast<T>();
         }
 
         public int ExecuteNonQuery(StatementList statementList)
         {
-            affectedRows = 0;
+            AffectedRows = 0;
             foreach (var query in statementList.Queries)
             {
                 WriteStatement(query);
             }
 
-            return affectedRows;
+            return AffectedRows;
         }
-
-        private List<object> lastResult;
-        private int affectedRows;
-        public object LastIdentity { get; private set; }
 
         private void WriteStatement(IStatement stmt)
         {
@@ -82,8 +82,8 @@ namespace TypedSql.InMemory
 
         private void WriteSelectStatement(ISelectStatement stmt)
         {
-            lastResult = stmt.EvaluateInMemory(this);
-            affectedRows = lastResult.Count;
+            LastResult = stmt.EvaluateInMemory(this);
+            AffectedRows = LastResult.Count;
         }
 
         private void WriteInsertStatement(IInsertStatement stmt)
@@ -91,7 +91,7 @@ namespace TypedSql.InMemory
             var insertedRows = stmt.EvaluateInMemory(this, out var identity);
             if (insertedRows > 0)
             {
-                affectedRows += insertedRows;
+                AffectedRows += insertedRows;
                 LastIdentity = identity;
             }
         }
@@ -101,19 +101,19 @@ namespace TypedSql.InMemory
             var insertedRows = stmt.EvaluateInMemory(this, out var identity);
             if (insertedRows > 0)
             {
-                affectedRows += insertedRows;
+                AffectedRows += insertedRows;
                 LastIdentity = identity;
             }
         }
 
         private void WriteUpdateStatement(IUpdateStatement stmt)
         {
-            affectedRows += stmt.EvaluateInMemory(this);
+            AffectedRows += stmt.EvaluateInMemory(this);
         }
 
         private void WriteDeleteStatement(IDeleteStatement stmt)
         {
-            affectedRows += stmt.EvaluateInMemory(this);
+            AffectedRows += stmt.EvaluateInMemory(this);
         }
 
         private void WriteDeclareSqlVariable(IDeclareVariableStatement stmt)

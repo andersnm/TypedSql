@@ -13,16 +13,16 @@ namespace TypedSql
 
     public class SetVariableStatement<T> : ISetVariableStatement
     {
-        public SqlPlaceholder<T> Variable { get; }
-        public Expression<Func<SelectorContext<T>, T>> ValueExpression { get; }
-        private Func<SelectorContext<T>, T> ValueFunction { get; }
-
         public SetVariableStatement(SqlPlaceholder<T> variable, Expression<Func<SelectorContext<T>, T>> valueExpr)
         {
             Variable = variable;
             ValueExpression = valueExpr;
             ValueFunction = valueExpr.Compile();
         }
+
+        private SqlPlaceholder<T> Variable { get; }
+        private Expression<Func<SelectorContext<T>, T>> ValueExpression { get; }
+        private Func<SelectorContext<T>, T> ValueFunction { get; }
 
         public void EvaluateInMemory(IQueryRunner runner)
         {

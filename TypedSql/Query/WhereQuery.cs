@@ -7,17 +7,17 @@ namespace TypedSql
 {
     public class WhereQuery<TFrom, T> : FlatQuery<TFrom, T>
     {
-        public Query<TFrom, T> ParentT { get; }
-        public LambdaExpression WhereExpression { get; }
-        private Func<T, bool> WhereFunction { get; }
-
-        public WhereQuery(Query<TFrom, T> parent, Expression<Func<T, bool>> expr) 
+        public WhereQuery(Query<TFrom, T> parent, Expression<Func<T, bool>> expr)
             : base(parent)
         {
             ParentT = parent;
             WhereExpression = expr;
             WhereFunction = expr.Compile();
         }
+
+        private Query<TFrom, T> ParentT { get; }
+        private LambdaExpression WhereExpression { get; }
+        private Func<T, bool> WhereFunction { get; }
 
         internal override IEnumerable<T> InMemorySelect(IQueryRunner runner)
         {

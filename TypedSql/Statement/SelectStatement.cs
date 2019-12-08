@@ -13,12 +13,12 @@ namespace TypedSql
 
     public class SelectStatement<TFrom, T> : ISelectStatement
     {
-        internal Query<TFrom, T> SelectQuery { get; }
-
         public SelectStatement(Query<TFrom, T> parent)
         {
             SelectQuery = parent;
         }
+
+        internal Query<TFrom, T> SelectQuery { get; }
 
         public List<object> EvaluateInMemory(InMemoryQueryRunner runner)
         {
@@ -69,12 +69,12 @@ namespace TypedSql
 
     public class SelectStatement<TResult> : ISelectStatement
     {
-        public Query<TResult, TResult> SelectQuery { get; }
-
         public SelectStatement(Expression<Func<SelectorContext, TResult>> selectExpression)
         {
             SelectQuery = new ProjectConstantQuery<TResult>(selectExpression);
         }
+
+        public Query<TResult, TResult> SelectQuery { get; }
 
         public List<object> EvaluateInMemory(InMemoryQueryRunner runner)
         {
