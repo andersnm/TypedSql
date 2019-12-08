@@ -21,6 +21,7 @@ namespace TypedSql
         private static readonly MethodInfo IsDBNullFunction = typeof(IDataRecord).GetTypeInfo().GetMethod(nameof(IDataRecord.IsDBNull), new Type[] { typeof(int) });
         private static readonly MethodInfo ReadBytesFunction = typeof(CompiledMaterializer).GetTypeInfo().GetMethod(nameof(CompiledMaterializer.ReadBytes), BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly MethodInfo IsNullOrdinalsFunction = typeof(CompiledMaterializer).GetTypeInfo().GetMethod(nameof(CompiledMaterializer.IsNullOrdinals), BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly ConstructorInfo InvalidOperationExceptionConstructor = typeof(InvalidOperationException).GetConstructor(new[] { typeof(string), typeof(Exception) });
 
         public override IEnumerable<T> ReadTypedReader<T>(IDataReader reader, List<SqlMember> selectMembers)
         {
@@ -40,7 +41,7 @@ namespace TypedSql
 
             if (IsScalarType(type))
             {
-                var body = CompileSimpleValue(type, recordParameter, 0);
+                var body = CompileSimpleValue(selectMembers[0], type, recordParameter, 0);
                 return Expression.Lambda<Func<IDataRecord, T>>(body, recordParameter).Compile();
             }
             else
@@ -50,7 +51,7 @@ namespace TypedSql
             }
         }
 
-        private Expression CompileSimpleValue(Type propertyType, Expression recordParameter, int ordinal)
+        private Expression CompileSimpleValue(SqlMember member, Type propertyType, Expression recordParameter, int ordinal)
         {
             var typeInfo = propertyType.GetTypeInfo();
             if (IsNullable(propertyType))
@@ -67,7 +68,20 @@ namespace TypedSql
             }
             else
             {
-                return CompileBaseScalar(propertyType, recordParameter, ordinal);
+                // Rethrow more useful reader errors including ordinal and field name in the error message:
+                //   try { return reader.GetXX(); }
+                //   catch (Exception e) { throw new InvalidOperationException(..., e); }
+                var ex = Expression.Parameter(typeof(Exception), "e");
+                return Expression.TryCatch(
+                    CompileBaseScalar(propertyType, recordParameter, ordinal),
+                    Expression.Catch(
+                        ex,
+                        Expression.Throw(
+                            Expression.New(
+                                InvalidOperationExceptionConstructor,
+                                Expression.Constant("Could not read ordinal " + ordinal + " for member " + member.MemberName),
+                                ex),
+                            propertyType)));
             }
         }
 
@@ -124,7 +138,7 @@ namespace TypedSql
             }
 
             usedOrdinals = 1;
-            return CompileSimpleValue(member.MemberInfo.PropertyType, recordParameter, ordinal);
+            return CompileSimpleValue(member, member.MemberInfo.PropertyType, recordParameter, ordinal);
         }
 
         private Expression CompileBaseScalar(Type propertyType, Expression recordParameter, int ordinal)
