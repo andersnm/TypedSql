@@ -85,9 +85,21 @@ namespace TypedSql
             {
                 if (call.Method.Name == nameof(Query<int, int>.AsExpression))
                 {
-                    var queryLambda = Expression.Lambda(call.Object);
+                    // Compile and evaluate the query instance, but rewrite
+                    // references to captured parameters from outer closures -
+                    // i.e subqueries accessing row data - otherwise these
+                    // would error or compile to constants.
+                    // E.g "p.ProductId" becomes "Parameter("p").ProductId".
+                    // This special method call parses as a
+                    // ParameterExpression in ParseExpression()
+
+                    var scanner = new CapturedParameterRewriter();
+                    var callObject = scanner.Visit(call.Object);
+
+                    var queryLambda = Expression.Lambda(callObject);
+
                     var query = (Query)queryLambda.Compile().DynamicInvoke();
-                    var sqlQuery = query.Parse(this);
+                    var sqlQuery = query.Parse(this, parameters);
                     return new SqlSelectExpression()
                     {
                         Query = sqlQuery
@@ -397,6 +409,17 @@ namespace TypedSql
 
         private SqlMember TryParseSqlMember(Expression expression, string memberName, Dictionary<string, SqlSubQueryResult> parameters)
         {
+            if (expression is MethodCallExpression callExpression
+                && callExpression.Method.DeclaringType == typeof(CapturedParameterRewriter)
+                && callExpression.Method.Name == nameof(CapturedParameterRewriter.Parameter)) 
+            {
+                // Expression is a captured parameter from an outer closure,
+                // which was rewritten to a method call before being compiled.
+                var arg = (ConstantExpression)callExpression.Arguments[0];
+                var subQuery = parameters[(string)arg.Value];
+                return subQuery.Members.Where(m => m.MemberName == memberName).First();
+            }
+            else
             if (expression is ParameterExpression parameterExpression)
             {
                 var subQuery = parameters[parameterExpression.Name];
@@ -675,7 +698,7 @@ namespace TypedSql
                     var orderBys = new List<SqlOrderBy>();
                     foreach (var selector in builder.Selectors)
                     {
-                        var selectorParameters = new Dictionary<string, SqlSubQueryResult>();
+                        var selectorParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
                         selectorParameters[selector.Selector.Parameters[0].Name] = parentResult;
 
                         var orderBySelector = ParseExpression(selector.Selector.Body, selectorParameters);
@@ -692,7 +715,7 @@ namespace TypedSql
                 {
                     var fieldSelectorUnary = (UnaryExpression)callExpression.Arguments[0];
                     var fieldSelector = (LambdaExpression)fieldSelectorUnary.Operand;
-                    var selectorParameters = new Dictionary<string, SqlSubQueryResult>();
+                    var selectorParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
                     selectorParameters[fieldSelector.Parameters[0].Name] = parentResult;
 
                     var expr = ParseExpression(fieldSelector.Body, selectorParameters);
@@ -725,6 +748,54 @@ namespace TypedSql
             var key = "p" + Constants.Count.ToString();
             Constants.Add(key, value);
             return key;
+        }
+
+        private class CapturedParameterRewriter : ExpressionVisitor
+        {
+            private static readonly MethodInfo ParameterFunction = typeof(CapturedParameterRewriter).GetTypeInfo().GetMethod(nameof(Parameter), BindingFlags.Public | BindingFlags.Static);
+
+            public HashSet<ParameterExpression> Parameters { get; private set; } = new HashSet<ParameterExpression>();
+            private List<ParameterExpression> ExceptParameters { get; set; } = new List<ParameterExpression>();
+
+            /// <summary>
+            /// The dummy method parameters are rewritten to.
+            /// </summary>
+            public static T Parameter<T>(string parameterName)
+            {
+                return default;
+            }
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                if (!ExceptParameters.Contains(node))
+                {
+                    Parameters.Add(node);
+
+                    var parameterFunction = ParameterFunction.MakeGenericMethod(node.Type);
+                    return Expression.Call(null, parameterFunction, Expression.Constant(node.Name));
+                }
+
+                return base.VisitParameter(node);
+            }
+
+            protected override Expression VisitMethodCall(MethodCallExpression node)
+            {
+                return base.VisitMethodCall(node);
+            }
+
+            protected override Expression VisitLambda<T>(Expression<T> node)
+            {
+                ExceptParameters.AddRange(node.Parameters);
+
+                var result = base.VisitLambda(node);
+
+                foreach (var p in node.Parameters)
+                {
+                    ExceptParameters.Remove(p);
+                }
+
+                return result;
+            }
         }
     }
 }

@@ -68,25 +68,25 @@ namespace TypedSql
             }
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult)
         {
-            var result = ParentT.Parse(parser, out var tempParentResult);
-            var joinFromSubQuery = JoinTable.Parse(parser, out var joinFromResult);
+            var result = ParentT.Parse(parser, parameters, out var tempParentResult);
+            var joinFromSubQuery = JoinTable.Parse(parser, parameters, out var joinFromResult);
             joinFromSubQuery.SelectResult = joinFromResult;
 
             if (JoinTable is IFromQuery)
             {
-                ParseJoinTableQuery(parser, tempParentResult, joinFromSubQuery, result, out parentResult);
+                ParseJoinTableQuery(parser, parameters, tempParentResult, joinFromSubQuery, result, out parentResult);
                 return result;
             }
             else
             {
-                ParseJoinSubQuery(parser, tempParentResult, joinFromSubQuery, result, out parentResult);
+                ParseJoinSubQuery(parser, parameters, tempParentResult, joinFromSubQuery, result, out parentResult);
                 return result;
             }
         }
 
-        private void ParseJoinSubQuery(SqlQueryParser parser, SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, SqlQuery result, out SqlSubQueryResult joinResult)
+        private void ParseJoinSubQuery(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, SqlQuery result, out SqlSubQueryResult joinResult)
         {
             var joinAlias = parser.AliasProvider.CreateAlias();
 
@@ -105,7 +105,7 @@ namespace TypedSql
             };
 
             // Parameters in both selector & join expressions: actx, a, bctx, b
-            var outerParameters = new Dictionary<string, SqlSubQueryResult>();
+            var outerParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
             outerParameters[JoinExpression.Parameters[0].Name] = parentResult;
             outerParameters[JoinExpression.Parameters[1].Name] = parentResult;
             outerParameters[JoinExpression.Parameters[2].Name] = tempFromSubQuery;
@@ -129,10 +129,10 @@ namespace TypedSql
             joinResult = joinInfo.JoinResult;
         }
 
-        private void ParseJoinTableQuery(SqlQueryParser parser, SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, SqlQuery result, out SqlSubQueryResult joinResult)
+        private void ParseJoinTableQuery(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, SqlSubQueryResult parentResult, SqlQuery joinFromSubQuery, SqlQuery result, out SqlSubQueryResult joinResult)
         {
             // Parameters in both selector & join expressions: actx, a, bctx, b
-            var outerParameters = new Dictionary<string, SqlSubQueryResult>();
+            var outerParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
             outerParameters[JoinExpression.Parameters[0].Name] = parentResult;
             outerParameters[JoinExpression.Parameters[1].Name] = parentResult;
             outerParameters[JoinExpression.Parameters[2].Name] = joinFromSubQuery.SelectResult;

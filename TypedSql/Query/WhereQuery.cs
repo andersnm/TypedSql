@@ -26,14 +26,14 @@ namespace TypedSql
             return items.Where(x => WhereFunction(x));
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult)
         {
-            var result = ParentT.Parse(parser, out parentResult);
+            var result = ParentT.Parse(parser, parameters, out parentResult);
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-            parameters[WhereExpression.Parameters[0].Name] = parentResult;
+            var whereParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
+            whereParameters[WhereExpression.Parameters[0].Name] = parentResult;
 
-            result.Wheres.Add(parser.ParseExpression(WhereExpression.Body, parameters));
+            result.Wheres.Add(parser.ParseExpression(WhereExpression.Body, whereParameters));
             return result;
         }
     }

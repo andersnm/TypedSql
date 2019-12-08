@@ -29,14 +29,14 @@ namespace TypedSql
             return Parent.GetFromQuery<TFrom>();
         }
 
-        internal SqlQuery Parse(SqlQueryParser parser)
+        internal SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters)
         {
-            var result = Parse(parser, out var selectResult);
+            var result = Parse(parser, parameters, out var selectResult);
             result.SelectResult = selectResult;
             return result;
         }
 
-        internal abstract SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult);
+        internal abstract SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult);
     }
 
     public abstract class Query<TFrom, T> : Query
@@ -48,14 +48,11 @@ namespace TypedSql
 
         internal Dictionary<T, TFrom> FromRowMapping { get; set; } = new Dictionary<T, TFrom>();
 
-        public T AsExpression(SelectorContext<T> ctx)
+        public T AsExpression(SelectorContext ctx)
         {
             return InMemorySelect(ctx.Runner).FirstOrDefault();
         }
 
-        internal virtual IEnumerable<T> InMemorySelect(IQueryRunner runner)
-        {
-            throw new NotSupportedException("Select must be overridden");
-        }
+        internal abstract IEnumerable<T> InMemorySelect(IQueryRunner runner);
     }
 }

@@ -38,7 +38,7 @@ namespace TypedSql
         {
             return new SqlDelete()
             {
-                FromSource = Parent.Parse(parser),
+                FromSource = Parent.Parse(parser, new Dictionary<string, SqlSubQueryResult>()),
             };
         }
     }

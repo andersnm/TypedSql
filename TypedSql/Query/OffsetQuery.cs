@@ -27,9 +27,9 @@ namespace TypedSql
             return items;
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult)
         {
-            var result = ParentT.Parse(parser, out parentResult);
+            var result = ParentT.Parse(parser, parameters, out parentResult);
             result.Offset = OffsetIndex;
             return result;
         }

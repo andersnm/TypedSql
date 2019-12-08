@@ -50,21 +50,21 @@ namespace TypedSql
             }
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult)
         {
-            var result = ParentT.Parse(parser, out var tempParentResult);
+            var result = ParentT.Parse(parser, parameters, out var tempParentResult);
 
             var newExpression = GroupExpression.Body as NewExpression;
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
-            parameters[GroupExpression.Parameters[0].Name] = tempParentResult;
+            var groupParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
+            groupParameters[GroupExpression.Parameters[0].Name] = tempParentResult;
 
             foreach (var argument in newExpression.Arguments)
             {
-                result.GroupBys.Add(parser.ParseExpression(argument, parameters));
+                result.GroupBys.Add(parser.ParseExpression(argument, groupParameters));
             }
 
-            var projectParameters = new Dictionary<string, SqlSubQueryResult>();
+            var projectParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
             projectParameters[ProjectExpression.Parameters[0].Name] = tempParentResult; // ctx
             projectParameters[ProjectExpression.Parameters[1].Name] = tempParentResult;
 

@@ -33,18 +33,18 @@ namespace TypedSql
             return parentResult.Select(x => InvokeSelectFunction(context, x));
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult)
         {
             var joinAlias = parser.AliasProvider.CreateAlias();
-            var result = ParentT.Parse(parser, out var tempParentResult);
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
+            var result = ParentT.Parse(parser, parameters, out var tempParentResult);
+            var selectParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
 
-            parameters[SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
-            parameters[SelectExpression.Parameters[1].Name] = tempParentResult; // item
+            selectParameters[SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
+            selectParameters[SelectExpression.Parameters[1].Name] = tempParentResult; // item
 
             result.SelectResult = new SqlSubQueryResult()
             {
-                Members = parser.ParseSelectExpression(SelectExpression, parameters)
+                Members = parser.ParseSelectExpression(SelectExpression, selectParameters)
             };
 
             parentResult = new SqlSubQueryResult()

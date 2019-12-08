@@ -26,7 +26,7 @@ namespace TypedSql
             };
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult)
         {
             // No parent, create new SqlQuery
             var result = new SqlQuery();
@@ -35,13 +35,13 @@ namespace TypedSql
                 Members = new List<SqlMember>(),
             };
 
-            var parameters = new Dictionary<string, SqlSubQueryResult>();
+            var projectParameters = new Dictionary<string, SqlSubQueryResult>(parameters);
 
-            parameters[SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
+            projectParameters[SelectExpression.Parameters[0].Name] = tempParentResult; // ctx
 
             parentResult = new SqlSubQueryResult()
             {
-                Members = parser.ParseSelectExpression(SelectExpression, parameters)
+                Members = parser.ParseSelectExpression(SelectExpression, projectParameters)
             };
 
             return result;

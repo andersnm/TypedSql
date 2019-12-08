@@ -161,6 +161,7 @@ namespace TypedSql.Test
             Assert.AreEqual(1, results.Count, "Should be 1 result");
             Assert.AreEqual("Happy T-Shirt, Happy XL", results[0], "Selected 'Happy T-Shirt, Happy XL'");
         }
+
         [Test]
         [TestCase(typeof(MySqlQueryRunner))]
         [TestCase(typeof(SqlServerQueryRunner))]
@@ -413,6 +414,35 @@ namespace TypedSql.Test
                             a.ProductId,
                             UnitName = a.Name,
                             b.UnitId
+                        }));
+
+            var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);
+            ResetDb(runner);
+
+            var results = runner.ExecuteQuery(select).ToList();
+            Assert.True(results.Count > 0, "Should be results");
+        }
+
+        [Test]
+        [TestCase(typeof(MySqlQueryRunner))]
+        [TestCase(typeof(SqlServerQueryRunner))]
+        [TestCase(typeof(PostgreSqlQueryRunner))]
+        [TestCase(typeof(InMemoryQueryRunner))]
+        public void SelectSubqueryUsingRow(Type runnerType)
+        {
+            var stmtList = new StatementList();
+
+            var select = stmtList.Select(
+                DB.Products
+                    .Project((ctx, p) => new
+                        {
+                            p.ProductId,
+                            UnitCount = DB.Units
+                                .Where(u => u.ProductId == p.ProductId)
+                                .GroupBy(
+                                    u => new { u.ProductId },
+                                    (gctx, ur) => (int?)Function.Count(gctx, t => t.UnitId))
+                               .AsExpression(ctx)
                         }));
 
             var runner = (IQueryRunner)Provider.GetRequiredService(runnerType);

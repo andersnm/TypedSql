@@ -62,7 +62,7 @@ namespace TypedSql
         {
             return new SqlSelect()
             {
-                FromSource = SelectQuery.Parse(parser),
+                FromSource = SelectQuery.Parse(parser, new Dictionary<string, SqlSubQueryResult>()),
             };
         }
     }
@@ -85,7 +85,7 @@ namespace TypedSql
         {
             return new SqlSelect()
             {
-                FromSource = SelectQuery.Parse(parser)
+                FromSource = SelectQuery.Parse(parser, new Dictionary<string, SqlSubQueryResult>())
             };
         }
     }

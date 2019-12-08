@@ -105,7 +105,7 @@ namespace TypedSql
             return Data.Remove(itemObject) ? 1 : 0;
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult selectResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult selectResult)
         {
             var tableAlias = parser.AliasProvider.CreateAlias();
 

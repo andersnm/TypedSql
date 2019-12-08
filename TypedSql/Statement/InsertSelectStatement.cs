@@ -48,7 +48,7 @@ namespace TypedSql
 
         public SqlStatement Parse(SqlQueryParser parser)
         {
-            var parentQueryResult = SelectQuery.Parse(parser);
+            var parentQueryResult = SelectQuery.Parse(parser, new Dictionary<string, SqlSubQueryResult>());
 
             var parameters = new Dictionary<string, SqlSubQueryResult>();
             parameters[InsertExpression.Parameters[0].Name] = parentQueryResult.SelectResult;

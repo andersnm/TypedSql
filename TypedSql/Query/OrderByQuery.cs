@@ -48,10 +48,10 @@ namespace TypedSql
             return ordered;
         }
 
-        internal override SqlQuery Parse(SqlQueryParser parser, out SqlSubQueryResult parentResult)
+        internal override SqlQuery Parse(SqlQueryParser parser, Dictionary<string, SqlSubQueryResult> parameters, out SqlSubQueryResult parentResult)
         {
-            var result = ParentT.Parse(parser, out parentResult);
-            result.OrderBys = parser.ParseOrderByBuilder<T>(parentResult, OrderByBuilderExpression, new Dictionary<string, SqlSubQueryResult>());
+            var result = ParentT.Parse(parser, parameters, out parentResult);
+            result.OrderBys = parser.ParseOrderByBuilder<T>(parentResult, OrderByBuilderExpression, parameters);
             return result;
         }
     }
